@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { sendGAEvent } from "@next/third-parties/google";
 import {
   ArrowRight,
   CheckCircle2,
@@ -40,6 +41,11 @@ export default function LeadForm() {
 
     const formData =
       new FormData(form);
+
+    const selectedService =
+      String(
+        formData.get("service") || ""
+      );
 
     const data = {
       name: formData.get("name"),
@@ -82,6 +88,13 @@ export default function LeadForm() {
             "Unable to submit enquiry."
         );
       }
+
+      // Google Analytics:
+      // Record a lead only after successful submission.
+      sendGAEvent("event", "generate_lead", {
+        service: selectedService,
+        lead_source: "website_form",
+      });
 
       setSuccess(true);
       form.reset();
