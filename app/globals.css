@@ -18167,3 +18167,325 @@ a.crm-action-item:hover {
     width: 100%;
   }
 }
+
+/* =========================================================
+   ADD COMPANY FORM
+   ========================================================= */
+
+.company-form-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.07), transparent 32%),
+    #f6f8fc;
+  color: #0f172a;
+}
+
+.company-form-topbar {
+  min-height: 64px;
+  padding: 0 36px;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.company-form-topbar > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.company-form-topbar > a:hover {
+  color: #2563eb;
+}
+
+.company-form-topbar > div {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.company-form-container {
+  width: min(920px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 42px 0 64px;
+}
+
+.company-form-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.company-form-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
+}
+
+.company-form-heading span {
+  display: block;
+  margin-bottom: 4px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.company-form-heading h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.company-form-heading p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.company-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.company-form-section {
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.05);
+}
+
+.company-form-section-heading {
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.company-form-section-heading h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.company-form-section-heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.company-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.company-form-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.company-form-field.full {
+  grid-column: 1 / -1;
+}
+
+.company-form-field label {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.company-form-field input,
+.company-form-field select,
+.company-form-field textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
+  box-sizing: border-box;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #d8dee9;
+  border-radius: 10px;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.company-form-field textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.company-form-field input::placeholder,
+.company-form-field textarea::placeholder {
+  color: #94a3b8;
+}
+
+.company-form-field input:hover,
+.company-form-field select:hover,
+.company-form-field textarea:hover {
+  border-color: #b8c3d4;
+}
+
+.company-form-field input:focus,
+.company-form-field select:focus,
+.company-form-field textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.company-form-success,
+.company-form-error {
+  padding: 13px 16px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.company-form-success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.company-form-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.company-form-actions {
+  padding-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.company-form-actions > a,
+.company-form-actions > button {
+  min-height: 44px;
+  padding: 0 19px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.company-form-actions > a {
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #d8dee9;
+}
+
+.company-form-actions > a:hover {
+  color: #0f172a;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.company-form-actions > button {
+  color: #ffffff;
+  background: #2563eb;
+  border: 1px solid #2563eb;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+}
+
+.company-form-actions > button:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 9px 20px rgba(37, 99, 235, 0.22);
+}
+
+.company-form-actions > button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .company-form-topbar {
+    padding: 0 18px;
+  }
+
+  .company-form-topbar > div {
+    display: none;
+  }
+
+  .company-form-container {
+    width: min(100% - 28px, 920px);
+    padding: 28px 0 44px;
+  }
+
+  .company-form-heading {
+    align-items: flex-start;
+  }
+
+  .company-form-section {
+    padding: 20px 16px;
+    border-radius: 15px;
+  }
+
+  .company-form-grid {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .company-form-field.full {
+    grid-column: auto;
+  }
+
+  .company-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .company-form-actions > a,
+  .company-form-actions > button {
+    width: 100%;
+  }
+}
