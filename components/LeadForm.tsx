@@ -1,7 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 
 const services = [
   "Water Testing",
@@ -13,43 +17,70 @@ const services = [
 ];
 
 export default function LeadForm() {
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const [success, setSuccess] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setLoading(true);
     setSuccess(false);
     setError("");
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+    const form =
+      event.currentTarget;
+
+    const formData =
+      new FormData(form);
 
     const data = {
       name: formData.get("name"),
-      company: formData.get("company"),
+      company:
+        formData.get("company"),
       phone: formData.get("phone"),
       email: formData.get("email"),
-      service: formData.get("service"),
-      requirement: formData.get("requirement"),
-      source: "Nexus Hyderabad Website",
+      service:
+        formData.get("service"),
+      requirement:
+        formData.get("requirement"),
+
+      // Hidden anti-bot honeypot
+      website:
+        formData.get("website"),
+
+      source:
+        "Nexus Hyderabad Website",
     };
 
     try {
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response =
+        await fetch("/api/leads", {
+          method: "POST",
 
-      const result = await response.json();
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(data),
+        });
+
+      const result =
+        await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Unable to submit enquiry.");
+        throw new Error(
+          result.message ||
+            "Unable to submit enquiry."
+        );
       }
 
       setSuccess(true);
@@ -66,9 +97,45 @@ export default function LeadForm() {
   }
 
   return (
-    <form className="contact-form" onSubmit={handleSubmit}>
+    <form
+      className="contact-form"
+      onSubmit={handleSubmit}
+    >
+      {/* ===============================================
+          ANTI-BOT HONEYPOT
+
+          Genuine visitors will never see this field.
+          Bots that automatically fill every input
+          may fill it and will be rejected by the API.
+      =============================================== */}
+
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: "auto",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
+        }}
+      >
+        <label htmlFor="website">
+          Leave this field empty
+        </label>
+
+        <input
+          id="website"
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       <div className="form-heading">
         <span>Request a Quote</span>
+
         <h3>How can we help?</h3>
       </div>
 
@@ -77,6 +144,7 @@ export default function LeadForm() {
           type="text"
           name="name"
           placeholder="Your Name *"
+          maxLength={100}
           required
         />
 
@@ -84,6 +152,7 @@ export default function LeadForm() {
           type="text"
           name="company"
           placeholder="Company Name *"
+          maxLength={150}
           required
         />
       </div>
@@ -93,6 +162,7 @@ export default function LeadForm() {
           type="tel"
           name="phone"
           placeholder="Phone Number *"
+          maxLength={20}
           required
         />
 
@@ -100,26 +170,40 @@ export default function LeadForm() {
           type="email"
           name="email"
           placeholder="Email Address *"
+          maxLength={254}
           required
         />
       </div>
 
-      <select name="service" defaultValue="" required>
-        <option value="" disabled>
+      <select
+        name="service"
+        defaultValue=""
+        required
+      >
+        <option
+          value=""
+          disabled
+        >
           Select Testing Service *
         </option>
 
-        {services.map((service) => (
-          <option value={service} key={service}>
-            {service}
-          </option>
-        ))}
+        {services.map(
+          (service) => (
+            <option
+              value={service}
+              key={service}
+            >
+              {service}
+            </option>
+          )
+        )}
       </select>
 
       <textarea
         name="requirement"
         placeholder="Tell us about your testing requirement..."
         rows={5}
+        maxLength={2000}
         required
       />
 
@@ -130,7 +214,11 @@ export default function LeadForm() {
       >
         {loading ? (
           <>
-            <Loader2 size={18} className="submit-spinner" />
+            <Loader2
+              size={18}
+              className="submit-spinner"
+            />
+
             Submitting...
           </>
         ) : (
@@ -146,16 +234,29 @@ export default function LeadForm() {
           <CheckCircle2 size={20} />
 
           <div>
-            <strong>Enquiry submitted successfully!</strong>
-            <span>Our team will contact you regarding your requirement.</span>
+            <strong>
+              Enquiry submitted
+              successfully!
+            </strong>
+
+            <span>
+              Our team will contact you
+              regarding your requirement.
+            </span>
           </div>
         </div>
       )}
 
-      {error && <div className="form-error">{error}</div>}
+      {error && (
+        <div className="form-error">
+          {error}
+        </div>
+      )}
 
       <small className="form-note">
-        Your information will only be used to respond to your testing enquiry.
+        Your information will only be
+        used to respond to your testing
+        enquiry.
       </small>
     </form>
   );

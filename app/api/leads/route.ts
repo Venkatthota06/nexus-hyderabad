@@ -14,11 +14,21 @@ type LeadRequestBody = {
   email?: string;
   service?: string;
   requirement?: string;
+
+  // Honeypot field
+  website?: string;
+
   source?: string;
   status?: string;
   notes?: string;
   nextFollowUp?: string;
 };
+
+const EMAIL_REGEX =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const PHONE_REGEX =
+  /^[0-9+\-()\s]{7,20}$/;
 
 /* =========================================================
    GET ALL LEADS - ADMIN ONLY
@@ -72,8 +82,64 @@ export async function POST(
   request: Request
 ) {
   try {
+    /* -----------------------------------------------------
+       REQUEST SIZE PROTECTION
+    ----------------------------------------------------- */
+
+    const contentLength =
+      request.headers.get(
+        "content-length"
+      );
+
+    if (
+      contentLength &&
+      Number(contentLength) >
+        10_000
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Submission is too large.",
+        },
+        { status: 413 }
+      );
+    }
+
     const body: LeadRequestBody =
       await request.json();
+
+    /* -----------------------------------------------------
+       HONEYPOT BOT PROTECTION
+    ----------------------------------------------------- */
+
+    const honeypot =
+      body.website?.trim() ?? "";
+
+    if (honeypot) {
+      /*
+       * Return a normal-looking success
+       * response so automated bots do
+       * not learn that the honeypot
+       * detected them.
+       *
+       * IMPORTANT:
+       * No lead is created in Neon.
+       */
+
+      return NextResponse.json(
+        {
+          success: true,
+          message:
+            "Enquiry submitted successfully.",
+        },
+        { status: 200 }
+      );
+    }
+
+    /* -----------------------------------------------------
+       NORMALISE PUBLIC FORM DATA
+    ----------------------------------------------------- */
 
     const name =
       body.name?.trim() ?? "";
@@ -95,9 +161,9 @@ export async function POST(
     const requirement =
       body.requirement?.trim() ?? "";
 
-    const source =
-      body.source?.trim() ||
-      "Nexus Hyderabad Website";
+    /* -----------------------------------------------------
+       REQUIRED FIELD VALIDATION
+    ----------------------------------------------------- */
 
     if (
       !name ||
@@ -117,6 +183,66 @@ export async function POST(
       );
     }
 
+    /* -----------------------------------------------------
+       LENGTH VALIDATION
+    ----------------------------------------------------- */
+
+    if (
+      name.length > 100 ||
+      company.length > 150 ||
+      phone.length > 20 ||
+      email.length > 254 ||
+      service.length > 100 ||
+      requirement.length > 2000
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "One or more fields are too long.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* -----------------------------------------------------
+       EMAIL VALIDATION
+    ----------------------------------------------------- */
+
+    if (
+      !EMAIL_REGEX.test(email)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Please enter a valid email address.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* -----------------------------------------------------
+       PHONE VALIDATION
+    ----------------------------------------------------- */
+
+    if (
+      !PHONE_REGEX.test(phone)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Please enter a valid phone number.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* -----------------------------------------------------
+       CREATE VERIFIED PUBLIC LEAD
+    ----------------------------------------------------- */
+
     const lead =
       await db.orm.public.Lead.create({
         name,
@@ -126,7 +252,15 @@ export async function POST(
         email,
         service,
         requirement,
-        source,
+
+        /*
+         * Do not trust "source" coming
+         * from the public browser.
+         */
+
+        source:
+          "Nexus Hyderabad Website",
+
         status: "New Lead",
         notes: null,
         nextFollowUp: null,
@@ -222,7 +356,8 @@ export async function PUT(
         : existingLead.notes;
 
     let nextFollowUp =
-      body.nextFollowUp !== undefined
+      body.nextFollowUp !==
+      undefined
         ? body.nextFollowUp.trim() ||
           null
         : existingLead.nextFollowUp;
@@ -242,7 +377,9 @@ export async function PUT(
         body.companyId?.trim() ||
         null;
 
-      if (requestedCompanyId) {
+      if (
+        requestedCompanyId
+      ) {
         const company =
           await db.orm.public.Company
             .where({
