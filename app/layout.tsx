@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,10 +19,8 @@ export const metadata: Metadata = {
   ),
 
   title: {
-    default:
-      "Nexus Test Labs | Testing Laboratory Services",
-    template:
-      "%s | Nexus Test Labs",
+    default: "Nexus Test Labs | Testing Laboratory Services",
+    template: "%s | Nexus Test Labs",
   },
 
   description:
@@ -61,16 +60,14 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: "/",
     siteName: "Nexus Test Labs",
-    title:
-      "Nexus Test Labs | Testing Laboratory Services",
+    title: "Nexus Test Labs | Testing Laboratory Services",
     description:
       "Professional water, food, air quality, workplace, and environmental testing services.",
   },
 
   twitter: {
     card: "summary_large_image",
-    title:
-      "Nexus Test Labs | Testing Laboratory Services",
+    title: "Nexus Test Labs | Testing Laboratory Services",
     description:
       "Professional water, food, air quality, workplace, and environmental testing services.",
   },
@@ -95,6 +92,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
+
+        <GoogleAnalytics gaId="G-YCBVKE59B9" />
       </body>
     </html>
   );
