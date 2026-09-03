@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,12 +15,12 @@ import {
 
 const services = {
   "water-testing": {
-    title: "Water Testing",
+    title: "Water Testing Lab in Hyderabad",
     shortTitle: "Water Testing",
     subtitle:
-      "Professional water quality testing support for organisations across Telangana and Andhra Pradesh.",
+      "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
     description:
-      "Nexus Test Labs supports businesses, hospitals, institutions, residential facilities and industries with water testing services based on their testing requirements.",
+      "Nexus Test Labs provides water testing services in Hyderabad for businesses, hospitals, institutions, residential facilities and industries. Our Hyderabad laboratory supports drinking water, RO water, domestic water, process water and wastewater testing requirements.",
     image: "/images/nexus-water-testing.jpg",
     icon: Droplets,
 
@@ -196,6 +197,99 @@ export function generateStaticParams() {
   }));
 }
 
+/* =========================================================
+   SERVICE PAGE SEO
+========================================================= */
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  if (slug === "water-testing") {
+    return {
+      title: "Water Testing Lab in Hyderabad",
+      description:
+        "Nexus Test Labs provides water testing services in Hyderabad for drinking water, RO water, domestic water, process water and wastewater requirements. Contact our Hyderabad team for sample coordination, quotations and testing support.",
+
+      keywords: [
+        "water testing lab in Hyderabad",
+        "water testing Hyderabad",
+        "water testing services Hyderabad",
+        "water quality testing Hyderabad",
+        "drinking water testing Hyderabad",
+        "RO water testing Hyderabad",
+        "domestic water testing Hyderabad",
+        "wastewater testing Hyderabad",
+        "water testing laboratory Hyderabad",
+        "water testing Telangana",
+        "water testing Andhra Pradesh",
+        "Nexus Test Labs Hyderabad",
+      ],
+
+      alternates: {
+        canonical: "/services/water-testing",
+      },
+
+      openGraph: {
+        title: "Water Testing Lab in Hyderabad | Nexus Test Labs",
+        description:
+          "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
+        url: "/services/water-testing",
+        type: "website",
+        images: [
+          {
+            url: "/images/nexus-water-testing.jpg",
+            alt: "Water Testing at Nexus Test Labs Hyderabad",
+          },
+        ],
+      },
+
+      twitter: {
+        card: "summary_large_image",
+        title: "Water Testing Lab in Hyderabad | Nexus Test Labs",
+        description:
+          "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
+        images: ["/images/nexus-water-testing.jpg"],
+      },
+    };
+  }
+
+  const service = services[slug as ServiceSlug];
+
+  if (!service) {
+    return {
+      title: "Testing Services",
+      description:
+        "Professional laboratory testing and environmental monitoring services from Nexus Test Labs.",
+    };
+  }
+
+  return {
+    title: service.title,
+    description: service.description,
+
+    alternates: {
+      canonical: `/services/${slug}`,
+    },
+
+    openGraph: {
+      title: `${service.title} | Nexus Test Labs`,
+      description: service.description,
+      url: `/services/${slug}`,
+      type: "website",
+      images: [
+        {
+          url: service.image,
+          alt: `${service.title} at Nexus Test Labs`,
+        },
+      ],
+    },
+  };
+}
+
 export default async function ServicePage({
   params,
 }: {
@@ -314,9 +408,9 @@ export default async function ServicePage({
             <p>{service.description}</p>
 
             <p>
-              Our Hyderabad regional support helps coordinate client enquiries,
-              quotations, sample requirements and testing communication for
-              organisations across Telangana and Andhra Pradesh.
+              Our Hyderabad team coordinates client enquiries, quotations,
+              sample requirements and testing communication for organisations
+              across Hyderabad, Telangana and Andhra Pradesh.
             </p>
           </div>
         </div>
@@ -400,7 +494,11 @@ export default async function ServicePage({
 
           <div className="service-process-grid">
             {[
-              ["01", "Share Requirement", "Tell us the testing service you require."],
+              [
+                "01",
+                "Share Requirement",
+                "Tell us the testing service you require.",
+              ],
               [
                 "02",
                 "Quotation",
@@ -437,8 +535,8 @@ export default async function ServicePage({
             <h2>Discuss your requirement with Nexus Test Labs.</h2>
 
             <p>
-              Regional client support for Hyderabad, Telangana and Andhra
-              Pradesh.
+              Laboratory testing and client support for Hyderabad, Telangana
+              and Andhra Pradesh.
             </p>
           </div>
 
