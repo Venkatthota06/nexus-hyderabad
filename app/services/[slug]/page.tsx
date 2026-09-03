@@ -41,15 +41,31 @@ const services = {
       "Professional sample coordination",
       "Technical testing support",
     ],
+
+    seoTitle: "Water Testing Lab in Hyderabad",
+    seoDescription:
+      "Nexus Test Labs provides water testing services in Hyderabad for drinking water, RO water, domestic water, process water and wastewater requirements.",
+    keywords: [
+      "water testing lab in Hyderabad",
+      "water testing Hyderabad",
+      "water testing services Hyderabad",
+      "water quality testing Hyderabad",
+      "drinking water testing Hyderabad",
+      "RO water testing Hyderabad",
+      "domestic water testing Hyderabad",
+      "wastewater testing Hyderabad",
+      "water testing laboratory Hyderabad",
+      "Nexus Test Labs Hyderabad",
+    ],
   },
 
   "food-testing": {
-    title: "Food Testing",
+    title: "Food Testing Lab in Hyderabad",
     shortTitle: "Food Testing",
     subtitle:
-      "Laboratory testing support for food businesses, catering operations and institutions.",
+      "Professional food testing services for food businesses, catering operations, hotels, restaurants and institutions in Hyderabad.",
     description:
-      "Nexus Test Labs provides food testing support for organisations that require chemical, quality and microbiological analysis based on their product and testing requirements.",
+      "Nexus Test Labs provides food testing services in Hyderabad for food businesses, catering companies, hotels, restaurants, institutional kitchens and other organisations. Our laboratory supports food quality, chemical and microbiological testing based on product and testing requirements.",
     image: "/images/nexus-food-testing.jpg",
     icon: Utensils,
 
@@ -70,15 +86,30 @@ const services = {
       "Sample collection support",
       "Professional reporting process",
     ],
+
+    seoTitle: "Food Testing Lab in Hyderabad",
+    seoDescription:
+      "Nexus Test Labs provides food testing services in Hyderabad for food businesses, catering companies, hotels, restaurants and institutions, including food quality, chemical and microbiological testing support.",
+    keywords: [
+      "food testing lab in Hyderabad",
+      "food testing Hyderabad",
+      "food testing services Hyderabad",
+      "food quality testing Hyderabad",
+      "food microbiological testing Hyderabad",
+      "food chemical testing Hyderabad",
+      "catering food testing Hyderabad",
+      "food testing laboratory Hyderabad",
+      "Nexus Test Labs Hyderabad",
+    ],
   },
 
   "indoor-air-quality": {
-    title: "Indoor Air Quality Testing",
+    title: "Indoor Air Quality Testing in Hyderabad",
     shortTitle: "Indoor Air Quality",
     subtitle:
-      "Indoor environmental monitoring support for workplaces and commercial facilities.",
+      "Professional indoor air quality testing and monitoring services for offices, hospitals, hotels and commercial facilities in Hyderabad.",
     description:
-      "Nexus Test Labs supports organisations with Indoor Air Quality monitoring for offices, hospitals, hotels, commercial buildings and other occupied facilities.",
+      "Nexus Test Labs provides Indoor Air Quality testing and monitoring services in Hyderabad for corporate offices, hospitals, IT parks, hotels, commercial buildings and educational institutions. Our team supports organisations with indoor environmental monitoring based on facility requirements.",
     image: "/images/nexus-environmental-testing.jpg",
     icon: Wind,
 
@@ -99,15 +130,29 @@ const services = {
       "Professional field coordination",
       "Technical reporting support",
     ],
+
+    seoTitle: "Indoor Air Quality Testing in Hyderabad",
+    seoDescription:
+      "Indoor Air Quality testing and monitoring services in Hyderabad for offices, hospitals, IT parks, hotels and commercial facilities from Nexus Test Labs.",
+    keywords: [
+      "indoor air quality testing Hyderabad",
+      "IAQ testing Hyderabad",
+      "indoor air quality monitoring Hyderabad",
+      "air quality testing Hyderabad",
+      "office air quality testing Hyderabad",
+      "workplace air quality testing Hyderabad",
+      "indoor environmental monitoring Hyderabad",
+      "Nexus Test Labs Hyderabad",
+    ],
   },
 
   "ambient-air-quality": {
-    title: "Ambient Air Quality Monitoring",
+    title: "Ambient Air Quality Monitoring in Hyderabad",
     shortTitle: "Ambient Air Quality",
     subtitle:
-      "Environmental air monitoring support for industries and commercial facilities.",
+      "Professional ambient air quality monitoring services for industries, infrastructure projects and commercial facilities in Hyderabad.",
     description:
-      "Nexus Test Labs supports ambient air quality monitoring requirements for industries, infrastructure projects and other facilities requiring environmental monitoring.",
+      "Nexus Test Labs provides ambient air quality monitoring services in Hyderabad for manufacturing units, industrial facilities, infrastructure projects and commercial organisations requiring environmental air monitoring.",
     image: "/images/nexus-environmental-testing.jpg",
     icon: Factory,
 
@@ -128,15 +173,29 @@ const services = {
       "Structured reporting",
       "Regional coordination",
     ],
+
+    seoTitle: "Ambient Air Quality Monitoring in Hyderabad",
+    seoDescription:
+      "Ambient air quality monitoring services in Hyderabad for industries, manufacturing units, infrastructure projects and commercial facilities from Nexus Test Labs.",
+    keywords: [
+      "ambient air quality monitoring Hyderabad",
+      "ambient air testing Hyderabad",
+      "AAQ monitoring Hyderabad",
+      "air quality monitoring Hyderabad",
+      "environmental air monitoring Hyderabad",
+      "industrial air quality monitoring Hyderabad",
+      "ambient air quality testing Hyderabad",
+      "Nexus Test Labs Hyderabad",
+    ],
   },
 
   "workplace-monitoring": {
-    title: "Workplace Monitoring",
+    title: "Workplace Monitoring Services in Hyderabad",
     shortTitle: "Workplace Monitoring",
     subtitle:
-      "Testing and monitoring solutions designed around workplace environmental requirements.",
+      "Professional workplace environmental monitoring services for corporate facilities, factories, hospitals and industrial workplaces in Hyderabad.",
     description:
-      "Nexus Test Labs supports organisations with workplace monitoring and related environmental testing based on facility and operational requirements.",
+      "Nexus Test Labs provides workplace monitoring services in Hyderabad for corporate facilities, factories, pharmaceutical units, hospitals, commercial buildings and industrial workplaces based on facility and operational requirements.",
     image: "/images/nexus-lab-main.jpg",
     icon: Microscope,
 
@@ -157,15 +216,28 @@ const services = {
       "Professional documentation",
       "Regional client support",
     ],
+
+    seoTitle: "Workplace Monitoring Services in Hyderabad",
+    seoDescription:
+      "Professional workplace environmental monitoring services in Hyderabad for corporate facilities, factories, hospitals, pharmaceutical units and industrial workplaces.",
+    keywords: [
+      "workplace monitoring Hyderabad",
+      "workplace monitoring services Hyderabad",
+      "workplace environmental monitoring Hyderabad",
+      "industrial workplace monitoring Hyderabad",
+      "workplace environmental testing Hyderabad",
+      "occupational environment monitoring Hyderabad",
+      "Nexus Test Labs Hyderabad",
+    ],
   },
 
   "environmental-monitoring": {
-    title: "Environmental Monitoring",
+    title: "Environmental Monitoring Services in Hyderabad",
     shortTitle: "Environmental Monitoring",
     subtitle:
-      "Integrated testing and environmental monitoring support for organisations across multiple sectors.",
+      "Professional environmental monitoring services for industries, hospitals, commercial facilities and infrastructure projects in Hyderabad.",
     description:
-      "Nexus Test Labs supports environmental monitoring requirements through laboratory testing, field monitoring, sample coordination and technical reporting services.",
+      "Nexus Test Labs provides environmental monitoring services in Hyderabad through field monitoring, laboratory testing, sample coordination and technical reporting for industries, hospitals, pharmaceutical companies, infrastructure projects and other facilities.",
     image: "/images/nexus-environmental-testing.jpg",
     icon: ShieldCheck,
 
@@ -185,6 +257,20 @@ const services = {
       "Structured testing process",
       "Technical reporting support",
       "Regional client coordination",
+    ],
+
+    seoTitle: "Environmental Monitoring Services in Hyderabad",
+    seoDescription:
+      "Environmental monitoring services in Hyderabad for industries, hospitals, pharmaceutical companies, commercial facilities and infrastructure projects from Nexus Test Labs.",
+    keywords: [
+      "environmental monitoring Hyderabad",
+      "environmental monitoring services Hyderabad",
+      "environmental testing Hyderabad",
+      "environmental testing lab Hyderabad",
+      "industrial environmental monitoring Hyderabad",
+      "environmental laboratory Hyderabad",
+      "environmental monitoring Telangana",
+      "Nexus Test Labs Hyderabad",
     ],
   },
 };
@@ -208,55 +294,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
 
-  if (slug === "water-testing") {
-    return {
-      title: "Water Testing Lab in Hyderabad",
-      description:
-        "Nexus Test Labs provides water testing services in Hyderabad for drinking water, RO water, domestic water, process water and wastewater requirements. Contact our Hyderabad team for sample coordination, quotations and testing support.",
-
-      keywords: [
-        "water testing lab in Hyderabad",
-        "water testing Hyderabad",
-        "water testing services Hyderabad",
-        "water quality testing Hyderabad",
-        "drinking water testing Hyderabad",
-        "RO water testing Hyderabad",
-        "domestic water testing Hyderabad",
-        "wastewater testing Hyderabad",
-        "water testing laboratory Hyderabad",
-        "water testing Telangana",
-        "water testing Andhra Pradesh",
-        "Nexus Test Labs Hyderabad",
-      ],
-
-      alternates: {
-        canonical: "/services/water-testing",
-      },
-
-      openGraph: {
-        title: "Water Testing Lab in Hyderabad | Nexus Test Labs",
-        description:
-          "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
-        url: "/services/water-testing",
-        type: "website",
-        images: [
-          {
-            url: "/images/nexus-water-testing.jpg",
-            alt: "Water Testing at Nexus Test Labs Hyderabad",
-          },
-        ],
-      },
-
-      twitter: {
-        card: "summary_large_image",
-        title: "Water Testing Lab in Hyderabad | Nexus Test Labs",
-        description:
-          "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
-        images: ["/images/nexus-water-testing.jpg"],
-      },
-    };
-  }
-
   const service = services[slug as ServiceSlug];
 
   if (!service) {
@@ -268,24 +305,35 @@ export async function generateMetadata({
   }
 
   return {
-    title: service.title,
-    description: service.description,
+    title: service.seoTitle,
+
+    description: service.seoDescription,
+
+    keywords: service.keywords,
 
     alternates: {
       canonical: `/services/${slug}`,
     },
 
     openGraph: {
-      title: `${service.title} | Nexus Test Labs`,
-      description: service.description,
+      title: `${service.seoTitle} | Nexus Test Labs`,
+      description: service.seoDescription,
       url: `/services/${slug}`,
       type: "website",
+
       images: [
         {
           url: service.image,
-          alt: `${service.title} at Nexus Test Labs`,
+          alt: `${service.shortTitle} at Nexus Test Labs Hyderabad`,
         },
       ],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title: `${service.seoTitle} | Nexus Test Labs`,
+      description: service.seoDescription,
+      images: [service.image],
     },
   };
 }
@@ -377,7 +425,7 @@ export default async function ServicePage({
           <div className="service-detail-image-wrap">
             <img
               src={service.image}
-              alt={`${service.title} at Nexus Test Labs`}
+              alt={`${service.shortTitle} at Nexus Test Labs Hyderabad`}
             />
 
             <div className="service-image-label">
@@ -399,7 +447,7 @@ export default async function ServicePage({
               Professional testing.
               <br />
               <span className="heading-highlight">
-                Dedicated regional support.
+                Dedicated Hyderabad support.
               </span>
             </h2>
           </div>
@@ -409,8 +457,8 @@ export default async function ServicePage({
 
             <p>
               Our Hyderabad team coordinates client enquiries, quotations,
-              sample requirements and testing communication for organisations
-              across Hyderabad, Telangana and Andhra Pradesh.
+              sample requirements, laboratory testing and communication for
+              organisations across Hyderabad, Telangana and Andhra Pradesh.
             </p>
           </div>
         </div>
@@ -422,6 +470,7 @@ export default async function ServicePage({
         <div className="container">
           <div className="service-section-heading">
             <span className="eyebrow">Applications</span>
+
             <h2>Where this service can be used</h2>
           </div>
 
@@ -447,7 +496,7 @@ export default async function ServicePage({
           <div className="service-benefits-image">
             <img
               src="/images/nexus-lab-main.jpg"
-              alt="Inside Nexus Test Labs"
+              alt="Nexus Test Labs laboratory testing facility"
             />
 
             <div className="service-benefit-floating">
@@ -489,6 +538,7 @@ export default async function ServicePage({
         <div className="container">
           <div className="service-section-heading center">
             <span className="eyebrow">How It Works</span>
+
             <h2>A simple testing coordination process</h2>
           </div>
 
