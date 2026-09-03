@@ -273,7 +273,7 @@ export default async function ServicePage({
                 <ArrowRight size={18} />
               </Link>
 
-              <a href="tel:+918050448777" className="secondary-btn">
+              <a href="tel:+916305820206" className="secondary-btn">
                 <Phone size={17} />
                 Call Us
               </a>
