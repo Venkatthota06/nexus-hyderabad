@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import LeadForm from "@/components/LeadForm";
 import { motion } from "framer-motion";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -61,15 +63,39 @@ export default function Home() {
   ];
 
   const industries = [
-    "Hospitals & Healthcare",
-    "Pharmaceuticals",
-    "Corporate Offices",
-    "Food & Catering",
-    "Hotels & Hospitality",
-    "Manufacturing",
-    "IT Parks",
-    "Educational Institutions",
-  ];
+  {
+    name: "Hospitals & Healthcare",
+    href: "/industries/hospitals",
+  },
+  {
+    name: "Pharmaceuticals",
+    href: "/industries/pharmaceutical",
+  },
+  {
+    name: "Corporate Offices",
+    href: "/industries/corporate-offices",
+  },
+  {
+    name: "Food & Catering",
+    href: "/industries/hotels-restaurants",
+  },
+  {
+    name: "Hotels & Hospitality",
+    href: "/industries/hotels-restaurants",
+  },
+  {
+    name: "Manufacturing",
+    href: "/industries/manufacturing",
+  },
+  {
+    name: "IT Parks",
+    href: "/industries/corporate-offices",
+  },
+  {
+    name: "Residential & Commercial",
+    href: "/industries/residential-commercial",
+  },
+];
 
   const credentials = [
     {
@@ -768,30 +794,25 @@ export default function Home() {
           </div>
 
           <div className="industry-grid">
-            {industries.map(
-              (industry) => (
-                <div
-                  className="industry-card"
-                  key={industry}
-                >
-                  <div className="industry-icon">
-                    <Building2
-                      size={22}
-                    />
-                  </div>
+  {industries.map((industry) => (
+    <Link
+      href={industry.href}
+      className="industry-card"
+      key={`${industry.name}-${industry.href}`}
+    >
+      <div className="industry-icon">
+        <Building2 size={22} />
+      </div>
 
-                  <span>
-                    {industry}
-                  </span>
+      <span>{industry.name}</span>
 
-                  <ArrowRight
-                    className="industry-arrow"
-                    size={17}
-                  />
-                </div>
-              )
-            )}
-          </div>
+      <ArrowRight
+        className="industry-arrow"
+        size={17}
+      />
+    </Link>
+  ))}
+</div>
         </div>
       </section>
 
