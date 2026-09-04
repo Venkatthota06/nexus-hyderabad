@@ -816,6 +816,71 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section resources-home-section">
+        <div className="container">
+          <motion.div
+            className="section-heading"
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span>Resources & Insights</span>
+
+            <h2>
+              Practical insights for
+              <br />
+              <span className="heading-highlight">
+                better testing decisions.
+              </span>
+            </h2>
+          </motion.div>
+
+          <motion.article
+            className="resource-home-card"
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55 }}
+          >
+            <div className="resource-home-image">
+              <img
+                src="/images/nexus-water-testing.jpg"
+                alt="Water testing for hospitals in Hyderabad"
+              />
+              <span>Water Quality • Healthcare</span>
+            </div>
+
+            <div className="resource-home-content">
+              <span className="eyebrow">Featured Insight</span>
+
+              <h3>
+                Why Water Testing Is Important for Hospitals in Hyderabad
+              </h3>
+
+              <p>
+                Understand why hospitals need structured water-quality
+                monitoring, which water sources may require testing, and how
+                facility teams can plan an appropriate testing program.
+              </p>
+
+              <div className="resource-home-meta">
+                <span>September 4, 2026</span>
+                <span>•</span>
+                <span>6 min read</span>
+              </div>
+
+              <Link
+                href="/resources/why-water-testing-is-important-for-hospitals"
+                className="resource-home-link"
+              >
+                Read Article
+                <ArrowRight size={17} />
+              </Link>
+            </div>
+          </motion.article>
+        </div>
+      </section>
+
       <section
         id="about"
         className="section about-section"
@@ -913,6 +978,132 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      <style>{`
+        .resources-home-section {
+          padding: 100px 0;
+          background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .resource-home-card {
+          display: grid;
+          grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+          max-width: 1080px;
+          margin: 42px auto 0;
+          overflow: hidden;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          border-radius: 26px;
+          background: #ffffff;
+          box-shadow: 0 22px 55px rgba(15, 23, 42, 0.08);
+        }
+
+        .resource-home-image {
+          position: relative;
+          min-height: 390px;
+          overflow: hidden;
+        }
+
+        .resource-home-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.45s ease;
+        }
+
+        .resource-home-card:hover .resource-home-image img {
+          transform: scale(1.035);
+        }
+
+        .resource-home-image > span {
+          position: absolute;
+          left: 20px;
+          bottom: 20px;
+          padding: 9px 13px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.94);
+          color: #0f172a;
+          font-size: 12px;
+          font-weight: 750;
+          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+        }
+
+        .resource-home-content {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 48px;
+        }
+
+        .resource-home-content h3 {
+          margin: 12px 0 17px;
+          color: #0f172a;
+          font-size: clamp(28px, 3vw, 38px);
+          line-height: 1.15;
+          letter-spacing: -0.03em;
+        }
+
+        .resource-home-content > p {
+          margin: 0;
+          color: #64748b;
+          font-size: 15px;
+          line-height: 1.8;
+        }
+
+        .resource-home-meta {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          margin-top: 20px;
+          color: #94a3b8;
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .resource-home-link {
+          display: inline-flex;
+          align-items: center;
+          align-self: flex-start;
+          gap: 8px;
+          margin-top: 25px;
+          padding: 12px 17px;
+          border-radius: 11px;
+          background: #2563eb;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .resource-home-link:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
+        }
+
+        @media (max-width: 800px) {
+          .resources-home-section {
+            padding: 72px 0;
+          }
+
+          .resource-home-card {
+            grid-template-columns: 1fr;
+            margin-top: 30px;
+            border-radius: 20px;
+          }
+
+          .resource-home-image {
+            min-height: 260px;
+          }
+
+          .resource-home-content {
+            padding: 30px 24px;
+          }
+
+          .resource-home-content h3 {
+            font-size: 27px;
+          }
+        }
+      `}</style>
 
       <div className="floating-actions">
         <a
