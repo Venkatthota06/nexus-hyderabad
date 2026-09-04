@@ -17,15 +17,11 @@ const services = {
   "water-testing": {
     title: "Water Testing Lab in Hyderabad",
     shortTitle: "Water Testing",
-
     subtitle:
       "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
-
     description:
       "Nexus Test Labs provides water testing services in Hyderabad for businesses, hospitals, institutions, residential facilities and industries. Our Hyderabad laboratory supports drinking water, RO water, domestic water, process water and wastewater testing requirements.",
-
     image: "/images/nexus-water-testing.jpg",
-
     icon: Droplets,
 
     applications: [
@@ -47,7 +43,6 @@ const services = {
     ],
 
     seoTitle: "Water Testing Lab in Hyderabad",
-
     seoDescription:
       "Nexus Test Labs provides water testing services in Hyderabad for drinking water, RO water, domestic water, process water and wastewater requirements.",
 
@@ -97,15 +92,11 @@ const services = {
   "food-testing": {
     title: "Food Testing Lab in Hyderabad",
     shortTitle: "Food Testing",
-
     subtitle:
       "Professional food testing services for food businesses, catering operations, hotels, restaurants and institutions in Hyderabad.",
-
     description:
       "Nexus Test Labs provides food testing services in Hyderabad for food businesses, catering companies, hotels, restaurants, institutional kitchens and other organisations. Our laboratory supports food quality, chemical and microbiological testing based on product and testing requirements.",
-
     image: "/images/nexus-food-testing.jpg",
-
     icon: Utensils,
 
     applications: [
@@ -127,7 +118,6 @@ const services = {
     ],
 
     seoTitle: "Food Testing Lab in Hyderabad",
-
     seoDescription:
       "Nexus Test Labs provides food testing services in Hyderabad for food businesses, catering companies, hotels, restaurants and institutions, including food quality, chemical and microbiological testing support.",
 
@@ -175,15 +165,11 @@ const services = {
   "indoor-air-quality": {
     title: "Indoor Air Quality Testing in Hyderabad",
     shortTitle: "Indoor Air Quality",
-
     subtitle:
       "Professional indoor air quality testing and monitoring services for offices, hospitals, hotels and commercial facilities in Hyderabad.",
-
     description:
       "Nexus Test Labs provides Indoor Air Quality testing and monitoring services in Hyderabad for corporate offices, hospitals, IT parks, hotels, commercial buildings and educational institutions. Our team supports organisations with indoor environmental monitoring based on facility requirements.",
-
     image: "/images/nexus-environmental-testing.jpg",
-
     icon: Wind,
 
     applications: [
@@ -205,7 +191,6 @@ const services = {
     ],
 
     seoTitle: "Indoor Air Quality Testing in Hyderabad",
-
     seoDescription:
       "Indoor Air Quality testing and monitoring services in Hyderabad for offices, hospitals, IT parks, hotels and commercial facilities from Nexus Test Labs.",
 
@@ -238,8 +223,7 @@ const services = {
           "Yes. Nexus Test Labs supports Indoor Air Quality testing and monitoring requirements for organisations in Hyderabad.",
       },
       {
-        question:
-          "Why should organisations monitor indoor air quality?",
+        question: "Why should organisations monitor indoor air quality?",
         answer:
           "Routine monitoring can help organisations understand indoor environmental conditions, identify potential concerns and maintain structured facility monitoring programs.",
       },
@@ -254,15 +238,11 @@ const services = {
   "ambient-air-quality": {
     title: "Ambient Air Quality Monitoring in Hyderabad",
     shortTitle: "Ambient Air Quality",
-
     subtitle:
       "Professional ambient air quality monitoring services for industries, infrastructure projects and commercial facilities in Hyderabad.",
-
     description:
       "Nexus Test Labs provides ambient air quality monitoring services in Hyderabad for manufacturing units, industrial facilities, infrastructure projects and commercial organisations requiring environmental air monitoring.",
-
     image: "/images/nexus-environmental-testing.jpg",
-
     icon: Factory,
 
     applications: [
@@ -284,7 +264,6 @@ const services = {
     ],
 
     seoTitle: "Ambient Air Quality Monitoring in Hyderabad",
-
     seoDescription:
       "Ambient air quality monitoring services in Hyderabad for industries, manufacturing units, infrastructure projects and commercial facilities from Nexus Test Labs.",
 
@@ -311,8 +290,7 @@ const services = {
           "Ambient air monitoring can support manufacturing units, industrial facilities, infrastructure projects, commercial facilities and environmental monitoring programs.",
       },
       {
-        question:
-          "Do you provide ambient air monitoring in Hyderabad?",
+        question: "Do you provide ambient air monitoring in Hyderabad?",
         answer:
           "Yes. Nexus Test Labs supports ambient air quality monitoring requirements for industrial, infrastructure and commercial clients in Hyderabad.",
       },
@@ -334,15 +312,11 @@ const services = {
   "workplace-monitoring": {
     title: "Workplace Monitoring Services in Hyderabad",
     shortTitle: "Workplace Monitoring",
-
     subtitle:
       "Professional workplace environmental monitoring services for corporate facilities, factories, hospitals and industrial workplaces in Hyderabad.",
-
     description:
       "Nexus Test Labs provides workplace monitoring services in Hyderabad for corporate facilities, factories, pharmaceutical units, hospitals, commercial buildings and industrial workplaces based on facility and operational requirements.",
-
     image: "/images/nexus-lab-main.jpg",
-
     icon: Microscope,
 
     applications: [
@@ -364,7 +338,6 @@ const services = {
     ],
 
     seoTitle: "Workplace Monitoring Services in Hyderabad",
-
     seoDescription:
       "Professional workplace environmental monitoring services in Hyderabad for corporate facilities, factories, hospitals, pharmaceutical units and industrial workplaces.",
 
@@ -390,14 +363,12 @@ const services = {
           "The service can support corporate facilities, factories, pharmaceutical units, hospitals, commercial buildings and other industrial workplaces.",
       },
       {
-        question:
-          "Do you provide workplace monitoring in Hyderabad?",
+        question: "Do you provide workplace monitoring in Hyderabad?",
         answer:
           "Yes. Nexus Test Labs supports workplace environmental monitoring requirements for organisations in Hyderabad.",
       },
       {
-        question:
-          "Can workplace monitoring include field sampling?",
+        question: "Can workplace monitoring include field sampling?",
         answer:
           "Yes. Field sampling and monitoring can be coordinated depending on the parameters, facility conditions and agreed testing scope.",
       },
@@ -412,15 +383,11 @@ const services = {
   "environmental-monitoring": {
     title: "Environmental Monitoring Services in Hyderabad",
     shortTitle: "Environmental Monitoring",
-
     subtitle:
       "Professional environmental monitoring services for industries, hospitals, commercial facilities and infrastructure projects in Hyderabad.",
-
     description:
       "Nexus Test Labs provides environmental monitoring services in Hyderabad through field monitoring, laboratory testing, sample coordination and technical reporting for industries, hospitals, pharmaceutical companies, infrastructure projects and other facilities.",
-
     image: "/images/nexus-environmental-testing.jpg",
-
     icon: ShieldCheck,
 
     applications: [
@@ -442,7 +409,6 @@ const services = {
     ],
 
     seoTitle: "Environmental Monitoring Services in Hyderabad",
-
     seoDescription:
       "Environmental monitoring services in Hyderabad for industries, hospitals, pharmaceutical companies, commercial facilities and infrastructure projects from Nexus Test Labs.",
 
@@ -493,6 +459,48 @@ const services = {
 };
 
 type ServiceSlug = keyof typeof services;
+
+/* =========================================================
+   RELATED SERVICES
+========================================================= */
+
+const relatedServices: Record<ServiceSlug, ServiceSlug[]> = {
+  "water-testing": [
+    "food-testing",
+    "indoor-air-quality",
+    "environmental-monitoring",
+  ],
+
+  "food-testing": [
+    "water-testing",
+    "workplace-monitoring",
+    "environmental-monitoring",
+  ],
+
+  "indoor-air-quality": [
+    "workplace-monitoring",
+    "ambient-air-quality",
+    "environmental-monitoring",
+  ],
+
+  "ambient-air-quality": [
+    "environmental-monitoring",
+    "workplace-monitoring",
+    "indoor-air-quality",
+  ],
+
+  "workplace-monitoring": [
+    "indoor-air-quality",
+    "ambient-air-quality",
+    "environmental-monitoring",
+  ],
+
+  "environmental-monitoring": [
+    "ambient-air-quality",
+    "workplace-monitoring",
+    "water-testing",
+  ],
+};
 
 export function generateStaticParams() {
   return Object.keys(services).map((slug) => ({
@@ -555,6 +563,10 @@ export async function generateMetadata({
   };
 }
 
+/* =========================================================
+   SERVICE PAGE
+========================================================= */
+
 export default async function ServicePage({
   params,
 }: {
@@ -562,7 +574,9 @@ export default async function ServicePage({
 }) {
   const { slug } = await params;
 
-  const service = services[slug as ServiceSlug];
+  const serviceSlug = slug as ServiceSlug;
+
+  const service = services[serviceSlug];
 
   if (!service) {
     return (
@@ -578,6 +592,8 @@ export default async function ServicePage({
   }
 
   const Icon = service.icon;
+
+  const currentRelatedServices = relatedServices[serviceSlug];
 
   return (
     <main className="service-detail-page">
@@ -679,6 +695,7 @@ export default async function ServicePage({
             <h2>
               Professional testing.
               <br />
+
               <span className="heading-highlight">
                 Dedicated Hyderabad support.
               </span>
@@ -743,6 +760,7 @@ export default async function ServicePage({
 
               <div>
                 <strong>Professional Testing</strong>
+
                 <span>
                   Laboratory & field coordination
                 </span>
@@ -758,6 +776,7 @@ export default async function ServicePage({
             <h2>
               Build a stronger
               <br />
+
               <span className="heading-highlight">
                 monitoring process.
               </span>
@@ -862,6 +881,71 @@ export default async function ServicePage({
         </div>
       </section>
 
+      {/* RELATED SERVICES */}
+
+      <section className="service-related-section">
+        <div className="container">
+          <div className="service-related-header">
+            <div>
+              <span className="eyebrow">
+                Related Testing Services
+              </span>
+
+              <h2>Explore more testing services</h2>
+
+              <p>
+                Discover other laboratory testing and environmental
+                monitoring services available from Nexus Test Labs.
+              </p>
+            </div>
+
+            <Link
+              href="/#services"
+              className="service-related-all"
+            >
+              View All Services
+              <ArrowRight size={17} />
+            </Link>
+          </div>
+
+          <div className="service-related-grid">
+            {currentRelatedServices.map((relatedSlug) => {
+              const related = services[relatedSlug];
+
+              const RelatedIcon = related.icon;
+
+              return (
+                <Link
+                  href={`/services/${relatedSlug}`}
+                  className="service-related-card"
+                  key={relatedSlug}
+                >
+                  <div className="service-related-card-top">
+                    <div className="service-related-icon">
+                      <RelatedIcon size={22} />
+                    </div>
+
+                    <ArrowRight
+                      size={19}
+                      className="service-related-arrow"
+                    />
+                  </div>
+
+                  <h3>{related.shortTitle}</h3>
+
+                  <p>{related.seoDescription}</p>
+
+                  <span className="service-related-link">
+                    {related.shortTitle} in Hyderabad
+                    <ArrowRight size={15} />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
 
       <section className="service-final-cta">
@@ -911,7 +995,7 @@ export default async function ServicePage({
         </div>
       </footer>
 
-      {/* FAQ STYLES */}
+      {/* FAQ + RELATED SERVICES STYLES */}
 
       <style>{`
         .service-faq-section {
@@ -1026,6 +1110,186 @@ export default async function ServicePage({
           line-height: 1.8;
         }
 
+        .service-related-section {
+          padding: 94px 0;
+          background: #ffffff;
+          border-top: 1px solid rgba(15, 23, 42, 0.06);
+        }
+
+        .service-related-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 40px;
+          margin-bottom: 38px;
+        }
+
+        .service-related-header > div {
+          max-width: 660px;
+        }
+
+        .service-related-header h2 {
+          margin: 9px 0 13px;
+          color: #0f172a;
+          font-size: clamp(30px, 4vw, 44px);
+          line-height: 1.08;
+          letter-spacing: -0.035em;
+        }
+
+        .service-related-header p {
+          margin: 0;
+          max-width: 620px;
+          color: #64748b;
+          font-size: 16px;
+          line-height: 1.75;
+        }
+
+        .service-related-all {
+          flex: 0 0 auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 17px;
+          border: 1px solid rgba(37, 99, 235, 0.14);
+          border-radius: 12px;
+          background: #eff6ff;
+          color: #2563eb;
+          font-size: 14px;
+          font-weight: 650;
+          text-decoration: none;
+          transition:
+            transform 0.22s ease,
+            background 0.22s ease,
+            border-color 0.22s ease;
+        }
+
+        .service-related-all:hover {
+          transform: translateY(-2px);
+          background: #dbeafe;
+          border-color: rgba(37, 99, 235, 0.22);
+        }
+
+        .service-related-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 18px;
+        }
+
+        .service-related-card {
+          position: relative;
+          display: flex;
+          min-height: 270px;
+          flex-direction: column;
+          padding: 25px;
+          overflow: hidden;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          border-radius: 20px;
+          background:
+            linear-gradient(
+              145deg,
+              #ffffff 0%,
+              #fbfdff 100%
+            );
+          box-shadow:
+            0 9px 28px rgba(15, 23, 42, 0.045);
+          text-decoration: none;
+          transition:
+            transform 0.25s ease,
+            box-shadow 0.25s ease,
+            border-color 0.25s ease;
+        }
+
+        .service-related-card::before {
+          content: "";
+          position: absolute;
+          inset: 0 auto auto 0;
+          width: 100%;
+          height: 3px;
+          background:
+            linear-gradient(
+              90deg,
+              #2563eb,
+              #38bdf8
+            );
+          opacity: 0;
+          transition: opacity 0.25s ease;
+        }
+
+        .service-related-card:hover {
+          transform: translateY(-5px);
+          border-color: rgba(37, 99, 235, 0.18);
+          box-shadow:
+            0 18px 45px rgba(15, 23, 42, 0.09);
+        }
+
+        .service-related-card:hover::before {
+          opacity: 1;
+        }
+
+        .service-related-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 26px;
+        }
+
+        .service-related-icon {
+          display: grid;
+          place-items: center;
+          width: 45px;
+          height: 45px;
+          border-radius: 13px;
+          background: #eff6ff;
+          color: #2563eb;
+        }
+
+        .service-related-arrow {
+          color: #94a3b8;
+          transition:
+            transform 0.25s ease,
+            color 0.25s ease;
+        }
+
+        .service-related-card:hover .service-related-arrow {
+          transform: translateX(4px);
+          color: #2563eb;
+        }
+
+        .service-related-card h3 {
+          margin: 0 0 11px;
+          color: #0f172a;
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+        }
+
+        .service-related-card p {
+          margin: 0 0 24px;
+          color: #64748b;
+          font-size: 14px;
+          line-height: 1.7;
+        }
+
+        .service-related-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          margin-top: auto;
+          color: #2563eb;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+          .service-related-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .service-related-card {
+            min-height: 0;
+          }
+        }
+
         @media (max-width: 768px) {
           .service-faq-section {
             padding: 68px 0;
@@ -1059,6 +1323,43 @@ export default async function ServicePage({
           .service-faq-answer p {
             font-size: 14px;
             line-height: 1.75;
+          }
+
+          .service-related-section {
+            padding: 68px 0;
+          }
+
+          .service-related-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 22px;
+            margin-bottom: 28px;
+          }
+
+          .service-related-header h2 {
+            font-size: 31px;
+          }
+
+          .service-related-header p {
+            font-size: 15px;
+          }
+
+          .service-related-all {
+            width: fit-content;
+          }
+
+          .service-related-grid {
+            gap: 14px;
+          }
+
+          .service-related-card {
+            min-height: 0;
+            padding: 21px;
+            border-radius: 17px;
+          }
+
+          .service-related-card-top {
+            margin-bottom: 21px;
           }
         }
       `}</style>
