@@ -17,11 +17,15 @@ const services = {
   "water-testing": {
     title: "Water Testing Lab in Hyderabad",
     shortTitle: "Water Testing",
+
     subtitle:
       "Professional water testing services for drinking water, RO water, domestic water, process water and wastewater requirements in Hyderabad.",
+
     description:
       "Nexus Test Labs provides water testing services in Hyderabad for businesses, hospitals, institutions, residential facilities and industries. Our Hyderabad laboratory supports drinking water, RO water, domestic water, process water and wastewater testing requirements.",
+
     image: "/images/nexus-water-testing.jpg",
+
     icon: Droplets,
 
     applications: [
@@ -43,8 +47,10 @@ const services = {
     ],
 
     seoTitle: "Water Testing Lab in Hyderabad",
+
     seoDescription:
       "Nexus Test Labs provides water testing services in Hyderabad for drinking water, RO water, domestic water, process water and wastewater requirements.",
+
     keywords: [
       "water testing lab in Hyderabad",
       "water testing Hyderabad",
@@ -57,16 +63,49 @@ const services = {
       "water testing laboratory Hyderabad",
       "Nexus Test Labs Hyderabad",
     ],
+
+    faqs: [
+      {
+        question: "What types of water can Nexus Test Labs test?",
+        answer:
+          "We support testing requirements for drinking water, RO water, domestic water, process water, wastewater and other facility water samples based on the client's requirement.",
+      },
+      {
+        question: "Who should consider regular water testing?",
+        answer:
+          "Water testing can be useful for hospitals, hotels, residential facilities, offices, institutions, industries, food businesses and other organisations that need to monitor water quality.",
+      },
+      {
+        question:
+          "Can you support drinking water and RO water testing in Hyderabad?",
+        answer:
+          "Yes. Nexus Test Labs supports drinking water and RO water testing requirements for clients in Hyderabad, along with sample coordination and laboratory testing.",
+      },
+      {
+        question: "Which parameters should be tested in a water sample?",
+        answer:
+          "The required parameters depend on the water source, intended use and client requirement. Our team can review your requirement and help coordinate an appropriate testing scope.",
+      },
+      {
+        question: "How do I request water testing?",
+        answer:
+          "Share your water source, intended use and testing requirement with our team. We can then coordinate the testing scope, quotation and sample collection or submission process.",
+      },
+    ],
   },
 
   "food-testing": {
     title: "Food Testing Lab in Hyderabad",
     shortTitle: "Food Testing",
+
     subtitle:
       "Professional food testing services for food businesses, catering operations, hotels, restaurants and institutions in Hyderabad.",
+
     description:
       "Nexus Test Labs provides food testing services in Hyderabad for food businesses, catering companies, hotels, restaurants, institutional kitchens and other organisations. Our laboratory supports food quality, chemical and microbiological testing based on product and testing requirements.",
+
     image: "/images/nexus-food-testing.jpg",
+
     icon: Utensils,
 
     applications: [
@@ -88,8 +127,10 @@ const services = {
     ],
 
     seoTitle: "Food Testing Lab in Hyderabad",
+
     seoDescription:
       "Nexus Test Labs provides food testing services in Hyderabad for food businesses, catering companies, hotels, restaurants and institutions, including food quality, chemical and microbiological testing support.",
+
     keywords: [
       "food testing lab in Hyderabad",
       "food testing Hyderabad",
@@ -101,16 +142,48 @@ const services = {
       "food testing laboratory Hyderabad",
       "Nexus Test Labs Hyderabad",
     ],
+
+    faqs: [
+      {
+        question: "What types of food testing does Nexus Test Labs support?",
+        answer:
+          "We support food quality, chemical and microbiological testing requirements based on the food product and the client's testing scope.",
+      },
+      {
+        question: "Who can use your food testing services?",
+        answer:
+          "Our food testing services can support food manufacturers, catering companies, hotels, restaurants, institutional kitchens, corporate catering operations and other food businesses.",
+      },
+      {
+        question: "Do you provide food testing services in Hyderabad?",
+        answer:
+          "Yes. Nexus Test Labs supports food testing requirements for businesses and institutions in Hyderabad, including sample coordination and laboratory testing.",
+      },
+      {
+        question: "Can catering food samples be tested?",
+        answer:
+          "Yes. Testing can be coordinated for catering and prepared-food samples depending on the required parameters and purpose of testing.",
+      },
+      {
+        question: "How do I get a quotation for food testing?",
+        answer:
+          "Share the food product, number of samples and required testing parameters with our team. We can review the requirement and coordinate the appropriate quotation.",
+      },
+    ],
   },
 
   "indoor-air-quality": {
     title: "Indoor Air Quality Testing in Hyderabad",
     shortTitle: "Indoor Air Quality",
+
     subtitle:
       "Professional indoor air quality testing and monitoring services for offices, hospitals, hotels and commercial facilities in Hyderabad.",
+
     description:
       "Nexus Test Labs provides Indoor Air Quality testing and monitoring services in Hyderabad for corporate offices, hospitals, IT parks, hotels, commercial buildings and educational institutions. Our team supports organisations with indoor environmental monitoring based on facility requirements.",
+
     image: "/images/nexus-environmental-testing.jpg",
+
     icon: Wind,
 
     applications: [
@@ -132,8 +205,10 @@ const services = {
     ],
 
     seoTitle: "Indoor Air Quality Testing in Hyderabad",
+
     seoDescription:
       "Indoor Air Quality testing and monitoring services in Hyderabad for offices, hospitals, IT parks, hotels and commercial facilities from Nexus Test Labs.",
+
     keywords: [
       "indoor air quality testing Hyderabad",
       "IAQ testing Hyderabad",
@@ -144,16 +219,50 @@ const services = {
       "indoor environmental monitoring Hyderabad",
       "Nexus Test Labs Hyderabad",
     ],
+
+    faqs: [
+      {
+        question: "What is Indoor Air Quality testing?",
+        answer:
+          "Indoor Air Quality testing evaluates selected environmental conditions or parameters inside occupied buildings to help organisations understand and monitor their indoor environment.",
+      },
+      {
+        question:
+          "Which facilities may require Indoor Air Quality monitoring?",
+        answer:
+          "IAQ monitoring can be useful for offices, hospitals, IT parks, hotels, commercial buildings, educational institutions and other occupied facilities.",
+      },
+      {
+        question: "Do you provide IAQ testing in Hyderabad?",
+        answer:
+          "Yes. Nexus Test Labs supports Indoor Air Quality testing and monitoring requirements for organisations in Hyderabad.",
+      },
+      {
+        question:
+          "Why should organisations monitor indoor air quality?",
+        answer:
+          "Routine monitoring can help organisations understand indoor environmental conditions, identify potential concerns and maintain structured facility monitoring programs.",
+      },
+      {
+        question: "How can I arrange an IAQ assessment?",
+        answer:
+          "Share your facility type, location and monitoring requirement with our team. We can review the scope and coordinate the quotation and field monitoring process.",
+      },
+    ],
   },
 
   "ambient-air-quality": {
     title: "Ambient Air Quality Monitoring in Hyderabad",
     shortTitle: "Ambient Air Quality",
+
     subtitle:
       "Professional ambient air quality monitoring services for industries, infrastructure projects and commercial facilities in Hyderabad.",
+
     description:
       "Nexus Test Labs provides ambient air quality monitoring services in Hyderabad for manufacturing units, industrial facilities, infrastructure projects and commercial organisations requiring environmental air monitoring.",
+
     image: "/images/nexus-environmental-testing.jpg",
+
     icon: Factory,
 
     applications: [
@@ -175,8 +284,10 @@ const services = {
     ],
 
     seoTitle: "Ambient Air Quality Monitoring in Hyderabad",
+
     seoDescription:
       "Ambient air quality monitoring services in Hyderabad for industries, manufacturing units, infrastructure projects and commercial facilities from Nexus Test Labs.",
+
     keywords: [
       "ambient air quality monitoring Hyderabad",
       "ambient air testing Hyderabad",
@@ -187,16 +298,51 @@ const services = {
       "ambient air quality testing Hyderabad",
       "Nexus Test Labs Hyderabad",
     ],
+
+    faqs: [
+      {
+        question: "What is Ambient Air Quality monitoring?",
+        answer:
+          "Ambient Air Quality monitoring involves evaluating selected air-quality parameters in the outdoor environment around a facility, industrial location or project site.",
+      },
+      {
+        question: "Who may require ambient air monitoring?",
+        answer:
+          "Ambient air monitoring can support manufacturing units, industrial facilities, infrastructure projects, commercial facilities and environmental monitoring programs.",
+      },
+      {
+        question:
+          "Do you provide ambient air monitoring in Hyderabad?",
+        answer:
+          "Yes. Nexus Test Labs supports ambient air quality monitoring requirements for industrial, infrastructure and commercial clients in Hyderabad.",
+      },
+      {
+        question:
+          "Can monitoring be arranged at an industrial or project site?",
+        answer:
+          "Yes. Field monitoring can be coordinated based on the site location, monitoring scope and client requirements.",
+      },
+      {
+        question:
+          "How do I request an ambient air monitoring quotation?",
+        answer:
+          "Share your site location, type of facility or project and monitoring requirement. Our team can review the scope and coordinate a quotation.",
+      },
+    ],
   },
 
   "workplace-monitoring": {
     title: "Workplace Monitoring Services in Hyderabad",
     shortTitle: "Workplace Monitoring",
+
     subtitle:
       "Professional workplace environmental monitoring services for corporate facilities, factories, hospitals and industrial workplaces in Hyderabad.",
+
     description:
       "Nexus Test Labs provides workplace monitoring services in Hyderabad for corporate facilities, factories, pharmaceutical units, hospitals, commercial buildings and industrial workplaces based on facility and operational requirements.",
+
     image: "/images/nexus-lab-main.jpg",
+
     icon: Microscope,
 
     applications: [
@@ -218,8 +364,10 @@ const services = {
     ],
 
     seoTitle: "Workplace Monitoring Services in Hyderabad",
+
     seoDescription:
       "Professional workplace environmental monitoring services in Hyderabad for corporate facilities, factories, hospitals, pharmaceutical units and industrial workplaces.",
+
     keywords: [
       "workplace monitoring Hyderabad",
       "workplace monitoring services Hyderabad",
@@ -229,16 +377,50 @@ const services = {
       "occupational environment monitoring Hyderabad",
       "Nexus Test Labs Hyderabad",
     ],
+
+    faqs: [
+      {
+        question: "What is workplace environmental monitoring?",
+        answer:
+          "Workplace environmental monitoring involves assessing selected environmental conditions or parameters within a workplace based on the facility and monitoring requirements.",
+      },
+      {
+        question: "Which workplaces can use this service?",
+        answer:
+          "The service can support corporate facilities, factories, pharmaceutical units, hospitals, commercial buildings and other industrial workplaces.",
+      },
+      {
+        question:
+          "Do you provide workplace monitoring in Hyderabad?",
+        answer:
+          "Yes. Nexus Test Labs supports workplace environmental monitoring requirements for organisations in Hyderabad.",
+      },
+      {
+        question:
+          "Can workplace monitoring include field sampling?",
+        answer:
+          "Yes. Field sampling and monitoring can be coordinated depending on the parameters, facility conditions and agreed testing scope.",
+      },
+      {
+        question: "How do we arrange workplace monitoring?",
+        answer:
+          "Share your facility type, location and monitoring requirement with our team. We can review the requirement and coordinate the scope, quotation and field activity.",
+      },
+    ],
   },
 
   "environmental-monitoring": {
     title: "Environmental Monitoring Services in Hyderabad",
     shortTitle: "Environmental Monitoring",
+
     subtitle:
       "Professional environmental monitoring services for industries, hospitals, commercial facilities and infrastructure projects in Hyderabad.",
+
     description:
       "Nexus Test Labs provides environmental monitoring services in Hyderabad through field monitoring, laboratory testing, sample coordination and technical reporting for industries, hospitals, pharmaceutical companies, infrastructure projects and other facilities.",
+
     image: "/images/nexus-environmental-testing.jpg",
+
     icon: ShieldCheck,
 
     applications: [
@@ -260,8 +442,10 @@ const services = {
     ],
 
     seoTitle: "Environmental Monitoring Services in Hyderabad",
+
     seoDescription:
       "Environmental monitoring services in Hyderabad for industries, hospitals, pharmaceutical companies, commercial facilities and infrastructure projects from Nexus Test Labs.",
+
     keywords: [
       "environmental monitoring Hyderabad",
       "environmental monitoring services Hyderabad",
@@ -271,6 +455,39 @@ const services = {
       "environmental laboratory Hyderabad",
       "environmental monitoring Telangana",
       "Nexus Test Labs Hyderabad",
+    ],
+
+    faqs: [
+      {
+        question:
+          "What environmental monitoring services does Nexus Test Labs provide?",
+        answer:
+          "We support environmental monitoring requirements through field monitoring, sample coordination, laboratory testing and technical reporting based on the agreed scope.",
+      },
+      {
+        question:
+          "Which organisations can use environmental monitoring services?",
+        answer:
+          "Our services can support industries, hospitals, pharmaceutical companies, commercial facilities, infrastructure projects and institutional facilities.",
+      },
+      {
+        question:
+          "Do you provide environmental monitoring in Hyderabad?",
+        answer:
+          "Yes. Nexus Test Labs supports environmental monitoring requirements for organisations and projects in Hyderabad.",
+      },
+      {
+        question:
+          "Can you coordinate both field monitoring and laboratory testing?",
+        answer:
+          "Yes. Depending on the requirement, our team can coordinate field activities, sample handling and laboratory testing as part of the monitoring process.",
+      },
+      {
+        question:
+          "How do I request an environmental monitoring quotation?",
+        answer:
+          "Share the facility or project location, monitoring requirement and required scope with our team. We can review the details and coordinate an appropriate quotation.",
+      },
     ],
   },
 };
@@ -369,7 +586,10 @@ export default async function ServicePage({
       <header className="navbar">
         <div className="container nav-inner">
           <Link href="/" className="brand">
-            <img src="/nexus-logo.png" alt="Nexus Test Labs Pvt. Ltd." />
+            <img
+              src="/nexus-logo.png"
+              alt="Nexus Test Labs Pvt. Ltd."
+            />
           </Link>
 
           <nav className="nav-links">
@@ -394,7 +614,10 @@ export default async function ServicePage({
 
         <div className="container service-detail-hero-grid">
           <div className="service-detail-content">
-            <Link href="/#services" className="service-back-link">
+            <Link
+              href="/#services"
+              className="service-back-link"
+            >
               <ArrowLeft size={16} />
               All Services
             </Link>
@@ -403,19 +626,27 @@ export default async function ServicePage({
               <Icon size={27} />
             </div>
 
-            <span className="eyebrow">Nexus Test Labs Pvt. Ltd.</span>
+            <span className="eyebrow">
+              Nexus Test Labs Pvt. Ltd.
+            </span>
 
             <h1>{service.title}</h1>
 
             <p>{service.subtitle}</p>
 
             <div className="service-detail-actions">
-              <Link href="/#contact" className="primary-btn">
+              <Link
+                href="/#contact"
+                className="primary-btn"
+              >
                 Request a Quote
                 <ArrowRight size={18} />
               </Link>
 
-              <a href="tel:+916305820206" className="secondary-btn">
+              <a
+                href="tel:+916305820206"
+                className="secondary-btn"
+              >
                 <Phone size={17} />
                 Call Us
               </a>
@@ -441,7 +672,9 @@ export default async function ServicePage({
       <section className="service-overview-section">
         <div className="container service-overview-grid">
           <div>
-            <span className="eyebrow">Service Overview</span>
+            <span className="eyebrow">
+              Service Overview
+            </span>
 
             <h2>
               Professional testing.
@@ -456,9 +689,10 @@ export default async function ServicePage({
             <p>{service.description}</p>
 
             <p>
-              Our Hyderabad team coordinates client enquiries, quotations,
-              sample requirements, laboratory testing and communication for
-              organisations across Hyderabad, Telangana and Andhra Pradesh.
+              Our Hyderabad team coordinates client enquiries,
+              quotations, sample requirements, laboratory testing and
+              communication for organisations across Hyderabad,
+              Telangana and Andhra Pradesh.
             </p>
           </div>
         </div>
@@ -469,14 +703,19 @@ export default async function ServicePage({
       <section className="service-applications-section">
         <div className="container">
           <div className="service-section-heading">
-            <span className="eyebrow">Applications</span>
+            <span className="eyebrow">
+              Applications
+            </span>
 
             <h2>Where this service can be used</h2>
           </div>
 
           <div className="service-application-grid">
             {service.applications.map((item, index) => (
-              <div className="service-application-card" key={item}>
+              <div
+                className="service-application-card"
+                key={item}
+              >
                 <span>0{index + 1}</span>
 
                 <div>
@@ -504,13 +743,17 @@ export default async function ServicePage({
 
               <div>
                 <strong>Professional Testing</strong>
-                <span>Laboratory & field coordination</span>
+                <span>
+                  Laboratory & field coordination
+                </span>
               </div>
             </div>
           </div>
 
           <div className="service-benefits-content">
-            <span className="eyebrow">Why Testing Matters</span>
+            <span className="eyebrow">
+              Why Testing Matters
+            </span>
 
             <h2>
               Build a stronger
@@ -537,9 +780,13 @@ export default async function ServicePage({
       <section className="service-process-section">
         <div className="container">
           <div className="service-section-heading center">
-            <span className="eyebrow">How It Works</span>
+            <span className="eyebrow">
+              How It Works
+            </span>
 
-            <h2>A simple testing coordination process</h2>
+            <h2>
+              A simple testing coordination process
+            </h2>
           </div>
 
           <div className="service-process-grid">
@@ -565,11 +812,51 @@ export default async function ServicePage({
                 "Testing is processed and reports are coordinated with the client.",
               ],
             ].map(([number, title, text]) => (
-              <div className="service-process-card" key={number}>
+              <div
+                className="service-process-card"
+                key={number}
+              >
                 <span>{number}</span>
                 <h3>{title}</h3>
                 <p>{text}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+
+      <section className="service-faq-section">
+        <div className="container">
+          <div className="service-section-heading center">
+            <span className="eyebrow">
+              Frequently Asked Questions
+            </span>
+
+            <h2>
+              Questions about {service.shortTitle}
+            </h2>
+          </div>
+
+          <div className="service-faq-list">
+            {service.faqs.map((faq) => (
+              <details
+                className="service-faq-item"
+                key={faq.question}
+              >
+                <summary>
+                  <span>{faq.question}</span>
+
+                  <span className="service-faq-plus">
+                    +
+                  </span>
+                </summary>
+
+                <div className="service-faq-answer">
+                  <p>{faq.answer}</p>
+                </div>
+              </details>
             ))}
           </div>
         </div>
@@ -580,17 +867,24 @@ export default async function ServicePage({
       <section className="service-final-cta">
         <div className="container service-final-cta-inner">
           <div>
-            <span>Need {service.shortTitle}?</span>
+            <span>
+              Need {service.shortTitle}?
+            </span>
 
-            <h2>Discuss your requirement with Nexus Test Labs.</h2>
+            <h2>
+              Discuss your requirement with Nexus Test Labs.
+            </h2>
 
             <p>
-              Laboratory testing and client support for Hyderabad, Telangana
-              and Andhra Pradesh.
+              Laboratory testing and client support for Hyderabad,
+              Telangana and Andhra Pradesh.
             </p>
           </div>
 
-          <Link href="/#contact" className="service-final-button">
+          <Link
+            href="/#contact"
+            className="service-final-button"
+          >
             Request a Quote
             <ArrowRight size={18} />
           </Link>
@@ -602,13 +896,172 @@ export default async function ServicePage({
       <footer className="service-footer">
         <div className="container service-footer-inner">
           <div>
-            <strong>Nexus Test Labs Pvt. Ltd.</strong>
-            <span>Testing & Environmental Monitoring Services</span>
+            <strong>
+              Nexus Test Labs Pvt. Ltd.
+            </strong>
+
+            <span>
+              Testing & Environmental Monitoring Services
+            </span>
           </div>
 
-          <Link href="/">Back to Homepage</Link>
+          <Link href="/">
+            Back to Homepage
+          </Link>
         </div>
       </footer>
+
+      {/* FAQ STYLES */}
+
+      <style>{`
+        .service-faq-section {
+          padding: 96px 0;
+          background:
+            radial-gradient(
+              circle at 50% 0%,
+              rgba(37, 99, 235, 0.06),
+              transparent 34%
+            ),
+            #f8fafc;
+        }
+
+        .service-faq-section .service-section-heading {
+          max-width: 720px;
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 44px;
+          text-align: center;
+        }
+
+        .service-faq-section .service-section-heading h2 {
+          margin-top: 10px;
+        }
+
+        .service-faq-list {
+          width: min(860px, 100%);
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .service-faq-item {
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(15, 23, 42, 0.09);
+          border-radius: 18px;
+          background: #ffffff;
+          box-shadow:
+            0 8px 25px rgba(15, 23, 42, 0.045);
+          transition:
+            border-color 0.25s ease,
+            box-shadow 0.25s ease,
+            transform 0.25s ease;
+        }
+
+        .service-faq-item:hover {
+          transform: translateY(-2px);
+          border-color: rgba(37, 99, 235, 0.2);
+          box-shadow:
+            0 14px 35px rgba(15, 23, 42, 0.075);
+        }
+
+        .service-faq-item[open] {
+          border-color: rgba(37, 99, 235, 0.25);
+          box-shadow:
+            0 16px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        .service-faq-item summary {
+          list-style: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          padding: 22px 24px;
+          color: #0f172a;
+          font-size: 16px;
+          font-weight: 650;
+          line-height: 1.55;
+          user-select: none;
+        }
+
+        .service-faq-item summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .service-faq-plus {
+          flex: 0 0 auto;
+          display: grid;
+          place-items: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          background: #eff6ff;
+          color: #2563eb;
+          font-size: 23px;
+          font-weight: 400;
+          line-height: 1;
+          transition:
+            transform 0.25s ease,
+            background 0.25s ease,
+            color 0.25s ease;
+        }
+
+        .service-faq-item[open] .service-faq-plus {
+          transform: rotate(45deg);
+          background: #2563eb;
+          color: #ffffff;
+        }
+
+        .service-faq-answer {
+          padding: 0 72px 22px 24px;
+        }
+
+        .service-faq-answer p {
+          margin: 0;
+          color: #64748b;
+          font-size: 15px;
+          line-height: 1.8;
+        }
+
+        @media (max-width: 768px) {
+          .service-faq-section {
+            padding: 68px 0;
+          }
+
+          .service-faq-section .service-section-heading {
+            margin-bottom: 30px;
+          }
+
+          .service-faq-item {
+            border-radius: 15px;
+          }
+
+          .service-faq-item summary {
+            padding: 18px;
+            gap: 16px;
+            font-size: 15px;
+          }
+
+          .service-faq-plus {
+            width: 29px;
+            height: 29px;
+            border-radius: 9px;
+            font-size: 21px;
+          }
+
+          .service-faq-answer {
+            padding: 0 18px 18px;
+          }
+
+          .service-faq-answer p {
+            font-size: 14px;
+            line-height: 1.75;
+          }
+        }
+      `}</style>
     </main>
   );
 }
