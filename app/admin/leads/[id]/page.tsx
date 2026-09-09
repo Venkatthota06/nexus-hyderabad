@@ -28,11 +28,19 @@ type Lead = {
   requirement: string;
   source: string;
   status: string;
+
+  // Notification status
+  isRead: boolean;
+
   notes: string | null;
   nextFollowUp: string | null;
   createdAt: string;
   updatedAt: string;
 };
+
+/* =========================================================
+   GET LEAD
+========================================================= */
 
 async function getLead(
   id: string
@@ -56,6 +64,31 @@ async function getLead(
     return null;
   }
 }
+
+/* =========================================================
+   MARK LEAD AS READ
+========================================================= */
+
+async function markLeadAsRead(
+  id: string
+) {
+  try {
+    await db.orm.public.Lead
+      .where({ id })
+      .update({
+        isRead: true,
+      });
+  } catch (error) {
+    console.error(
+      "Mark lead as read error:",
+      error
+    );
+  }
+}
+
+/* =========================================================
+   DATE FORMATTERS
+========================================================= */
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(
@@ -87,6 +120,10 @@ function formatFollowUpDate(
   ).format(new Date(value));
 }
 
+/* =========================================================
+   STATUS CLASS
+========================================================= */
+
 function getStatusClass(status: string) {
   switch (status) {
     case "Won":
@@ -115,6 +152,10 @@ function getStatusClass(status: string) {
   }
 }
 
+/* =========================================================
+   LEAD DETAIL PAGE
+========================================================= */
+
 export default async function LeadDetailPage({
   params,
 }: {
@@ -128,6 +169,18 @@ export default async function LeadDetailPage({
 
   if (!lead) {
     notFound();
+  }
+
+  /* =======================================================
+     MARK THIS INDIVIDUAL LEAD AS READ
+
+     Only runs when this lead detail page is opened.
+
+     It does NOT change the CRM sales status.
+  ======================================================= */
+
+  if (!lead.isRead) {
+    await markLeadAsRead(lead.id);
   }
 
   return (
@@ -197,8 +250,13 @@ export default async function LeadDetailPage({
               </div>
 
               <div>
-                <h2>Contact Information</h2>
-                <p>Client and company details</p>
+                <h2>
+                  Contact Information
+                </h2>
+
+                <p>
+                  Client and company details
+                </p>
               </div>
             </div>
 
@@ -212,7 +270,9 @@ export default async function LeadDetailPage({
 
               <InfoItem
                 label="Company"
-                icon={<Building2 size={15} />}
+                icon={
+                  <Building2 size={15} />
+                }
               >
                 {lead.companyId ? (
                   <Link
@@ -229,7 +289,9 @@ export default async function LeadDetailPage({
                 label="Phone"
                 icon={<Phone size={15} />}
               >
-                <a href={`tel:${lead.phone}`}>
+                <a
+                  href={`tel:${lead.phone}`}
+                >
                   {lead.phone}
                 </a>
               </InfoItem>
@@ -238,7 +300,9 @@ export default async function LeadDetailPage({
                 label="Email"
                 icon={<Mail size={15} />}
               >
-                <a href={`mailto:${lead.email}`}>
+                <a
+                  href={`mailto:${lead.email}`}
+                >
                   {lead.email}
                 </a>
               </InfoItem>
@@ -250,23 +314,41 @@ export default async function LeadDetailPage({
           <article className="lead-profile-card">
             <div className="lead-profile-card-header">
               <div className="lead-profile-card-icon">
-                <ClipboardList size={18} />
+                <ClipboardList
+                  size={18}
+                />
               </div>
 
               <div>
-                <h2>Testing Requirement</h2>
-                <p>Service requested by client</p>
+                <h2>
+                  Testing Requirement
+                </h2>
+
+                <p>
+                  Service requested by
+                  client
+                </p>
               </div>
             </div>
 
             <div className="lead-profile-service">
-              <span>Requested Service</span>
-              <strong>{lead.service}</strong>
+              <span>
+                Requested Service
+              </span>
+
+              <strong>
+                {lead.service}
+              </strong>
             </div>
 
             <div className="lead-profile-requirement">
-              <span>Client Requirement</span>
-              <p>{lead.requirement}</p>
+              <span>
+                Client Requirement
+              </span>
+
+              <p>
+                {lead.requirement}
+              </p>
             </div>
           </article>
 
@@ -275,33 +357,53 @@ export default async function LeadDetailPage({
           <article className="lead-profile-card">
             <div className="lead-profile-card-header">
               <div className="lead-profile-card-icon">
-                <CalendarDays size={18} />
+                <CalendarDays
+                  size={18}
+                />
               </div>
 
               <div>
-                <h2>Lead Information</h2>
-                <p>Tracking and activity information</p>
+                <h2>
+                  Lead Information
+                </h2>
+
+                <p>
+                  Tracking and activity
+                  information
+                </p>
               </div>
             </div>
 
             <div className="lead-profile-info-grid">
               <InfoItem
                 label="Lead Source"
-                icon={<MapPin size={15} />}
+                icon={
+                  <MapPin size={15} />
+                }
               >
                 {lead.source}
               </InfoItem>
 
               <InfoItem
                 label="Created"
-                icon={<CalendarDays size={15} />}
+                icon={
+                  <CalendarDays
+                    size={15}
+                  />
+                }
               >
-                {formatDate(lead.createdAt)}
+                {formatDate(
+                  lead.createdAt
+                )}
               </InfoItem>
 
               <InfoItem
                 label="Next Follow-up"
-                icon={<CalendarDays size={15} />}
+                icon={
+                  <CalendarDays
+                    size={15}
+                  />
+                }
               >
                 {formatFollowUpDate(
                   lead.nextFollowUp
@@ -310,9 +412,15 @@ export default async function LeadDetailPage({
 
               <InfoItem
                 label="Last Updated"
-                icon={<CalendarDays size={15} />}
+                icon={
+                  <CalendarDays
+                    size={15}
+                  />
+                }
               >
-                {formatDate(lead.updatedAt)}
+                {formatDate(
+                  lead.updatedAt
+                )}
               </InfoItem>
             </div>
           </article>
@@ -328,9 +436,11 @@ export default async function LeadDetailPage({
               id: lead.id,
               status: lead.status,
               notes:
-                lead.notes ?? undefined,
+                lead.notes ??
+                undefined,
               nextFollowUp:
-                lead.nextFollowUp ?? undefined,
+                lead.nextFollowUp ??
+                undefined,
               companyId:
                 lead.companyId,
             }}
@@ -340,6 +450,10 @@ export default async function LeadDetailPage({
     </div>
   );
 }
+
+/* =========================================================
+   INFO ITEM
+========================================================= */
 
 function InfoItem({
   label,
@@ -356,7 +470,10 @@ function InfoItem({
 
       <div>
         {icon}
-        <strong>{children}</strong>
+
+        <strong>
+          {children}
+        </strong>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+
 import { db } from "@/src/prisma/db";
 
 export const runtime = "nodejs";
@@ -93,8 +94,7 @@ export async function POST(
 
     if (
       contentLength &&
-      Number(contentLength) >
-        10_000
+      Number(contentLength) > 10_000
     ) {
       return NextResponse.json(
         {
@@ -117,16 +117,6 @@ export async function POST(
       body.website?.trim() ?? "";
 
     if (honeypot) {
-      /*
-       * Return a normal-looking success
-       * response so automated bots do
-       * not learn that the honeypot
-       * detected them.
-       *
-       * IMPORTANT:
-       * No lead is created in Neon.
-       */
-
       return NextResponse.json(
         {
           success: true,
@@ -209,9 +199,7 @@ export async function POST(
        EMAIL VALIDATION
     ----------------------------------------------------- */
 
-    if (
-      !EMAIL_REGEX.test(email)
-    ) {
+    if (!EMAIL_REGEX.test(email)) {
       return NextResponse.json(
         {
           success: false,
@@ -226,9 +214,7 @@ export async function POST(
        PHONE VALIDATION
     ----------------------------------------------------- */
 
-    if (
-      !PHONE_REGEX.test(phone)
-    ) {
+    if (!PHONE_REGEX.test(phone)) {
       return NextResponse.json(
         {
           success: false,
@@ -253,15 +239,17 @@ export async function POST(
         service,
         requirement,
 
-        /*
-         * Do not trust "source" coming
-         * from the public browser.
-         */
-
+        // Public website source
         source:
           "Nexus Hyderabad Website",
 
+        // CRM pipeline status
         status: "New Lead",
+
+        // NEW NOTIFICATION:
+        // Every website enquiry starts unread.
+        isRead: false,
+
         notes: null,
         nextFollowUp: null,
       });
@@ -356,8 +344,7 @@ export async function PUT(
         : existingLead.notes;
 
     let nextFollowUp =
-      body.nextFollowUp !==
-      undefined
+      body.nextFollowUp !== undefined
         ? body.nextFollowUp.trim() ||
           null
         : existingLead.nextFollowUp;
@@ -370,16 +357,13 @@ export async function PUT(
       existingLead.companyId;
 
     if (
-      body.companyId !==
-      undefined
+      body.companyId !== undefined
     ) {
       const requestedCompanyId =
         body.companyId?.trim() ||
         null;
 
-      if (
-        requestedCompanyId
-      ) {
+      if (requestedCompanyId) {
         const company =
           await db.orm.public.Company
             .where({

@@ -570,6 +570,13 @@
                   "kind": "scalar"
                 }
               },
+              "isRead": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -667,6 +674,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "isRead": {
+                  "column": "isRead"
                 },
                 "name": {
                   "column": "name"
@@ -1609,6 +1619,15 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "isRead": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -2131,7 +2150,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "6dac836039f50dc32e542679b8c6c60d487293f908f34eb092d3fee76d3d7de3"
+    "storageHash": "7133ef874f2a7aea123cc33c4567ac99e77af1026938fcee20b812d44aef7909"
   },
   "execution": {
     "executionHash": "abf42e7490c925a6d7016a65b247f8cb21068d51215f4fad97496a83a2f13407",

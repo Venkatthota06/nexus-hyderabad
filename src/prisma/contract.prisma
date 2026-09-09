@@ -26,6 +26,7 @@ model Company {
 
 model Contact {
   id            String              @id @default(uuid())
+
   companyId     String
   company       Company             @relation(fields: [companyId], references: [id])
 
@@ -54,6 +55,10 @@ model Lead {
   requirement   String
   source        String              @default("Nexus Hyderabad Website")
   status        String              @default("New Lead")
+
+  // Unread notification system
+  isRead        Boolean             @default(false)
+
   notes         String?
   nextFollowUp  TimestamptzString?
 
