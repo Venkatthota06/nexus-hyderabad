@@ -83,6 +83,60 @@ type Activity = {
   updatedAt: string;
 };
 
+type Quotation = {
+  id: string;
+  companyId: string;
+  quotationNumber: string;
+  service: string;
+  description: string | null;
+  amount: number;
+  gstPercent: number;
+  gstAmount: number;
+  totalAmount: number;
+  status: string;
+  quotationDate: string;
+  sentDate: string | null;
+  nextFollowUp: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Sample = {
+  id: string;
+  companyId: string;
+  quotationId: string | null;
+  sampleNumber: string;
+  sampleType: string;
+  sampleCount: number;
+  collectionDate: string | null;
+  collectedBy: string | null;
+  status: string;
+  testingLocation: string | null;
+  expectedCompletionDate: string | null;
+  reportStatus: string;
+  reportDeliveredDate: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Report = {
+  id: string;
+  companyId: string;
+  sampleId: string;
+  reportNumber: string;
+  reportType: string;
+  reportDate: string | null;
+  status: string;
+  deliveredDate: string | null;
+  deliveryMethod: string | null;
+  fileReference: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 /* =========================================================
    DATA
 ========================================================= */
@@ -139,6 +193,48 @@ async function getActivities(companyId: string): Promise<Activity[]> {
   }
 }
 
+async function getQuotations(companyId: string): Promise<Quotation[]> {
+  try {
+    const quotations = await db.orm.public.Quotation
+      .where({ companyId })
+      .orderBy((quotation) => quotation.quotationDate.desc())
+      .all();
+
+    return quotations as Quotation[];
+  } catch (error) {
+    console.error("Company quotations error:", error);
+    return [];
+  }
+}
+
+async function getSamples(companyId: string): Promise<Sample[]> {
+  try {
+    const samples = await db.orm.public.Sample
+      .where({ companyId })
+      .orderBy((sample) => sample.createdAt.desc())
+      .all();
+
+    return samples as Sample[];
+  } catch (error) {
+    console.error("Company samples error:", error);
+    return [];
+  }
+}
+
+async function getReports(companyId: string): Promise<Report[]> {
+  try {
+    const reports = await db.orm.public.Report
+      .where({ companyId })
+      .orderBy((report) => report.createdAt.desc())
+      .all();
+
+    return reports as Report[];
+  } catch (error) {
+    console.error("Company reports error:", error);
+    return [];
+  }
+}
+
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -149,6 +245,14 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 function statusClass(value: string) {
@@ -176,11 +280,15 @@ export default async function CompanyDetailPage({
     notFound();
   }
 
-  const [contacts, leads, activities] = await Promise.all([
-    getContacts(company.id),
-    getLeads(company.id),
-    getActivities(company.id),
-  ]);
+  const [contacts, leads, activities, quotations, samples, reports] =
+    await Promise.all([
+      getContacts(company.id),
+      getLeads(company.id),
+      getActivities(company.id),
+      getQuotations(company.id),
+      getSamples(company.id),
+      getReports(company.id),
+    ]);
 
   const decisionMakers = contacts.filter(
     (contact) => contact.decisionMaker
@@ -600,6 +708,220 @@ export default async function CompanyDetailPage({
             description={`Record the first call, meeting or field visit for ${company.name}.`}
             actionHref={`/admin/companies/${company.id}/activities/new`}
             actionLabel="Add First Activity"
+          />
+        )}
+      </section>
+
+      {/* =====================================================
+          QUOTATIONS
+      ====================================================== */}
+
+      <section className="company-profile-section">
+        <div className="company-profile-section-header">
+          <div>
+            <span>Commercial History</span>
+            <h2>Quotations</h2>
+            <p>Pricing, GST, quotation status and commercial follow-ups.</p>
+          </div>
+
+          <Link href="/admin/quotations" className="company-profile-secondary-action">
+            View All Quotations
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        {quotations.length > 0 ? (
+          <div className="company-profile-leads-grid">
+            {quotations.map((quotation) => (
+              <article key={quotation.id} className="company-profile-lead-card">
+                <div className="company-profile-lead-top">
+                  <div className="company-profile-avatar">₹</div>
+                  <div className="company-profile-lead-title">
+                    <h3>{quotation.quotationNumber}</h3>
+                    <p>{quotation.service}</p>
+                  </div>
+                  <span className={`company-profile-lead-status ${statusClass(quotation.status)}`}>
+                    {quotation.status}
+                  </span>
+                </div>
+
+                <div className="company-profile-lead-requirement">
+                  <span>Commercial Value</span>
+                  <p>
+                    Base: {formatCurrency(quotation.amount)} • GST ({quotation.gstPercent}%): {formatCurrency(quotation.gstAmount)} • Total: {formatCurrency(quotation.totalAmount)}
+                  </p>
+                </div>
+
+                {quotation.description && (
+                  <div className="company-profile-lead-requirement">
+                    <span>Scope / Description</span>
+                    <p>{quotation.description}</p>
+                  </div>
+                )}
+
+                <div className="company-profile-lead-footer">
+                  <span>
+                    {formatDate(quotation.quotationDate)}
+                    {quotation.nextFollowUp ? ` • Follow-up ${formatDate(quotation.nextFollowUp)}` : ""}
+                  </span>
+                  <Link href={`/admin/quotations/${quotation.id}`}>
+                    View Quotation
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<FileText size={28} />}
+            title="No quotations yet"
+            description={`No commercial quotation is linked to ${company.name} yet.`}
+            actionHref="/admin/quotations/new"
+            actionLabel="Create Quotation"
+          />
+        )}
+      </section>
+
+      {/* =====================================================
+          SAMPLES
+      ====================================================== */}
+
+      <section className="company-profile-section">
+        <div className="company-profile-section-header">
+          <div>
+            <span>Laboratory Operations</span>
+            <h2>Samples & Testing</h2>
+            <p>Collection, laboratory movement, testing and report progress.</p>
+          </div>
+
+          <Link href="/admin/samples" className="company-profile-secondary-action">
+            View All Samples
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        {samples.length > 0 ? (
+          <div className="company-profile-leads-grid">
+            {samples.map((sample) => (
+              <article key={sample.id} className="company-profile-lead-card">
+                <div className="company-profile-lead-top">
+                  <div className="company-profile-avatar">S</div>
+                  <div className="company-profile-lead-title">
+                    <h3>{sample.sampleNumber}</h3>
+                    <p>{sample.sampleType} • {sample.sampleCount} {sample.sampleCount === 1 ? "Sample" : "Samples"}</p>
+                  </div>
+                  <span className={`company-profile-lead-status ${statusClass(sample.status)}`}>
+                    {sample.status}
+                  </span>
+                </div>
+
+                <div className="company-profile-lead-requirement">
+                  <span>Testing Progress</span>
+                  <p>
+                    Report: {sample.reportStatus}
+                    {sample.testingLocation ? ` • Lab: ${sample.testingLocation}` : ""}
+                    {sample.collectedBy ? ` • Collected by: ${sample.collectedBy}` : ""}
+                  </p>
+                </div>
+
+                <div className="company-profile-lead-footer">
+                  <span>
+                    Collection: {sample.collectionDate ? formatDate(sample.collectionDate) : "Not collected"}
+                    {sample.expectedCompletionDate ? ` • Expected ${formatDate(sample.expectedCompletionDate)}` : ""}
+                  </span>
+                  <Link href={`/admin/samples/${sample.id}`}>
+                    View Sample
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<FileText size={28} />}
+            title="No samples yet"
+            description={`No laboratory sample is linked to ${company.name} yet.`}
+            actionHref="/admin/samples/new"
+            actionLabel="Add Sample"
+          />
+        )}
+      </section>
+
+      {/* =====================================================
+          REPORTS
+      ====================================================== */}
+
+      <section className="company-profile-section">
+        <div className="company-profile-section-header">
+          <div>
+            <span>Laboratory Reporting</span>
+            <h2>Reports</h2>
+            <p>Report preparation, release and client delivery history.</p>
+          </div>
+
+          <Link href="/admin/reports" className="company-profile-secondary-action">
+            View All Reports
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        {reports.length > 0 ? (
+          <div className="company-profile-leads-grid">
+            {reports.map((report) => {
+              const linkedSample = samples.find((sample) => sample.id === report.sampleId);
+
+              return (
+                <article key={report.id} className="company-profile-lead-card">
+                  <div className="company-profile-lead-top">
+                    <div className="company-profile-avatar">R</div>
+                    <div className="company-profile-lead-title">
+                      <h3>{report.reportNumber}</h3>
+                      <p>{report.reportType}</p>
+                    </div>
+                    <span className={`company-profile-lead-status ${statusClass(report.status)}`}>
+                      {report.status}
+                    </span>
+                  </div>
+
+                  <div className="company-profile-lead-requirement">
+                    <span>Report Details</span>
+                    <p>
+                      Sample: {linkedSample?.sampleNumber || "Unknown"}
+                      {report.deliveryMethod ? ` • Delivery: ${report.deliveryMethod}` : ""}
+                      {report.fileReference ? ` • File: ${report.fileReference}` : ""}
+                    </p>
+                  </div>
+
+                  {report.notes && (
+                    <div className="company-profile-lead-requirement">
+                      <span>Notes</span>
+                      <p>{report.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="company-profile-lead-footer">
+                    <span>
+                      Report: {report.reportDate ? formatDate(report.reportDate) : "Pending"}
+                      {report.deliveredDate ? ` • Delivered ${formatDate(report.deliveredDate)}` : ""}
+                    </span>
+                    <Link href={`/admin/reports/${report.id}`}>
+                      View Report
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<FileText size={28} />}
+            title="No reports yet"
+            description={`No laboratory report is linked to ${company.name} yet.`}
+            actionHref="/admin/reports/new"
+            actionLabel="Add Report"
           />
         )}
       </section>

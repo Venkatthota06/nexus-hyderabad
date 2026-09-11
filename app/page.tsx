@@ -778,6 +778,104 @@ export default function Home() {
         </div>
       </section>
 
+
+      {/* =========================================================
+          DOORSTEP & ON-SITE SAMPLE COLLECTION
+      ========================================================= */}
+
+      <section className="sample-collection-section">
+        <div className="container">
+          <motion.div
+            className="sample-collection-card"
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65 }}
+          >
+            <div className="sample-collection-glow" />
+
+            <div className="sample-collection-header">
+              <div className="sample-collection-content">
+                <span className="sample-collection-eyebrow">
+                  <MapPin size={16} />
+                  Convenient Sample Collection
+                </span>
+
+                <h2>
+                  Doorstep & On-Site
+                  <br />
+                  <span>Sample Collection</span>
+                </h2>
+
+                <p>
+                  Need a sample tested? For applicable testing
+                  requirements, our field team can coordinate sample
+                  collection from your location — helping make the
+                  testing process simple and convenient.
+                </p>
+
+                <div className="sample-collection-locations">
+                  <span><CheckCircle2 size={16} /> Homes</span>
+                  <span><CheckCircle2 size={16} /> Hospitals</span>
+                  <span><CheckCircle2 size={16} /> Offices</span>
+                  <span><CheckCircle2 size={16} /> Apartments</span>
+                  <span><CheckCircle2 size={16} /> Hotels & Restaurants</span>
+                  <span><CheckCircle2 size={16} /> Commercial Facilities</span>
+                </div>
+
+                <motion.a
+                  href="/?collection=yes#contact"
+                  className="sample-collection-button"
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Book Sample Collection
+                  <ArrowRight size={18} />
+                </motion.a>
+              </div>
+
+              <div className="sample-collection-visual">
+                <div className="sample-collection-visual-top">
+                  <div className="sample-collection-visual-icon">
+                    <FlaskConical size={27} />
+                  </div>
+                  <div>
+                    <small>HOW IT WORKS</small>
+                    <strong>From your location to testing</strong>
+                  </div>
+                </div>
+
+                <div className="sample-collection-steps">
+                  {[
+                    ["01", "Share Your Requirement", "Tell us what you need tested and your location."],
+                    ["02", "Schedule Collection", "Our team coordinates a convenient collection time."],
+                    ["03", "We Visit Your Location", "Our field representative visits the agreed location."],
+                    ["04", "Sample Collection", "Applicable samples are collected and coordinated for laboratory testing."],
+                    ["05", "Testing & Report", "Testing is completed and the report is delivered through the agreed channel."],
+                  ].map(([number, title, description]) => (
+                    <div className="sample-collection-step" key={number}>
+                      <span>{number}</span>
+                      <div>
+                        <strong>{title}</strong>
+                        <p>{description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="sample-collection-note">
+                  <ShieldCheck size={17} />
+                  <span>
+                    Collection availability depends on the testing
+                    requirement and location.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <section
         id="industries"
         className="industries-section"
@@ -980,6 +1078,236 @@ export default function Home() {
       </footer>
 
       <style>{`
+
+        /* =========================================================
+           DOORSTEP & ON-SITE SAMPLE COLLECTION
+        ========================================================= */
+
+        .sample-collection-section {
+          padding: 100px 0;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .sample-collection-card {
+          position: relative;
+          overflow: hidden;
+          padding: 60px;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          border-radius: 28px;
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          box-shadow: 0 25px 65px rgba(15, 23, 42, 0.08);
+        }
+
+        .sample-collection-glow {
+          position: absolute;
+          width: 330px;
+          height: 330px;
+          top: -170px;
+          left: -130px;
+          border-radius: 50%;
+          background: rgba(156, 201, 0, 0.12);
+          filter: blur(15px);
+          pointer-events: none;
+        }
+
+        .sample-collection-header {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+          gap: 70px;
+          align-items: center;
+        }
+
+        .sample-collection-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 18px;
+          padding: 8px 12px;
+          border-radius: 999px;
+          background: rgba(156, 201, 0, 0.11);
+          color: #6f9200;
+          font-size: 12px;
+          font-weight: 750;
+          letter-spacing: 0.03em;
+        }
+
+        .sample-collection-content h2 {
+          margin: 0;
+          color: #0f172a;
+          font-size: clamp(36px, 4vw, 54px);
+          line-height: 1.08;
+          letter-spacing: -0.04em;
+        }
+
+        .sample-collection-content h2 span { color: #9cc900; }
+
+        .sample-collection-content > p {
+          max-width: 560px;
+          margin: 22px 0 0;
+          color: #64748b;
+          font-size: 15px;
+          line-height: 1.8;
+        }
+
+        .sample-collection-locations {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px 16px;
+          margin-top: 26px;
+        }
+
+        .sample-collection-locations span {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #475569;
+          font-size: 12px;
+          font-weight: 650;
+        }
+
+        .sample-collection-locations svg { color: #9cc900; }
+
+        .sample-collection-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          margin-top: 30px;
+          padding: 14px 19px;
+          border-radius: 11px;
+          background: #0f172a;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 700;
+          text-decoration: none;
+          box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16);
+        }
+
+        .sample-collection-visual {
+          padding: 30px;
+          border: 1px solid rgba(15, 23, 42, 0.07);
+          border-radius: 22px;
+          background: #ffffff;
+          box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+        }
+
+        .sample-collection-visual-top {
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          padding-bottom: 21px;
+          border-bottom: 1px solid #eef2f7;
+        }
+
+        .sample-collection-visual-icon {
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 48px;
+          border-radius: 13px;
+          background: rgba(156, 201, 0, 0.12);
+          color: #789c00;
+        }
+
+        .sample-collection-visual-top div:last-child {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .sample-collection-visual-top small {
+          color: #94a3b8;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+        }
+
+        .sample-collection-visual-top strong {
+          color: #0f172a;
+          font-size: 15px;
+        }
+
+        .sample-collection-steps { margin-top: 6px; }
+
+        .sample-collection-step {
+          display: grid;
+          grid-template-columns: 38px 1fr;
+          gap: 13px;
+          padding: 16px 0;
+        }
+
+        .sample-collection-step:not(:last-child) {
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .sample-collection-step > span {
+          width: 34px;
+          height: 34px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: #f8fafc;
+          color: #789c00;
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        .sample-collection-step strong {
+          display: block;
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
+        .sample-collection-step p {
+          margin: 4px 0 0;
+          color: #94a3b8;
+          font-size: 11px;
+          line-height: 1.5;
+        }
+
+        .sample-collection-note {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          margin-top: 13px;
+          padding: 12px 14px;
+          border-radius: 10px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .sample-collection-note svg {
+          flex: 0 0 auto;
+          color: #9cc900;
+        }
+
+        @media (max-width: 800px) {
+          .sample-collection-section { padding: 72px 0; }
+          .sample-collection-card { padding: 34px 22px; border-radius: 21px; }
+          .sample-collection-header { grid-template-columns: 1fr; gap: 36px; }
+          .sample-collection-content h2 { font-size: 35px; }
+          .sample-collection-content > p { font-size: 14px; }
+          .sample-collection-locations {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+          }
+          .sample-collection-button { width: 100%; justify-content: center; }
+          .sample-collection-visual { padding: 22px 18px; border-radius: 17px; }
+        }
+
+        @media (max-width: 480px) {
+          .sample-collection-locations { grid-template-columns: 1fr; }
+          .sample-collection-content h2 { font-size: 31px; }
+        }
+
         .resources-home-section {
           padding: 100px 0;
           background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
