@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
   useEffect,
   useRef,
@@ -16,18 +17,27 @@ import {
   CircleDollarSign,
   FileText,
   FlaskConical,
+  FolderOpen,
   LayoutDashboard,
   Loader2,
+  Megaphone,
   Search,
+  Settings2,
   UserRound,
   Users,
+  WalletCards,
   X,
 } from "lucide-react";
 
 import AdminLogoutButton from "@/components/AdminLogoutButton";
 
+/* =========================================================
+   SEARCH RESULT TYPE
+========================================================= */
+
 type SearchResult = {
   id: string;
+
   type:
     | "company"
     | "contact"
@@ -35,6 +45,7 @@ type SearchResult = {
     | "quotation"
     | "sample"
     | "report";
+
   title: string;
   subtitle: string;
   detail: string;
@@ -42,43 +53,87 @@ type SearchResult = {
   companyId: string | null;
 };
 
+/* =========================================================
+   SIDEBAR NAVIGATION
+========================================================= */
+
 const navigation = [
   {
     label: "Dashboard",
     href: "/admin",
     icon: LayoutDashboard,
   },
+
   {
-    label: "Leads",
-    href: "/admin/leads",
-    icon: Users,
-  },
-  {
-    label: "Follow-ups",
-    href: "/admin/follow-ups",
-    icon: CalendarDays,
-  },
-  {
-    label: "Companies",
+    label: "Clients",
     href: "/admin/companies",
     icon: Building2,
   },
+
+  {
+    label: "Lead Management",
+    href: "/admin/leads",
+    icon: Users,
+  },
+
   {
     label: "Quotations",
     href: "/admin/quotations",
     icon: CircleDollarSign,
   },
+
   {
-    label: "Samples",
+    label: "Sample Collection",
     href: "/admin/samples",
     icon: FlaskConical,
   },
+
   {
     label: "Reports",
     href: "/admin/reports",
     icon: FileText,
   },
+
+  {
+    label: "Payments",
+    href: "/admin/payments",
+    icon: WalletCards,
+  },
+
+  {
+    label: "Follow-ups",
+    href: "/admin/follow-ups",
+    icon: CalendarDays,
+  },
+
+  {
+    label: "Monthly Plan",
+    href: "/admin/monthly-plan",
+    icon: CalendarDays,
+  },
+
+  {
+    label: "Digital Marketing",
+    href: "/admin/digital-marketing",
+    icon: Megaphone,
+  },
+
+  {
+    label: "Documents",
+    href: "/admin/documents",
+    icon: FolderOpen,
+  },
+
+  {
+    label: "Settings",
+    href: "/admin/settings",
+    icon: Settings2,
+  },
 ];
+
+/* =========================================================
+   SEARCH RESULT ICON
+========================================================= */
 
 function SearchResultIcon({
   type,
@@ -87,27 +142,49 @@ function SearchResultIcon({
 }) {
   switch (type) {
     case "company":
-      return <Building2 size={16} />;
+      return (
+        <Building2 size={16} />
+      );
 
     case "contact":
-      return <UserRound size={16} />;
+      return (
+        <UserRound size={16} />
+      );
 
     case "lead":
-      return <Users size={16} />;
+      return (
+        <Users size={16} />
+      );
 
     case "quotation":
-      return <CircleDollarSign size={16} />;
+      return (
+        <CircleDollarSign
+          size={16}
+        />
+      );
 
     case "sample":
-      return <FlaskConical size={16} />;
+      return (
+        <FlaskConical
+          size={16}
+        />
+      );
 
     case "report":
-      return <FileText size={16} />;
+      return (
+        <FileText size={16} />
+      );
 
     default:
-      return <Search size={16} />;
+      return (
+        <Search size={16} />
+      );
   }
 }
+
+/* =========================================================
+   SEARCH RESULT LABEL
+========================================================= */
 
 function resultTypeLabel(
   type: SearchResult["type"]
@@ -136,25 +213,33 @@ function resultTypeLabel(
   }
 }
 
+/* =========================================================
+   ADMIN SIDEBAR
+========================================================= */
+
 export default function AdminSidebar() {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
 
-  /* =========================================================
+  /* =======================================================
      UNREAD LEAD NOTIFICATION COUNT
-  ========================================================= */
+  ======================================================= */
 
-  const [newLeadCount, setNewLeadCount] =
-    useState(0);
+  const [
+    newLeadCount,
+    setNewLeadCount,
+  ] = useState(0);
 
   useEffect(() => {
     async function loadNotifications() {
       try {
-        const response = await fetch(
-          "/api/notifications",
-          {
-            cache: "no-store",
-          }
-        );
+        const response =
+          await fetch(
+            "/api/notifications",
+            {
+              cache: "no-store",
+            }
+          );
 
         if (!response.ok) {
           return;
@@ -176,43 +261,60 @@ export default function AdminSidebar() {
 
     loadNotifications();
 
-    const interval = setInterval(
-      loadNotifications,
-      30000
-    );
+    const interval =
+      setInterval(
+        loadNotifications,
+        30000
+      );
 
     return () => {
       clearInterval(interval);
     };
   }, [pathname]);
 
-  /* =========================================================
+  /* =======================================================
      GLOBAL CRM SEARCH
-  ========================================================= */
+  ======================================================= */
 
-  const [searchQuery, setSearchQuery] =
-    useState("");
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState("");
 
-  const [searchResults, setSearchResults] =
-    useState<SearchResult[]>([]);
+  const [
+    searchResults,
+    setSearchResults,
+  ] = useState<
+    SearchResult[]
+  >([]);
 
-  const [searchLoading, setSearchLoading] =
-    useState(false);
+  const [
+    searchLoading,
+    setSearchLoading,
+  ] = useState(false);
 
-  const [searchOpen, setSearchOpen] =
-    useState(false);
+  const [
+    searchOpen,
+    setSearchOpen,
+  ] = useState(false);
 
-  const [searchError, setSearchError] =
-    useState("");
+  const [
+    searchError,
+    setSearchError,
+  ] = useState("");
 
   const searchRequestRef =
-    useRef<AbortController | null>(null);
+    useRef<
+      AbortController | null
+    >(null);
 
   useEffect(() => {
     const query =
       searchQuery.trim();
 
-    if (query.length < 2) {
+    if (
+      query.length < 2
+    ) {
       searchRequestRef.current?.abort();
 
       setSearchResults([]);
@@ -222,80 +324,105 @@ export default function AdminSidebar() {
       return;
     }
 
-    const timer = setTimeout(
-      async () => {
-        searchRequestRef.current?.abort();
+    const timer =
+      setTimeout(
+        async () => {
+          searchRequestRef.current?.abort();
 
-        const controller =
-          new AbortController();
+          const controller =
+            new AbortController();
 
-        searchRequestRef.current =
-          controller;
+          searchRequestRef.current =
+            controller;
 
-        setSearchLoading(true);
-        setSearchError("");
+          setSearchLoading(
+            true
+          );
 
-        try {
-          const response = await fetch(
-            `/api/search?q=${encodeURIComponent(
-              query
-            )}`,
-            {
-              cache: "no-store",
-              signal: controller.signal,
+          setSearchError("");
+
+          try {
+            const response =
+              await fetch(
+                `/api/search?q=${encodeURIComponent(
+                  query
+                )}`,
+                {
+                  cache:
+                    "no-store",
+
+                  signal:
+                    controller.signal,
+                }
+              );
+
+            if (
+              !response.ok
+            ) {
+              throw new Error(
+                "Search request failed"
+              );
             }
-          );
 
-          if (!response.ok) {
-            throw new Error(
-              "Search request failed"
+            const data =
+              await response.json();
+
+            setSearchResults(
+              data.results ??
+                []
             );
+
+            setSearchOpen(
+              true
+            );
+          } catch (error) {
+            if (
+              error instanceof
+                DOMException &&
+              error.name ===
+                "AbortError"
+            ) {
+              return;
+            }
+
+            console.error(
+              "CRM search error:",
+              error
+            );
+
+            setSearchResults(
+              []
+            );
+
+            setSearchError(
+              "Unable to search CRM."
+            );
+
+            setSearchOpen(
+              true
+            );
+          } finally {
+            if (
+              searchRequestRef.current ===
+              controller
+            ) {
+              setSearchLoading(
+                false
+              );
+            }
           }
-
-          const data =
-            await response.json();
-
-          setSearchResults(
-            data.results ?? []
-          );
-
-          setSearchOpen(true);
-        } catch (error) {
-          if (
-            error instanceof DOMException &&
-            error.name === "AbortError"
-          ) {
-            return;
-          }
-
-          console.error(
-            "CRM search error:",
-            error
-          );
-
-          setSearchResults([]);
-
-          setSearchError(
-            "Unable to search CRM."
-          );
-
-          setSearchOpen(true);
-        } finally {
-          if (
-            searchRequestRef.current ===
-            controller
-          ) {
-            setSearchLoading(false);
-          }
-        }
-      },
-      300
-    );
+        },
+        300
+      );
 
     return () => {
       clearTimeout(timer);
     };
   }, [searchQuery]);
+
+  /* =======================================================
+     RESET SEARCH WHEN ROUTE CHANGES
+  ======================================================= */
 
   useEffect(() => {
     setSearchOpen(false);
@@ -314,25 +441,42 @@ export default function AdminSidebar() {
     setSearchLoading(false);
   }
 
-  /* =========================================================
+  /* =======================================================
      ACTIVE NAVIGATION
-  ========================================================= */
+  ======================================================= */
 
-  function isActive(href: string) {
-    if (href === "/admin") {
-      return pathname === "/admin";
+  function isActive(
+    href: string
+  ) {
+    if (
+      href === "/admin"
+    ) {
+      return (
+        pathname ===
+        "/admin"
+      );
     }
 
-    return pathname.startsWith(href);
+    return pathname.startsWith(
+      href
+    );
   }
 
-  return (
-    <aside className="admin-shell-sidebar">
-      {/* =====================================================
-          BRAND
-      ===================================================== */}
+  /* =======================================================
+     UI
+  ======================================================= */
 
-      <div className="admin-shell-brand">
+  return (
+    <aside className="admin-shell-sidebar nexus-dashboard-sidebar">
+
+      {/* ===================================================
+          BRAND
+      =================================================== */}
+
+      <Link
+        href="/admin"
+        className="admin-shell-brand"
+      >
         <div className="admin-shell-logo">
           <img
             src="/nexus-logo.png"
@@ -342,21 +486,23 @@ export default function AdminSidebar() {
 
         <div className="admin-shell-brand-text">
           <strong>
-            Nexus Hyderabad
+            Nexus Test Labs
           </strong>
 
           <span>
-            Business CRM
+            Hyderabad Operations
           </span>
         </div>
-      </div>
+      </Link>
 
-      {/* =====================================================
+      {/* ===================================================
           CRM SEARCH
-      ===================================================== */}
+      =================================================== */}
 
       <div className="admin-crm-search">
+
         <div className="admin-crm-search-box">
+
           <Search
             size={16}
             className="admin-crm-search-icon"
@@ -364,20 +510,29 @@ export default function AdminSidebar() {
 
           <input
             type="text"
-            value={searchQuery}
+            value={
+              searchQuery
+            }
             placeholder="Search CRM..."
             autoComplete="off"
             aria-label="Search CRM"
             onFocus={() => {
               if (
-                searchQuery.trim().length >= 2
+                searchQuery
+                  .trim()
+                  .length >= 2
               ) {
-                setSearchOpen(true);
+                setSearchOpen(
+                  true
+                );
               }
             }}
-            onChange={(event) => {
+            onChange={(
+              event
+            ) => {
               setSearchQuery(
-                event.target.value
+                event.target
+                  .value
               );
             }}
           />
@@ -394,49 +549,68 @@ export default function AdminSidebar() {
               <button
                 type="button"
                 className="admin-crm-search-clear"
-                onClick={clearSearch}
+                onClick={
+                  clearSearch
+                }
                 aria-label="Clear search"
               >
                 <X size={14} />
               </button>
             )}
+
         </div>
 
         {searchOpen &&
-          searchQuery.trim().length >= 2 && (
+          searchQuery
+            .trim()
+            .length >=
+            2 && (
             <div className="admin-crm-search-results">
+
               <div className="admin-crm-search-results-header">
+
                 <span>
                   Search Results
                 </span>
 
                 {!searchLoading && (
                   <strong>
-                    {searchResults.length}
+                    {
+                      searchResults.length
+                    }
                   </strong>
                 )}
+
               </div>
 
               {searchLoading &&
-                searchResults.length === 0 && (
+                searchResults.length ===
+                  0 && (
                   <div className="admin-crm-search-state">
+
                     <Loader2
                       size={18}
                       className="admin-crm-search-state-loader"
                     />
 
                     <span>
-                      Searching CRM...
+                      Searching
+                      CRM...
                     </span>
+
                   </div>
                 )}
 
               {!searchLoading &&
                 searchError && (
                   <div className="admin-crm-search-state error">
+
                     <span>
-                      {searchError}
+                      {
+                        searchError
+                      }
                     </span>
+
                   </div>
                 )}
 
@@ -445,28 +619,43 @@ export default function AdminSidebar() {
                 searchResults.length ===
                   0 && (
                   <div className="admin-crm-search-state">
-                    <Search size={18} />
+
+                    <Search
+                      size={18}
+                    />
 
                     <span>
-                      No matching records
+                      No matching
+                      records
                     </span>
 
                     <small>
-                      Try company, contact,
-                      phone, email, quotation,
-                      sample or report number.
+                      Try company,
+                      contact,
+                      phone,
+                      email,
+                      quotation,
+                      sample or
+                      report number.
                     </small>
+
                   </div>
                 )}
 
               {!searchError &&
-                searchResults.length > 0 && (
+                searchResults.length >
+                  0 && (
                   <div className="admin-crm-search-result-list">
+
                     {searchResults.map(
-                      (result) => (
+                      (
+                        result
+                      ) => (
                         <Link
                           key={`${result.type}-${result.id}`}
-                          href={result.href}
+                          href={
+                            result.href
+                          }
                           className="admin-crm-search-result"
                           onClick={() => {
                             setSearchOpen(
@@ -474,6 +663,7 @@ export default function AdminSidebar() {
                             );
                           }}
                         >
+
                           <div
                             className={`admin-crm-search-result-icon ${result.type}`}
                           >
@@ -485,9 +675,13 @@ export default function AdminSidebar() {
                           </div>
 
                           <div className="admin-crm-search-result-content">
+
                             <div className="admin-crm-search-result-top">
+
                               <strong>
-                                {result.title}
+                                {
+                                  result.title
+                                }
                               </strong>
 
                               <span>
@@ -495,6 +689,7 @@ export default function AdminSidebar() {
                                   result.type
                                 )}
                               </span>
+
                             </div>
 
                             <p>
@@ -510,95 +705,127 @@ export default function AdminSidebar() {
                                 }
                               </small>
                             )}
+
                           </div>
 
                           <ArrowRight
-                            size={14}
+                            size={
+                              14
+                            }
                             className="admin-crm-search-result-arrow"
                           />
+
                         </Link>
                       )
                     )}
+
                   </div>
                 )}
+
             </div>
           )}
+
       </div>
 
-      {/* =====================================================
-          WORKSPACE
-      ===================================================== */}
+      {/* ===================================================
+          OPERATIONS
+      =================================================== */}
 
       <div className="admin-shell-section-label">
-        Workspace
+        Operations
       </div>
 
-      {/* =====================================================
+      {/* ===================================================
           NAVIGATION
-      ===================================================== */}
+      =================================================== */}
 
       <nav className="admin-shell-nav">
-        {navigation.map((item) => {
-          const Icon = item.icon;
 
-          const active =
-            isActive(item.href);
+        {navigation.map(
+          (item) => {
+            const Icon =
+              item.icon;
 
-          const hasLeadNotification =
-            item.label === "Leads" &&
-            newLeadCount > 0;
+            const active =
+              isActive(
+                item.href
+              );
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={
-                active
-                  ? "admin-shell-nav-link active"
-                  : "admin-shell-nav-link"
-              }
-            >
-              <span className="admin-shell-nav-icon">
-                <Icon
-                  size={18}
-                  strokeWidth={1.9}
-                />
-              </span>
+            const hasLeadNotification =
+              item.href ===
+                "/admin/leads" &&
+              newLeadCount >
+                0;
 
-              <span className="admin-shell-nav-label">
-                {item.label}
-              </span>
+            return (
+              <Link
+                key={
+                  item.href
+                }
+                href={
+                  item.href
+                }
+                className={
+                  active
+                    ? "admin-shell-nav-link active"
+                    : "admin-shell-nav-link"
+                }
+              >
 
-              {hasLeadNotification && (
-                <span
-                  className="admin-shell-notification-badge"
-                  title={`${newLeadCount} unread ${
-                    newLeadCount === 1
-                      ? "lead"
-                      : "leads"
-                  }`}
-                >
-                  {newLeadCount > 99
-                    ? "99+"
-                    : newLeadCount}
+                <span className="admin-shell-nav-icon">
+
+                  <Icon
+                    size={18}
+                    strokeWidth={
+                      1.9
+                    }
+                  />
+
                 </span>
-              )}
 
-              {active &&
-                !hasLeadNotification && (
-                  <span className="admin-shell-active-dot" />
+                <span className="admin-shell-nav-label">
+                  {
+                    item.label
+                  }
+                </span>
+
+                {hasLeadNotification && (
+                  <span
+                    className="admin-shell-notification-badge"
+                    title={`${newLeadCount} unread ${
+                      newLeadCount ===
+                      1
+                        ? "lead"
+                        : "leads"
+                    }`}
+                  >
+                    {newLeadCount >
+                    99
+                      ? "99+"
+                      : newLeadCount}
+                  </span>
                 )}
-            </Link>
-          );
-        })}
+
+                {active &&
+                  !hasLeadNotification && (
+                    <span className="admin-shell-active-dot" />
+                  )}
+
+              </Link>
+            );
+          }
+        )}
+
       </nav>
 
-      {/* =====================================================
+      {/* ===================================================
           SIDEBAR FOOTER
-      ===================================================== */}
+      =================================================== */}
 
       <div className="admin-shell-sidebar-footer">
+
         <div className="admin-shell-system-status">
+
           <span className="admin-shell-status-dot" />
 
           <div>
@@ -607,9 +834,11 @@ export default function AdminSidebar() {
             </strong>
 
             <span>
-              Neon database connected
+              Neon database
+              connected
             </span>
           </div>
+
         </div>
 
         <Link
@@ -630,13 +859,18 @@ export default function AdminSidebar() {
         </div>
 
         <div className="admin-shell-version">
+
           Nexus Business CRM
 
           <span>
-            Hyderabad Operations
+            Hyderabad
+            Operations
           </span>
+
         </div>
+
       </div>
+
     </aside>
   );
 }

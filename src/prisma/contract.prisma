@@ -13,12 +13,19 @@ model Company {
   source    String?
   status    String              @default("Prospect")
 
-  contacts    Contact[]
-  leads       Lead[]
-  activities  Activity[]
-  quotations  Quotation[]
-  samples     Sample[]
-  reports     Report[]
+  contacts           Contact[]
+  leads              Lead[]
+  activities         Activity[]
+  quotations         Quotation[]
+  samples            Sample[]
+  reports            Report[]
+  locations          Location[]
+  workOrders         WorkOrder[]
+  payments           Payment[]
+  recurringServices  RecurringService[]
+  planItems           PlanItem[]
+  marketingProspects MarketingProspect[]
+  documents           Document[]
 
   createdAt TimestamptzString   @default(now())
   updatedAt temporal.updatedAtString()
@@ -61,6 +68,9 @@ model Lead {
 
   notes         String?
   nextFollowUp  TimestamptzString?
+
+  // Digital Marketing conversion relationship
+  marketingProspect MarketingProspect?
 
   createdAt     TimestamptzString   @default(now())
   updatedAt     temporal.updatedAtString()
@@ -106,7 +116,11 @@ model Quotation {
 
   notes           String?
 
+  items           QuotationItem[]
   samples         Sample[]
+  workOrders      WorkOrder[]
+  payments        Payment[]
+  documents       Document[]
 
   createdAt       TimestamptzString   @default(now())
   updatedAt       temporal.updatedAtString()
@@ -120,6 +134,9 @@ model Sample {
 
   quotationId            String?
   quotation              Quotation?          @relation(fields: [quotationId], references: [id])
+
+  workOrderId            String?
+  workOrder              WorkOrder?          @relation(fields: [workOrderId], references: [id])
 
   sampleNumber           String
   sampleType             String
@@ -139,9 +156,10 @@ model Sample {
   notes                  String?
 
   reports                Report[]
+  documents              Document[]
 
   createdAt              TimestamptzString   @default(now())
-  updatedAt              temporal.updatedAtString()
+  updatedAt               temporal.updatedAtString()
 }
 
 model Report {
@@ -164,6 +182,258 @@ model Report {
   deliveryMethod  String?
 
   fileReference   String?
+
+  notes           String?
+
+  documents       Document[]
+
+  createdAt       TimestamptzString   @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model Location {
+  id          String              @id @default(uuid())
+
+  companyId   String
+  company     Company             @relation(fields: [companyId], references: [id])
+
+  name        String
+  address     String?
+  city        String?
+  state       String?
+
+  contactName String?
+  phone       String?
+  email       String?
+
+  status      String              @default("Active")
+  notes       String?
+
+  recurringServices RecurringService[]
+
+  createdAt   TimestamptzString   @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model QuotationItem {
+  id          String              @id @default(uuid())
+
+  quotationId String
+  quotation   Quotation           @relation(fields: [quotationId], references: [id])
+
+  service     String
+  description String?
+
+  quantity    Int                 @default(1)
+  unitPrice   Float               @default(0)
+  amount      Float               @default(0)
+
+  createdAt   TimestamptzString   @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model WorkOrder {
+  id              String              @id @default(uuid())
+
+  companyId       String
+  company         Company             @relation(fields: [companyId], references: [id])
+
+  quotationId     String?
+  quotation       Quotation?          @relation(fields: [quotationId], references: [id])
+
+  workOrderNumber String
+
+  service         String
+  description     String?
+
+  amount          Float
+  gstPercent      Float               @default(18)
+  gstAmount       Float
+  totalAmount     Float
+
+  status          String              @default("Confirmed")
+
+  confirmedDate   TimestamptzString
+  expectedStart   TimestamptzString?
+  expectedEnd     TimestamptzString?
+
+  notes           String?
+
+  samples         Sample[]
+  payments        Payment[]
+  documents       Document[]
+
+  createdAt       TimestamptzString   @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model Payment {
+  id            String              @id @default(uuid())
+
+  companyId     String
+  company       Company             @relation(fields: [companyId], references: [id])
+
+  quotationId   String?
+  quotation     Quotation?          @relation(fields: [quotationId], references: [id])
+
+  workOrderId   String?
+  workOrder     WorkOrder?          @relation(fields: [workOrderId], references: [id])
+
+  amount        Float
+  paymentDate   TimestamptzString
+
+  paymentMethod String?
+  reference     String?
+
+  status        String              @default("Received")
+  notes         String?
+
+  documents     Document[]
+
+  createdAt     TimestamptzString   @default(now())
+  updatedAt     temporal.updatedAtString()
+}
+
+model RecurringService {
+  id              String              @id @default(uuid())
+
+  companyId       String
+  company         Company             @relation(fields: [companyId], references: [id])
+
+  locationId      String?
+  location        Location?           @relation(fields: [locationId], references: [id])
+
+  service         String
+  sampleType      String
+
+  samplesPerMonth Int                 @default(1)
+
+  frequency       String              @default("Monthly")
+  status          String              @default("Active")
+
+  startDate       TimestamptzString?
+  endDate         TimestamptzString?
+
+  notes           String?
+
+  createdAt       TimestamptzString   @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model PlanItem {
+  id          String              @id @default(uuid())
+
+  companyId   String?
+  company     Company?            @relation(fields: [companyId], references: [id])
+
+  title       String
+  description String?
+
+  category    String              @default("Operations")
+  priority    String              @default("Medium")
+  status      String              @default("Planned")
+
+  dueDate     TimestamptzString?
+  completedAt TimestamptzString?
+
+  notes       String?
+
+  createdAt   TimestamptzString   @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model MarketingProspect {
+  id              String              @id @default(uuid())
+
+  // Optional CRM Company relationship
+  companyId       String?
+  company         Company?            @relation(fields: [companyId], references: [id])
+
+  // Exact CRM Lead created after conversion
+  leadId          String?             @unique
+  lead            Lead?               @relation(fields: [leadId], references: [id])
+
+  companyName     String
+
+  contactName     String?
+  designation     String?
+
+  linkedin        String?
+  email           String?
+  phone           String?
+
+  industry        String?
+  source          String              @default("LinkedIn")
+
+  targetService   String?
+
+  outreachStatus  String              @default("Identified")
+  priority        String              @default("Medium")
+
+  lastContacted   TimestamptzString?
+  nextFollowUp    TimestamptzString?
+
+  converted       Boolean             @default(false)
+  convertedDate   TimestamptzString?
+
+  notes           String?
+
+  createdAt       TimestamptzString   @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+// =========================================================
+  // DOCUMENT MANAGEMENT
+//=========================================================
+
+model Document {
+  id              String              @id @default(uuid())
+
+  // Main company relationship
+  companyId       String?
+  company         Company?            @relation(fields: [companyId], references: [id])
+
+  // Optional quotation relationship
+  quotationId     String?
+  quotation       Quotation?          @relation(fields: [quotationId], references: [id])
+
+  // Optional work order / PO relationship
+  workOrderId     String?
+  workOrder       WorkOrder?          @relation(fields: [workOrderId], references: [id])
+
+  // Optional sample relationship
+  sampleId        String?
+  sample          Sample?             @relation(fields: [sampleId], references: [id])
+
+  // Optional report relationship
+  reportId        String?
+  report          Report?             @relation(fields: [reportId], references: [id])
+
+  // Optional payment relationship
+  paymentId       String?
+  payment         Payment?            @relation(fields: [paymentId], references: [id])
+
+  // Document information
+  title           String
+  documentType    String
+
+  documentNumber  String?
+
+  description     String?
+
+  // File / storage information
+  fileName        String?
+  fileUrl         String?
+  fileReference   String?
+
+  mimeType        String?
+  fileSize        Int?
+
+  // Document status
+  status          String              @default("Active")
+
+  issueDate       TimestamptzString?
+  expiryDate      TimestamptzString?
 
   notes           String?
 

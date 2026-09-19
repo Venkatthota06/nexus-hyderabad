@@ -44,3 +44,10 @@ dist/
 .env
 
 /data/leads.json
+
+
+# Local AI / editor configuration
+.agents/
+.claude/
+.cursor/
+.devin/

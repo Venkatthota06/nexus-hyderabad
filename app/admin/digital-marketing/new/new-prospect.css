@@ -1,0 +1,464 @@
+/* =========================================================
+   ADD DIGITAL MARKETING PROSPECT
+========================================================= */
+
+.dm-new-page {
+  width: 100%;
+  max-width: 1350px;
+  margin: 0 auto;
+  color: #173f5d;
+}
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.dm-new-back {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.dm-new-back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #397394;
+  font-size: 8px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.dm-new-back span {
+  color: #8aa0ad;
+  font-size: 7px;
+  font-weight: 750;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.dm-new-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  margin-bottom: 15px;
+  padding: 20px 22px;
+
+  border: 1px solid #dce9f0;
+  border-radius: 17px;
+
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(16, 137, 216, 0.13),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #f3faff
+    );
+
+  box-shadow:
+    0 8px 25px
+    rgba(30, 72, 99, 0.045);
+}
+
+.dm-new-hero-icon {
+  width: 49px;
+  height: 49px;
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 14px;
+
+  background: #e7f5fe;
+  color: #0877c8;
+}
+
+.dm-new-hero span {
+  display: block;
+  margin-bottom: 3px;
+
+  color: #1383c7;
+
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.dm-new-hero h1 {
+  margin: 0;
+
+  color: #173f5c;
+
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.dm-new-hero p {
+  max-width: 680px;
+
+  margin: 5px 0 0;
+
+  color: #79909f;
+
+  font-size: 8px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.dm-new-form {
+  display: grid;
+  gap: 13px;
+}
+
+/* =========================================================
+   PANEL
+========================================================= */
+
+.dm-new-panel {
+  overflow: hidden;
+
+  padding: 17px;
+
+  border: 1px solid #dde9ef;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 6px 20px
+    rgba(32, 73, 98, 0.035);
+}
+
+.dm-new-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-bottom: 15px;
+
+  color: #1581c4;
+}
+
+.dm-new-panel-icon {
+  width: 33px;
+  height: 33px;
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+
+  background: #edf7fd;
+  color: #1683c5;
+}
+
+.dm-new-panel-heading h2 {
+  margin: 0;
+
+  color: #244e69;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.dm-new-panel-heading p {
+  margin: 3px 0 0;
+
+  color: #8a9ca7;
+
+  font-size: 6.5px;
+}
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.dm-new-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.dm-new-field {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 5px;
+}
+
+.dm-new-field-full {
+  grid-column: 1 / -1;
+}
+
+.dm-new-field label {
+  color: #557388;
+
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.dm-new-field input,
+.dm-new-field select,
+.dm-new-field textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dce6ec;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #fbfdfe;
+
+  color: #294d65;
+
+  font-family: inherit;
+  font-size: 8px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.dm-new-field input,
+.dm-new-field select {
+  height: 38px;
+
+  padding: 0 10px;
+}
+
+.dm-new-field textarea {
+  min-height: 100px;
+
+  resize: vertical;
+
+  padding: 10px;
+
+  line-height: 1.5;
+}
+
+.dm-new-field input::placeholder,
+.dm-new-field textarea::placeholder {
+  color: #a1b0b9;
+}
+
+.dm-new-field input:focus,
+.dm-new-field select:focus,
+.dm-new-field textarea:focus {
+  border-color: #5daee1;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(16, 137, 216, 0.08);
+}
+
+/* =========================================================
+   FIELD HELPER
+========================================================= */
+
+.dm-new-helper {
+  color: #93a4ae;
+
+  font-size: 6px;
+
+  line-height: 1.45;
+}
+
+/* =========================================================
+   SUCCESS / ERROR
+========================================================= */
+
+.dm-new-success {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #bde5cc;
+  border-radius: 9px;
+
+  background: #edf9f2;
+
+  color: #287b51;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.dm-new-error {
+  padding: 10px 12px;
+
+  border: 1px solid #f0c4c4;
+  border-radius: 9px;
+
+  background: #fff1f1;
+
+  color: #b64d4d;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.dm-new-actions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  padding: 4px 0 15px;
+}
+
+.dm-new-cancel {
+  min-height: 36px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9e4eb;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #536f82;
+
+  font-size: 8px;
+  font-weight: 850;
+
+  text-decoration: none;
+}
+
+.dm-new-submit {
+  min-height: 36px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1089d8,
+      #0876c9
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 17px
+    rgba(8, 118, 201, 0.18);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dm-new-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 20px
+    rgba(8, 118, 201, 0.22);
+}
+
+.dm-new-submit:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+/* =========================================================
+   SPINNER
+========================================================= */
+
+.dm-new-spin {
+  animation:
+    dm-new-spin-animation
+    0.8s linear infinite;
+}
+
+@keyframes dm-new-spin-animation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+  .dm-new-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dm-new-field-full {
+    grid-column: auto;
+  }
+
+  .dm-new-hero {
+    padding: 17px;
+  }
+
+  .dm-new-actions {
+    align-items: stretch;
+
+    flex-direction: column-reverse;
+  }
+
+  .dm-new-actions > * {
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+}

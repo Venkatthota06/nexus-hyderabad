@@ -1,0 +1,283 @@
+.wrapper {
+  overflow: hidden;
+  margin-top: 16px;
+  border: 1px solid #dfeaf0;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(32, 73, 98, 0.035);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 18px;
+  border-bottom: 1px solid #e7eef2;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #edf8fe;
+  color: #1484c6;
+}
+
+.heading span {
+  display: block;
+  margin-bottom: 2px;
+  color: #1484c6;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.heading h2 {
+  margin: 0;
+  color: #274f68;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.heading p {
+  margin: 4px 0 0;
+  color: #899da9;
+  font-size: 8px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.secondaryButton,
+.addButton {
+  min-height: 33px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 11px;
+  border-radius: 8px;
+  font-size: 8px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.secondaryButton {
+  border: 1px solid #dce7ed;
+  background: #ffffff;
+  color: #58768a;
+}
+
+.addButton {
+  background: linear-gradient(135deg, #1089d8, #0876c9);
+  color: #ffffff;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 13px 16px;
+  background: #f9fcfe;
+  border-bottom: 1px solid #e8eff3;
+}
+
+.summary > div {
+  padding: 10px 12px;
+  border: 1px solid #e1ebf1;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.summary span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8196a3;
+  font-size: 7px;
+  font-weight: 750;
+}
+
+.summary strong {
+  color: #315870;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 9px 12px;
+  background: #f8fbfd;
+  color: #748d9d;
+  font-size: 7px;
+  font-weight: 900;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-top: 1px solid #edf2f5;
+  color: #506d80;
+  font-size: 8px;
+  vertical-align: middle;
+}
+
+.documentName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.documentName > span {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #edf7fd;
+  color: #1484c6;
+}
+
+.documentName > div {
+  display: grid;
+  gap: 2px;
+}
+
+.documentName strong {
+  color: #31566e;
+  font-size: 8px;
+}
+
+.documentName small {
+  color: #8ba0ac;
+  font-size: 6.5px;
+}
+
+.type {
+  display: inline-flex;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #edf7fc;
+  color: #357b9f;
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.status {
+  display: inline-flex;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #eff3f5;
+  color: #667e8d;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.active {
+  background: #eaf8ef;
+  color: #2f8a5b;
+}
+
+.expired {
+  background: #fff0f0;
+  color: #b75050;
+}
+
+.archived {
+  background: #f0f2f4;
+  color: #687783;
+}
+
+.openLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #0876c9;
+  font-size: 7px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.muted {
+  color: #9fadb6;
+}
+
+.empty {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  text-align: center;
+  color: #7c939f;
+}
+
+.empty svg {
+  margin-bottom: 7px;
+  color: #1683c5;
+}
+
+.empty strong {
+  color: #345b72;
+  font-size: 11px;
+}
+
+.empty p {
+  margin: 4px 0 10px;
+  font-size: 8px;
+}
+
+.empty a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 11px;
+  border-radius: 7px;
+  background: #0876c9;
+  color: #ffffff;
+  font-size: 7px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+@media (max-width: 750px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions a {
+    flex: 1;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+}

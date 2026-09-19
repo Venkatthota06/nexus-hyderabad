@@ -1,146 +1,218 @@
 import Link from "next/link";
-import { db } from "@/src/prisma/db";
+import type { ElementType } from "react";
+import Next30DaysPlan from "./Next30DaysPlan";
 
 import {
+  Activity,
   ArrowRight,
+  Building2,
   CalendarDays,
   CheckCircle2,
   CircleDollarSign,
-  Clock3,
-  FileClock,
   FileText,
   FlaskConical,
+  MapPin,
+  Search,
   Target,
   TrendingUp,
   Users,
+  WalletCards,
 } from "lucide-react";
+
+import { db } from "@/src/prisma/db";
+
+import "./admin-dashboard.css";
 
 export const dynamic = "force-dynamic";
 
-/* =========================================================
-   TYPES
-========================================================= */
+type Company = {
+  id: string;
+  name: string;
+  industry: string | null;
+  status: string;
+  createdAt: string;
+};
+
+type Location = {
+  id: string;
+  companyId: string;
+  name: string;
+  status: string;
+};
+
+type RecurringService = {
+  id: string;
+  companyId: string;
+  service: string;
+  sampleType: string;
+  samplesPerMonth: number;
+  status: string;
+};
+
+type WorkOrder = {
+  id: string;
+  companyId: string;
+  workOrderNumber: string;
+  service: string;
+  totalAmount: number;
+  status: string;
+  confirmedDate: string;
+};
+
+type Payment = {
+  id: string;
+  companyId: string;
+  amount: number;
+  paymentDate: string;
+  status: string;
+};
+
+type Quotation = {
+  id: string;
+  companyId: string;
+  quotationNumber: string;
+  service: string;
+  totalAmount: number;
+  status: string;
+  nextFollowUp: string | null;
+  createdAt: string;
+};
+
+type ActivityRow = {
+  id: string;
+  companyId: string;
+  type: string;
+  title: string;
+  description: string | null;
+  activityDate: string;
+  nextAction: string | null;
+  nextFollowUp: string | null;
+};
 
 type Lead = {
   id: string;
+  companyId: string | null;
   name: string;
   company: string;
-  phone: string;
-  email: string;
   service: string;
-  requirement: string;
-  source: string;
   status: string;
-  notes: string | null;
   nextFollowUp: string | null;
   createdAt: string;
-  updatedAt: string;
 };
 
 type Sample = {
   id: string;
   companyId: string;
-  quotationId: string | null;
-
   sampleNumber: string;
   sampleType: string;
   sampleCount: number;
-
-  collectionDate: string | null;
-  collectedBy: string | null;
-
   status: string;
-
-  testingLocation: string | null;
-  expectedCompletionDate: string | null;
-
-  reportStatus: string;
-  reportDeliveredDate: string | null;
-
-  notes: string | null;
-
   createdAt: string;
-  updatedAt: string;
 };
 
-type Report = {
-  id: string;
+async function getCompanies(): Promise<Company[]> {
+  try {
+    return (await db.orm.public.Company
+      .orderBy((row) => row.createdAt.desc())
+      .all()) as Company[];
+  } catch (error) {
+    console.error("Dashboard companies:", error);
+    return [];
+  }
+}
 
-  companyId: string;
-  sampleId: string;
+async function getLocations(): Promise<Location[]> {
+  try {
+    return (await db.orm.public.Location.all()) as Location[];
+  } catch (error) {
+    console.error("Dashboard locations:", error);
+    return [];
+  }
+}
 
-  reportNumber: string;
-  reportType: string;
+async function getRecurringServices(): Promise<
+  RecurringService[]
+> {
+  try {
+    return (await db.orm.public.RecurringService.all()) as RecurringService[];
+  } catch (error) {
+    console.error("Dashboard recurring:", error);
+    return [];
+  }
+}
 
-  reportDate: string | null;
+async function getWorkOrders(): Promise<WorkOrder[]> {
+  try {
+    return (await db.orm.public.WorkOrder
+      .orderBy((row) => row.confirmedDate.desc())
+      .all()) as WorkOrder[];
+  } catch (error) {
+    console.error("Dashboard work orders:", error);
+    return [];
+  }
+}
 
-  status: string;
+async function getPayments(): Promise<Payment[]> {
+  try {
+    return (await db.orm.public.Payment
+      .orderBy((row) => row.paymentDate.desc())
+      .all()) as Payment[];
+  } catch (error) {
+    console.error("Dashboard payments:", error);
+    return [];
+  }
+}
 
-  deliveredDate: string | null;
-  deliveryMethod: string | null;
+async function getQuotations(): Promise<Quotation[]> {
+  try {
+    return (await db.orm.public.Quotation
+      .orderBy((row) => row.createdAt.desc())
+      .all()) as Quotation[];
+  } catch (error) {
+    console.error("Dashboard quotations:", error);
+    return [];
+  }
+}
 
-  fileReference: string | null;
-  notes: string | null;
-
-  createdAt: string;
-  updatedAt: string;
-};
-
-/* =========================================================
-   DATABASE
-========================================================= */
+async function getActivities(): Promise<ActivityRow[]> {
+  try {
+    return (await db.orm.public.Activity
+      .orderBy((row) => row.activityDate.desc())
+      .all()) as ActivityRow[];
+  } catch (error) {
+    console.error("Dashboard activities:", error);
+    return [];
+  }
+}
 
 async function getLeads(): Promise<Lead[]> {
   try {
-    const leads = await db.orm.public.Lead
-      .orderBy((lead) => lead.createdAt.desc())
-      .all();
-
-    return leads as Lead[];
+    return (await db.orm.public.Lead
+      .orderBy((row) => row.createdAt.desc())
+      .all()) as Lead[];
   } catch (error) {
-    console.error("Dashboard getLeads error:", error);
+    console.error("Dashboard leads:", error);
     return [];
   }
 }
 
 async function getSamples(): Promise<Sample[]> {
   try {
-    const samples = await db.orm.public.Sample
-      .orderBy((sample) => sample.createdAt.desc())
-      .all();
-
-    return samples as Sample[];
+    return (await db.orm.public.Sample
+      .orderBy((row) => row.createdAt.desc())
+      .all()) as Sample[];
   } catch (error) {
-    console.error("Dashboard getSamples error:", error);
+    console.error("Dashboard samples:", error);
     return [];
   }
 }
 
-async function getReports(): Promise<Report[]> {
-  try {
-    const reports = await db.orm.public.Report
-      .orderBy((report) => report.createdAt.desc())
-      .all();
-
-    return reports as Report[];
-  } catch (error) {
-    console.error("Dashboard getReports error:", error);
-    return [];
-  }
-}
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function toDateOnly(value: string) {
-  const date = new Date(value);
-
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  );
+function money(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function formatDate(value: string) {
@@ -151,669 +223,853 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-/* =========================================================
-   DASHBOARD
-========================================================= */
+function isActiveStatus(status: string) {
+  const value = status.toLowerCase();
+
+  return ![
+    "inactive",
+    "cancelled",
+    "canceled",
+    "closed",
+    "rejected",
+    "void",
+  ].includes(value);
+}
+
+function isOpenQuotation(status: string) {
+  const value = status.toLowerCase();
+
+  return ![
+    "accepted",
+    "approved",
+    "won",
+    "closed",
+    "rejected",
+    "cancelled",
+    "canceled",
+    "expired",
+  ].includes(value);
+}
+
+function isValidWorkOrder(status: string) {
+  const value = status.toLowerCase();
+
+  return ![
+    "cancelled",
+    "canceled",
+    "rejected",
+    "void",
+  ].includes(value);
+}
+
+function isReceivedPayment(status: string) {
+  return [
+    "received",
+    "paid",
+    "collected",
+    "completed",
+  ].includes(status.toLowerCase());
+}
+
+function Kpi({
+  title,
+  value,
+  note,
+  icon: Icon,
+  tone,
+}: {
+  title: string;
+  value: string | number;
+  note: string;
+  icon: ElementType;
+  tone: string;
+}) {
+  return (
+    <article className={`hyd-kpi hyd-kpi-${tone}`}>
+      <span className="hyd-kpi-icon">
+        <Icon size={21} />
+      </span>
+
+      <div>
+        <p>{title}</p>
+        <strong>{value}</strong>
+        <span>{note}</span>
+      </div>
+    </article>
+  );
+}
 
 export default async function AdminDashboardPage() {
-  const [leads, samples, reports] = await Promise.all([
+  const [
+    companies,
+    locations,
+    recurringServices,
+    workOrders,
+    payments,
+    quotations,
+    activities,
+    leads,
+    samples,
+  ] = await Promise.all([
+    getCompanies(),
+    getLocations(),
+    getRecurringServices(),
+    getWorkOrders(),
+    getPayments(),
+    getQuotations(),
+    getActivities(),
     getLeads(),
     getSamples(),
-    getReports(),
   ]);
 
-  /* -------------------------
-     LEAD METRICS
-  ------------------------- */
-
-  const totalLeads = leads.length;
-
-  const wonLeads = leads.filter(
-    (lead) => lead.status === "Won"
+  const companyMap = new Map(
+    companies.map((company) => [
+      company.id,
+      company.name,
+    ])
   );
 
-  const activeLeads = leads.filter(
-    (lead) =>
-      lead.status !== "Won" &&
-      lead.status !== "Lost"
+  const activeLocations = locations.filter(
+    (location) =>
+      location.status.toLowerCase() === "active"
   );
 
-  const quotations = leads.filter(
-    (lead) => lead.status === "Quotation Sent"
+  const activeRecurring = recurringServices.filter(
+    (service) =>
+      service.status.toLowerCase() === "active"
   );
 
-  const today = toDateOnly(new Date().toISOString());
-
-  const overdue = activeLeads.filter((lead) => {
-    if (!lead.nextFollowUp) {
-      return false;
-    }
-
-    return toDateOnly(lead.nextFollowUp) < today;
-  });
-
-  const upcoming = activeLeads.filter((lead) => {
-    if (!lead.nextFollowUp) {
-      return false;
-    }
-
-    return toDateOnly(lead.nextFollowUp) >= today;
-  });
-
-  const recentLeads = leads.slice(0, 5);
-
-  /* -------------------------
-     SAMPLE METRICS
-  ------------------------- */
-
-  const totalSampleRecords = samples.length;
-
-  const totalSamples = samples.reduce(
-    (total, sample) =>
-      total + Number(sample.sampleCount || 0),
+  const recurringSamples = activeRecurring.reduce(
+    (total, service) =>
+      total +
+      Number(service.samplesPerMonth || 0),
     0
   );
 
-  const samplesInTesting = samples.filter(
-    (sample) => sample.status === "Testing"
-  ).length;
+  const validOrders = workOrders.filter((order) =>
+    isValidWorkOrder(order.status)
+  );
 
-  const sampleReportsPending = samples.filter(
-    (sample) => sample.reportStatus !== "Delivered"
-  ).length;
+  const businessValue = validOrders.reduce(
+    (total, order) =>
+      total + Number(order.totalAmount || 0),
+    0
+  );
 
-  const sampleReportsDelivered = samples.filter(
-    (sample) => sample.reportStatus === "Delivered"
-  ).length;
+  const receivedPayments = payments.filter((payment) =>
+    isReceivedPayment(payment.status)
+  );
 
-  const recentSamples = samples.slice(0, 5);
+  const collectedAmount = receivedPayments.reduce(
+    (total, payment) =>
+      total + Number(payment.amount || 0),
+    0
+  );
 
-  /* -------------------------
-     REPORT METRICS
-  ------------------------- */
+  const pendingAmount = Math.max(
+    businessValue - collectedAmount,
+    0
+  );
 
-  const totalReports = reports.length;
+  const collectionRate =
+    businessValue > 0
+      ? (collectedAmount / businessValue) * 100
+      : 0;
 
-  const pendingReports = reports.filter(
-    (report) => report.status === "Pending"
-  ).length;
+  const openQuotations = quotations.filter(
+    (quotation) =>
+      isOpenQuotation(quotation.status)
+  );
 
-  const preparingReports = reports.filter(
-    (report) => report.status === "Under Preparation"
-  ).length;
+  const activeLeads = leads.filter((lead) =>
+    isActiveStatus(lead.status)
+  );
 
-  const readyReports = reports.filter(
-    (report) => report.status === "Ready"
-  ).length;
+  const now = new Date();
 
-  const deliveredReports = reports.filter(
-    (report) => report.status === "Delivered"
-  ).length;
+  const monthSamples = samples.filter((sample) => {
+    const date = new Date(sample.createdAt);
 
-  const recentReports = reports.slice(0, 5);
+    return (
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear()
+    );
+  });
 
-  /* -------------------------
-     SALES PIPELINE
-  ------------------------- */
+  const sampleMix = monthSamples.reduce(
+    (result, sample) => {
+      const type = sample.sampleType.toLowerCase();
+      const count = Number(sample.sampleCount || 0);
 
-  const pipeline = [
-    {
-      name: "New Lead",
-      count: leads.filter(
-        (lead) => lead.status === "New Lead"
-      ).length,
+      if (type.includes("water")) {
+        result.water += count;
+      } else if (
+        type.includes("food") ||
+        type.includes("meal")
+      ) {
+        result.food += count;
+      } else if (type.includes("swab")) {
+        result.swab += count;
+      } else {
+        result.other += count;
+      }
+
+      return result;
     },
     {
-      name: "Contacted",
-      count: leads.filter(
-        (lead) => lead.status === "Contacted"
-      ).length,
-    },
-    {
-      name: "Meeting Scheduled",
-      count: leads.filter(
-        (lead) => lead.status === "Meeting Scheduled"
-      ).length,
-    },
-    {
-      name: "Requirement Identified",
-      count: leads.filter(
-        (lead) =>
-          lead.status === "Requirement Identified"
-      ).length,
-    },
-    {
-      name: "Quotation Sent",
-      count: quotations.length,
-    },
-    {
-      name: "Follow-up",
-      count: leads.filter(
-        (lead) => lead.status === "Follow-up"
-      ).length,
-    },
-    {
-      name: "Won",
-      count: wonLeads.length,
-    },
-  ];
+      water: 0,
+      food: 0,
+      swab: 0,
+      other: 0,
+    }
+  );
+
+  const monthSampleTotal =
+    sampleMix.water +
+    sampleMix.food +
+    sampleMix.swab +
+    sampleMix.other;
+
+  const recentCompanies = companies.slice(0, 5);
+
+  const recentQuotations =
+    openQuotations.slice(0, 5);
+
+  const recentActivities =
+    activities.slice(0, 5);
+
+  const followups = [
+    ...leads
+      .filter((lead) => lead.nextFollowUp)
+      .map((lead) => ({
+        id: `lead-${lead.id}`,
+        title: lead.company || lead.name,
+        subtitle: lead.service,
+        date: lead.nextFollowUp!,
+        href: `/admin/leads/${lead.id}`,
+      })),
+
+    ...activities
+      .filter(
+        (activity) => activity.nextFollowUp
+      )
+      .map((activity) => ({
+        id: `activity-${activity.id}`,
+        title:
+          companyMap.get(activity.companyId) ||
+          "Client",
+        subtitle:
+          activity.nextAction ||
+          activity.title,
+        date: activity.nextFollowUp!,
+        href: `/admin/companies/${activity.companyId}`,
+      })),
+
+    ...quotations
+      .filter(
+        (quotation) =>
+          quotation.nextFollowUp &&
+          isOpenQuotation(
+            quotation.status
+          )
+      )
+      .map((quotation) => ({
+        id: `quotation-${quotation.id}`,
+        title:
+          companyMap.get(quotation.companyId) ||
+          "Client",
+        subtitle: quotation.service,
+        date: quotation.nextFollowUp!,
+        href: `/admin/quotations/${quotation.id}`,
+      })),
+  ]
+    .filter(
+      (item) =>
+        new Date(item.date).getTime() >=
+        new Date().setHours(0, 0, 0, 0)
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.date).getTime() -
+        new Date(b.date).getTime()
+    )
+    .slice(0, 5);
 
   return (
-    <div className="crm-dashboard-content">
-      {/* =========================================
-          PAGE HEADER
-      ========================================= */}
+    <div className="hyd-dashboard">
+      {/* TOP BAR */}
 
-      <header className="crm-header">
-        <div>
-          <span>Nexus Hyderabad CRM</span>
-
-          <h1>Business Dashboard</h1>
-
-          <p>
-            Lead pipeline, follow-ups, samples,
-            reports and business development
-            activity at a glance.
-          </p>
+      <header className="hyd-topbar">
+        <div className="hyd-top-search">
+          <Search size={17} />
+          <span>
+            Hyderabad Operations Overview
+          </span>
         </div>
 
-        <div className="crm-live-badge">
-          <span />
-          Neon Database Connected
+        <div className="hyd-user">
+          <div className="hyd-user-avatar">
+            V
+          </div>
+
+          <div>
+            <strong>Venkat</strong>
+            <span>
+              Hyderabad Operations
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* =========================================
-          BUSINESS METRICS
-      ========================================= */}
+      {/* HERO */}
 
-      <div className="crm-metrics">
-        <MetricCard
-          title="Total Leads"
-          value={totalLeads}
-          icon={<Target size={21} />}
-        />
+      <section className="hyd-hero">
+        <div>
+          <span className="hyd-eyebrow">
+            NEXUS TEST LABS · HYDERABAD
+          </span>
 
-        <MetricCard
-          title="Active Leads"
-          value={activeLeads.length}
-          icon={<Users size={21} />}
-        />
+          <h1>
+            Welcome back, Venkat 👋
+          </h1>
 
-        <MetricCard
-          title="Quotations"
-          value={quotations.length}
-          icon={<FileText size={21} />}
-        />
+          <h2>
+            Hyderabad Operations Dashboard
+          </h2>
 
-        <MetricCard
-          title="Won Deals"
-          value={wonLeads.length}
-          icon={<CircleDollarSign size={21} />}
-        />
-
-        <MetricCard
-          title="Overdue"
-          value={overdue.length}
-          icon={<Clock3 size={21} />}
-        />
-
-        <MetricCard
-          title="Upcoming"
-          value={upcoming.length}
-          icon={<CalendarDays size={21} />}
-        />
-      </div>
-
-      {/* =========================================
-          SAMPLE OPERATIONS
-      ========================================= */}
-
-      <section className="crm-panel crm-dashboard-section">
-        <div className="crm-panel-heading">
-          <div>
-            <h2>Sample Operations</h2>
-
-            <p>
-              Live sample collection, testing and
-              report status from Neon.
-            </p>
-          </div>
-
-          <Link href="/admin/samples">
-            View Samples
-            <ArrowRight size={14} />
-          </Link>
+          <p>
+            Recurring operations, sales
+            pipeline, collections, client
+            activity and growth overview.
+          </p>
         </div>
 
-        <div className="crm-metrics crm-operation-metrics">
-          <MetricCard
-            title="Sample Records"
-            value={totalSampleRecords}
-            icon={<FlaskConical size={21} />}
-          />
+        <div className="hyd-hero-side">
+          <MapPin size={22} />
 
-          <MetricCard
-            title="Total Samples"
-            value={totalSamples}
-            icon={<FlaskConical size={21} />}
-          />
-
-          <MetricCard
-            title="In Testing"
-            value={samplesInTesting}
-            icon={<TrendingUp size={21} />}
-          />
-
-          <MetricCard
-            title="Reports Pending"
-            value={sampleReportsPending}
-            icon={<FileClock size={21} />}
-          />
-
-          <MetricCard
-            title="Reports Delivered"
-            value={sampleReportsDelivered}
-            icon={<CheckCircle2 size={21} />}
-          />
+          <div>
+            <strong>
+              Serving Hyderabad
+            </strong>
+            <span>
+              Live CRM Operations
+            </span>
+          </div>
         </div>
       </section>
 
-      {/* =========================================
-          REPORT OPERATIONS
-      ========================================= */}
+      {/* KPI */}
 
-      <section className="crm-panel crm-dashboard-section">
-        <div className="crm-panel-heading">
-          <div>
-            <h2>Report Operations</h2>
+      <section className="hyd-kpi-grid">
+        <Kpi
+          title="Existing Customer Locations"
+          value={activeLocations.length}
+          note="Active recurring locations"
+          icon={Building2}
+          tone="blue"
+        />
 
-            <p>
-              Laboratory report preparation,
-              readiness and client delivery.
-            </p>
-          </div>
+        <Kpi
+          title="Recurring Samples / Month"
+          value={recurringSamples}
+          note="Active recurring services"
+          icon={FlaskConical}
+          tone="green"
+        />
 
-          <Link href="/admin/reports">
-            View Reports
-            <ArrowRight size={14} />
-          </Link>
-        </div>
+        <Kpi
+          title="Orders Closed"
+          value={validOrders.length}
+          note={`${money(
+            businessValue
+          )} business value`}
+          icon={CheckCircle2}
+          tone="rose"
+        />
 
-        <div className="crm-metrics crm-operation-metrics">
-          <MetricCard
-            title="Total Reports"
-            value={totalReports}
-            icon={<FileText size={21} />}
-          />
+        <Kpi
+          title="Amount Collected"
+          value={money(collectedAmount)}
+          note={`${collectionRate.toFixed(
+            1
+          )}% collection rate`}
+          icon={TrendingUp}
+          tone="mint"
+        />
 
-          <MetricCard
-            title="Pending"
-            value={pendingReports}
-            icon={<FileClock size={21} />}
-          />
+        <Kpi
+          title="Pending Amount"
+          value={money(pendingAmount)}
+          note="Against confirmed orders"
+          icon={WalletCards}
+          tone="yellow"
+        />
 
-          <MetricCard
-            title="Under Preparation"
-            value={preparingReports}
-            icon={<TrendingUp size={21} />}
-          />
-
-          <MetricCard
-            title="Ready"
-            value={readyReports}
-            icon={<CheckCircle2 size={21} />}
-          />
-
-          <MetricCard
-            title="Delivered"
-            value={deliveredReports}
-            icon={<CheckCircle2 size={21} />}
-          />
-        </div>
+        <Kpi
+          title="Active Opportunities"
+          value={openQuotations.length}
+          note={`${activeLeads.length} active leads`}
+          icon={Target}
+          tone="purple"
+        />
       </section>
 
-      {/* =========================================
-          PIPELINE + FOLLOW UPS
-      ========================================= */}
+      {/* OVERVIEW */}
 
-      <div className="crm-dashboard-grid">
-        <section className="crm-panel">
-          <div className="crm-panel-heading">
+      <section className="hyd-three-grid">
+        <article className="hyd-panel">
+          <div className="hyd-panel-head">
             <div>
-              <h2>Sales Pipeline</h2>
-
-              <p>
-                Current leads by business stage.
-              </p>
+              <span>
+                Sample Operations
+              </span>
+              <h3>
+                Monthly Sample Mix
+              </h3>
             </div>
 
-            <Link href="/admin/leads">
-              View Leads
+            <FlaskConical size={19} />
+          </div>
+
+          <div className="hyd-big-number">
+            {monthSampleTotal}
+          </div>
+
+          <p className="hyd-muted">
+            Samples recorded this month
+          </p>
+
+          <div className="hyd-stat-list">
+            <div>
+              <span>Water</span>
+              <strong>
+                {sampleMix.water}
+              </strong>
+            </div>
+
+            <div>
+              <span>Food</span>
+              <strong>
+                {sampleMix.food}
+              </strong>
+            </div>
+
+            <div>
+              <span>Swabs</span>
+              <strong>
+                {sampleMix.swab}
+              </strong>
+            </div>
+
+            <div>
+              <span>Other</span>
+              <strong>
+                {sampleMix.other}
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <article className="hyd-panel">
+          <div className="hyd-panel-head">
+            <div>
+              <span>
+                Client Database
+              </span>
+
+              <h3>
+                Client Overview
+              </h3>
+            </div>
+
+            <Users size={19} />
+          </div>
+
+          <div className="hyd-big-number">
+            {companies.length}
+          </div>
+
+          <p className="hyd-muted">
+            Companies currently in CRM
+          </p>
+
+          <div className="hyd-stat-list">
+            <div>
+              <span>
+                Active Locations
+              </span>
+
+              <strong>
+                {activeLocations.length}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Active Leads
+              </span>
+
+              <strong>
+                {activeLeads.length}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Open Quotations
+              </span>
+
+              <strong>
+                {openQuotations.length}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Recurring Services
+              </span>
+
+              <strong>
+                {activeRecurring.length}
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <article className="hyd-panel">
+          <div className="hyd-panel-head">
+            <div>
+              <span>
+                Financial Position
+              </span>
+
+              <h3>
+                Collection Status
+              </h3>
+            </div>
+
+            <CircleDollarSign size={19} />
+          </div>
+
+          <div className="hyd-money-main">
+            {money(businessValue)}
+          </div>
+
+          <p className="hyd-muted">
+            Confirmed business value
+          </p>
+
+          <div className="hyd-finance-row">
+            <div>
+              <span>Collected</span>
+              <strong>
+                {money(collectedAmount)}
+              </strong>
+            </div>
+
+            <div>
+              <span>Pending</span>
+              <strong>
+                {money(pendingAmount)}
+              </strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      {/* RECENT CONTENT */}
+
+      <section className="hyd-content-grid">
+        <article className="hyd-panel">
+          <div className="hyd-section-title">
+            <div>
+              <Users size={18} />
+
+              <div>
+                <h3>
+                  Recent Clients
+                </h3>
+
+                <span>
+                  Latest company records
+                </span>
+              </div>
+            </div>
+
+            <Link href="/admin/companies">
+              View All
               <ArrowRight size={14} />
             </Link>
           </div>
 
-          <div className="crm-pipeline">
-            {pipeline.map((stage) => {
-              const percentage =
-                totalLeads > 0
-                  ? Math.max(
-                      (stage.count / totalLeads) * 100,
-                      stage.count > 0 ? 8 : 0
-                    )
-                  : 0;
+          <div className="hyd-list">
+            {recentCompanies.length ? (
+              recentCompanies.map(
+                (company) => {
+                  const companySamples =
+                    samples
+                      .filter(
+                        (sample) =>
+                          sample.companyId ===
+                          company.id
+                      )
+                      .reduce(
+                        (total, sample) =>
+                          total +
+                          Number(
+                            sample.sampleCount ||
+                              0
+                          ),
+                        0
+                      );
 
-              return (
-                <div
-                  className="crm-pipeline-row"
-                  key={stage.name}
-                >
-                  <div>
-                    <span>{stage.name}</span>
-                    <strong>{stage.count}</strong>
-                  </div>
+                  return (
+                    <Link
+                      href={`/admin/companies/${company.id}`}
+                      className="hyd-list-row"
+                      key={company.id}
+                    >
+                      <div className="hyd-list-avatar">
+                        {company.name
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
 
-                  <div className="crm-pipeline-track">
-                    <div
-                      className="crm-pipeline-fill"
-                      style={{
-                        width: `${percentage}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                      <div className="hyd-list-main">
+                        <strong>
+                          {company.name}
+                        </strong>
+
+                        <span>
+                          {company.industry ||
+                            "Industry not set"}
+                        </span>
+                      </div>
+
+                      <div className="hyd-list-right">
+                        <strong>
+                          {companySamples}
+                        </strong>
+
+                        <span>
+                          samples
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                }
+              )
+            ) : (
+              <div className="hyd-empty">
+                No client records yet.
+              </div>
+            )}
           </div>
-        </section>
+        </article>
 
-        <section className="crm-panel">
-          <div className="crm-panel-heading">
+        <article className="hyd-panel">
+          <div className="hyd-section-title">
             <div>
-              <h2>Follow-up Summary</h2>
+              <FileText size={18} />
 
-              <p>
-                Leads requiring action.
-              </p>
+              <div>
+                <h3>
+                  Active Quotations
+                </h3>
+
+                <span>
+                  Current opportunities
+                </span>
+              </div>
+            </div>
+
+            <Link href="/admin/quotations">
+              View All
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="hyd-list">
+            {recentQuotations.length ? (
+              recentQuotations.map(
+                (quotation) => (
+                  <Link
+                    href={`/admin/quotations/${quotation.id}`}
+                    className="hyd-list-row"
+                    key={quotation.id}
+                  >
+                    <div className="hyd-list-avatar quote">
+                      Q
+                    </div>
+
+                    <div className="hyd-list-main">
+                      <strong>
+                        {companyMap.get(
+                          quotation.companyId
+                        ) || "Client"}
+                      </strong>
+
+                      <span>
+                        {quotation.service}
+                      </span>
+                    </div>
+
+                    <div className="hyd-list-right">
+                      <strong>
+                        {money(
+                          quotation.totalAmount
+                        )}
+                      </strong>
+
+                      <span>
+                        {quotation.status}
+                      </span>
+                    </div>
+                  </Link>
+                )
+              )
+            ) : (
+              <div className="hyd-empty">
+                No active quotations.
+              </div>
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="hyd-content-grid">
+        <article className="hyd-panel">
+          <div className="hyd-section-title">
+            <div>
+              <Activity size={18} />
+
+              <div>
+                <h3>
+                  Recent Activities
+                </h3>
+
+                <span>
+                  CRM activity history
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="hyd-list">
+            {recentActivities.length ? (
+              recentActivities.map(
+                (activity) => (
+                  <Link
+                    href={`/admin/companies/${activity.companyId}`}
+                    className="hyd-list-row"
+                    key={activity.id}
+                  >
+                    <div className="hyd-activity-dot" />
+
+                    <div className="hyd-list-main">
+                      <strong>
+                        {activity.title}
+                      </strong>
+
+                      <span>
+                        {companyMap.get(
+                          activity.companyId
+                        ) || activity.type}
+                      </span>
+                    </div>
+
+                    <div className="hyd-list-right">
+                      <span>
+                        {formatDate(
+                          activity.activityDate
+                        )}
+                      </span>
+                    </div>
+                  </Link>
+                )
+              )
+            ) : (
+              <div className="hyd-empty">
+                No recent activities.
+              </div>
+            )}
+          </div>
+        </article>
+
+        <article className="hyd-panel">
+          <div className="hyd-section-title">
+            <div>
+              <CalendarDays size={18} />
+
+              <div>
+                <h3>
+                  Upcoming Follow-ups
+                </h3>
+
+                <span>
+                  Next CRM actions
+                </span>
+              </div>
             </div>
 
             <Link href="/admin/follow-ups">
-              View Follow-ups
+              View All
               <ArrowRight size={14} />
             </Link>
           </div>
 
-          <div className="crm-action-summary">
-            <Link
-              href="/admin/follow-ups"
-              className="crm-action-item urgent"
-            >
-              <div>
-                <Clock3 size={18} />
-                <span>Overdue</span>
+          <div className="hyd-list">
+            {followups.length ? (
+              followups.map((followup) => (
+                <Link
+                  href={followup.href}
+                  className="hyd-list-row"
+                  key={followup.id}
+                >
+                  <div className="hyd-list-avatar follow">
+                    <CalendarDays
+                      size={15}
+                    />
+                  </div>
+
+                  <div className="hyd-list-main">
+                    <strong>
+                      {followup.title}
+                    </strong>
+
+                    <span>
+                      {followup.subtitle}
+                    </span>
+                  </div>
+
+                  <div className="hyd-list-right">
+                    <strong>
+                      {formatDate(
+                        followup.date
+                      )}
+                    </strong>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="hyd-empty">
+                No upcoming follow-ups.
               </div>
-
-              <strong>{overdue.length}</strong>
-            </Link>
-
-            <Link
-              href="/admin/follow-ups"
-              className="crm-action-item"
-            >
-              <div>
-                <CalendarDays size={18} />
-                <span>Upcoming</span>
-              </div>
-
-              <strong>{upcoming.length}</strong>
-            </Link>
-
-            <div className="crm-action-item">
-              <div>
-                <Target size={18} />
-                <span>Active Pipeline</span>
-              </div>
-
-              <strong>{activeLeads.length}</strong>
-            </div>
-
-            <div className="crm-action-item">
-              <div>
-                <CircleDollarSign size={18} />
-                <span>Closed Won</span>
-              </div>
-
-              <strong>{wonLeads.length}</strong>
-            </div>
+            )}
           </div>
-        </section>
-      </div>
+        </article>
+      </section>
 
-      {/* =========================================
-          RECENT REPORTS
-      ========================================= */}
+      <footer className="hyd-footer">
+        <span>
+          © 2026 Nexus Test Labs Pvt. Ltd.
+          · Hyderabad Operations
+        </span>
 
-      <RecentSection
-        title="Recent Reports"
-        description="Latest laboratory reports being tracked in the CRM."
-        viewAllHref="/admin/reports"
-      >
-        {recentReports.length > 0 ? (
-          <div className="crm-recent-list">
-            {recentReports.map((report) => (
-              <Link
-                href={`/admin/reports/${report.id}`}
-                className="crm-recent-lead"
-                key={report.id}
-              >
-                <div className="crm-recent-avatar">
-                  {report.reportType
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-
-                <div className="crm-recent-person">
-                  <strong>
-                    {report.reportNumber}
-                  </strong>
-
-                  <span>{report.reportType}</span>
-                </div>
-
-                <div className="crm-recent-service">
-                  <span>Status</span>
-                  <strong>{report.status}</strong>
-                </div>
-
-                <div className="crm-recent-status">
-                  {report.status}
-                </div>
-
-                <div className="crm-recent-date">
-                  {formatDate(report.createdAt)}
-                </div>
-
-                <ArrowRight size={15} />
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="crm-empty">
-            No reports yet.
-          </div>
-        )}
-      </RecentSection>
-
-      {/* =========================================
-          RECENT SAMPLES
-      ========================================= */}
-
-      <RecentSection
-        title="Recent Samples"
-        description="Latest samples being tracked in the CRM."
-        viewAllHref="/admin/samples"
-      >
-        {recentSamples.length > 0 ? (
-          <div className="crm-recent-list">
-            {recentSamples.map((sample) => (
-              <Link
-                href={`/admin/samples/${sample.id}`}
-                className="crm-recent-lead"
-                key={sample.id}
-              >
-                <div className="crm-recent-avatar">
-                  {sample.sampleType
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-
-                <div className="crm-recent-person">
-                  <strong>
-                    {sample.sampleNumber}
-                  </strong>
-
-                  <span>{sample.sampleType}</span>
-                </div>
-
-                <div className="crm-recent-service">
-  <span>Samples</span>
-  <strong>
-    {sample.sampleCount}
-  </strong>
-</div>
-
-                <div className="crm-recent-status">
-                  {sample.status}
-                </div>
-
-                <div className="crm-recent-date">
-                  {formatDate(sample.createdAt)}
-                </div>
-
-                <ArrowRight size={15} />
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="crm-empty">
-            No samples yet.
-          </div>
-        )}
-      </RecentSection>
-
-      {/* =========================================
-          RECENT LEADS
-      ========================================= */}
-
-      <RecentSection
-        title="Recent Leads"
-        description="Latest website enquiries and prospects."
-        viewAllHref="/admin/leads"
-      >
-        {recentLeads.length > 0 ? (
-          <div className="crm-recent-list">
-            {recentLeads.map((lead) => (
-              <Link
-                href={`/admin/leads/${lead.id}`}
-                className="crm-recent-lead"
-                key={lead.id}
-              >
-                <div className="crm-recent-avatar">
-                  {lead.name
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-
-                <div className="crm-recent-person">
-                  <strong>{lead.name}</strong>
-                  <span>{lead.company}</span>
-                </div>
-
-                <div className="crm-recent-service">
-                  <span>Service</span>
-                  <strong>{lead.service}</strong>
-                </div>
-
-                <div className="crm-recent-status">
-                  {lead.status}
-                </div>
-
-                <div className="crm-recent-date">
-                  {formatDate(lead.createdAt)}
-                </div>
-
-                <ArrowRight size={15} />
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="crm-empty">
-            No leads yet.
-          </div>
-        )}
-      </RecentSection>
+        <strong>
+          Testing for a Healthier Tomorrow
+        </strong>
+      </footer>
     </div>
-  );
-}
-
-/* =========================================================
-   METRIC CARD
-========================================================= */
-
-function MetricCard({
-  title,
-  value,
-  icon,
-}: {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="crm-metric-card">
-      <div className="crm-metric-icon">
-        {icon}
-      </div>
-
-      <div>
-        <span>{title}</span>
-        <strong>{value}</strong>
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   RECENT SECTION
-========================================================= */
-
-function RecentSection({
-  title,
-  description,
-  viewAllHref,
-  children,
-}: {
-  title: string;
-  description: string;
-  viewAllHref: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="crm-panel crm-recent-panel">
-      <div className="crm-panel-heading">
-        <div>
-          <h2>{title}</h2>
-          <p>{description}</p>
-        </div>
-
-        <Link href={viewAllHref}>
-          View All
-          <ArrowRight size={14} />
-        </Link>
-      </div>
-
-      {children}
-    </section>
   );
 }

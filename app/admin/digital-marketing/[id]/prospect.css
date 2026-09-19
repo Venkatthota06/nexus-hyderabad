@@ -1,0 +1,506 @@
+/* =========================================================
+   PROSPECT DETAIL PAGE
+========================================================= */
+
+.prospect-page {
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
+  color: #173f5d;
+}
+
+/* =========================================================
+   BACK
+========================================================= */
+
+.prospect-back-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.prospect-back-row > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #397394;
+  font-size: 8px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.prospect-converted-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #e8f7ed;
+  color: #28875a;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.prospect-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  margin-bottom: 14px;
+  padding: 20px 22px;
+
+  border: 1px solid #dce9f0;
+  border-radius: 17px;
+
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(16, 137, 216, 0.13),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #f3faff
+    );
+
+  box-shadow:
+    0 8px 25px
+    rgba(30, 72, 99, 0.045);
+}
+
+.prospect-hero-main {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.prospect-hero-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e7f5fe;
+  color: #0877c8;
+}
+
+.prospect-hero-main span {
+  display: block;
+  margin-bottom: 3px;
+  color: #1383c7;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.prospect-hero-main h1 {
+  margin: 0;
+  color: #173f5c;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.prospect-hero-main p {
+  margin: 5px 0 0;
+  color: #79909f;
+  font-size: 8px;
+}
+
+.prospect-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.prospect-hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid #d6e6ee;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2173a3;
+  font-size: 7px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.prospect-summary-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.prospect-summary-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 13px;
+  border: 1px solid #e0eaf0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.prospect-summary-card > div {
+  width: 33px;
+  height: 33px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #ecf7fd;
+  color: #1685c7;
+}
+
+.prospect-summary-card section {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.prospect-summary-card span {
+  color: #8195a2;
+  font-size: 6px;
+  font-weight: 750;
+}
+
+.prospect-summary-card strong {
+  overflow: hidden;
+  color: #315770;
+  font-size: 8px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.prospect-form {
+  display: grid;
+  gap: 13px;
+}
+
+.prospect-panel {
+  overflow: hidden;
+  padding: 17px;
+  border: 1px solid #dde9ef;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow:
+    0 6px 20px
+    rgba(32, 73, 98, 0.035);
+}
+
+.prospect-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: #1581c4;
+}
+
+.prospect-panel-title h2 {
+  margin: 0;
+  color: #244e69;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.prospect-panel-title p {
+  margin: 3px 0 0;
+  color: #8a9ca7;
+  font-size: 6.5px;
+}
+
+.prospect-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.prospect-field {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.prospect-field-full {
+  grid-column: 1 / -1;
+}
+
+.prospect-field label {
+  color: #557388;
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.prospect-field input,
+.prospect-field select,
+.prospect-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dce6ec;
+  border-radius: 8px;
+  outline: 0;
+  background: #fbfdfe;
+  color: #294d65;
+  font: inherit;
+  font-size: 8px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.prospect-field input,
+.prospect-field select {
+  height: 37px;
+  padding: 0 10px;
+}
+
+.prospect-field textarea {
+  resize: vertical;
+  min-height: 85px;
+  padding: 10px;
+  line-height: 1.5;
+}
+
+.prospect-field input:focus,
+.prospect-field select:focus,
+.prospect-field textarea:focus {
+  border-color: #60aee0;
+  box-shadow:
+    0 0 0 3px
+    rgba(16, 137, 216, 0.08);
+}
+
+.prospect-field input:disabled,
+.prospect-field select:disabled,
+.prospect-field textarea:disabled {
+  cursor: not-allowed;
+  background: #f3f6f8;
+  color: #778b98;
+}
+
+.prospect-input-icon {
+  position: relative;
+}
+
+.prospect-input-icon svg {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #7694a6;
+}
+
+.prospect-input-icon input {
+  padding-left: 32px;
+}
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+.prospect-success-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid #bde5cc;
+  border-radius: 9px;
+  background: #edf9f2;
+  color: #287b51;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.prospect-error-message {
+  padding: 10px 12px;
+  border: 1px solid #f0c4c4;
+  border-radius: 9px;
+  background: #fff1f1;
+  color: #b64d4d;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.prospect-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 3px 0 12px;
+}
+
+.prospect-actions > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 35px;
+  padding: 0 12px;
+  border: 1px solid #d9e4eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #536f82;
+  font-size: 8px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.prospect-actions button {
+  min-height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.prospect-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.prospect-save-button {
+  background: #4f7f9e;
+}
+
+.prospect-convert-button {
+  background:
+    linear-gradient(
+      135deg,
+      #1089d8,
+      #0876c9
+    );
+  box-shadow:
+    0 6px 15px
+    rgba(8, 118, 201, 0.17);
+}
+
+.prospect-company-button {
+  border: 0 !important;
+  background: #0876c9 !important;
+  color: white !important;
+}
+
+/* =========================================================
+   STATES
+========================================================= */
+
+.prospect-loading,
+.prospect-error-state {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #688395;
+  text-align: center;
+}
+
+.prospect-error-state h2 {
+  margin: 0;
+  color: #345b72;
+}
+
+.prospect-error-state p {
+  margin: 0;
+  color: #8398a5;
+}
+
+.prospect-error-state a {
+  padding: 8px 11px;
+  border-radius: 7px;
+  background: #0876c9;
+  color: white;
+  text-decoration: none;
+}
+
+/* =========================================================
+   SPINNER
+========================================================= */
+
+.spin {
+  animation:
+    prospect-spin
+    0.8s linear infinite;
+}
+
+@keyframes prospect-spin {
+  to {
+    transform:
+      rotate(360deg);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+  .prospect-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .prospect-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .prospect-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prospect-field-full {
+    grid-column: auto;
+  }
+
+  .prospect-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prospect-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .prospect-actions > * {
+    width: 100%;
+  }
+}

@@ -1,0 +1,504 @@
+.settings-page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    linear-gradient(180deg, #f7fbff 0%, #f2f8fc 100%);
+  color: #17324a;
+}
+
+.settings-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px;
+  border: 1px solid #d9eaf5;
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, #ffffff 0%, #ecf8ff 100%);
+  box-shadow: 0 12px 32px rgba(31, 89, 126, 0.08);
+}
+
+.settings-eyebrow,
+.settings-card-head > div:last-child > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #1987c9;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.settings-hero h1,
+.settings-card-head h2 {
+  margin: 0;
+  color: #173a57;
+}
+
+.settings-hero h1 {
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.settings-hero p,
+.settings-card-head p {
+  margin: 7px 0 0;
+  color: #6f879a;
+  line-height: 1.6;
+}
+
+.settings-hero p {
+  max-width: 680px;
+  font-size: 13px;
+}
+
+.settings-hero-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #138fd5, #5ec2ea);
+  color: #ffffff;
+  box-shadow: 0 12px 25px rgba(22, 143, 213, 0.22);
+}
+
+.settings-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.settings-health-card {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px;
+  border: 1px solid #dcebf5;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(41, 86, 116, 0.06);
+}
+
+.settings-health-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 13px;
+}
+
+.settings-health-card > div:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.settings-health-card span {
+  color: #668195;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.settings-health-card strong {
+  color: #183e5d;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.settings-health-card small {
+  color: #8a9eae;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.settings-health-card.good .settings-health-icon {
+  background: #e9f8ee;
+  color: #229052;
+}
+
+.settings-health-card.blue .settings-health-icon {
+  background: #eaf5fe;
+  color: #177cc1;
+}
+
+.settings-health-card.purple .settings-health-icon {
+  background: #f0edff;
+  color: #7359c5;
+}
+
+.settings-health-card.cyan .settings-health-icon {
+  background: #e9f9fb;
+  color: #1694a4;
+}
+
+.settings-health-card.danger .settings-health-icon {
+  background: #fff0f0;
+  color: #c84c4c;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.settings-card,
+.settings-preferences-card {
+  border: 1px solid #dcebf5;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(41, 86, 116, 0.06);
+}
+
+.settings-card {
+  padding: 22px;
+}
+
+.settings-preferences-card {
+  margin-top: 18px;
+  padding: 22px;
+}
+
+.settings-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.settings-card-head h2 {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.settings-card-head p {
+  font-size: 10px;
+}
+
+.settings-card-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 12px;
+}
+
+.settings-card-icon.blue {
+  background: #e9f4fd;
+  color: #167fc2;
+}
+
+.settings-card-icon.green {
+  background: #eaf8ef;
+  color: #238f53;
+}
+
+.settings-card-icon.purple {
+  background: #f0edff;
+  color: #7257c3;
+}
+
+.settings-card-icon.cyan {
+  background: #e8f9fb;
+  color: #168e9f;
+}
+
+.settings-card-icon.slate {
+  background: #edf3f6;
+  color: #527184;
+}
+
+.settings-info-list,
+.settings-status-list {
+  margin-top: 20px;
+  border-top: 1px solid #edf3f7;
+}
+
+.settings-info-row,
+.settings-status-row {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #edf3f7;
+}
+
+.settings-info-row {
+  justify-content: space-between;
+}
+
+.settings-info-row span {
+  color: #71889b;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.settings-info-row strong {
+  color: #1d405b;
+  font-size: 10px;
+  font-weight: 850;
+  text-align: right;
+}
+
+.settings-info-row a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #1681c4;
+}
+
+.settings-status-row > span {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.settings-status-row > span.online {
+  background: #2cbf6b;
+  box-shadow: 0 0 0 4px #e9f9ef;
+}
+
+.settings-status-row > span.offline {
+  background: #da5353;
+  box-shadow: 0 0 0 4px #fff0f0;
+}
+
+.settings-status-row strong {
+  flex: 1;
+  color: #27475f;
+  font-size: 10px;
+}
+
+.settings-status-row small {
+  color: #7e94a4;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.settings-preferences-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.settings-toggle-row,
+.settings-select-field {
+  min-height: 78px;
+  border: 1px solid #e1edf5;
+  border-radius: 14px;
+  background: #f9fcfe;
+}
+
+.settings-toggle-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.settings-toggle-row > div {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-toggle-row strong,
+.settings-select-field > span {
+  color: #24465f;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.settings-toggle-row span {
+  color: #7a91a2;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.settings-toggle-row input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-toggle-row i {
+  width: 38px;
+  height: 22px;
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #d9e4eb;
+  transition: 0.2s ease;
+}
+
+.settings-toggle-row i::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(44, 70, 88, 0.18);
+  transition: 0.2s ease;
+}
+
+.settings-toggle-row input:checked + i {
+  background: #1591d2;
+}
+
+.settings-toggle-row input:checked + i::after {
+  transform: translateX(16px);
+}
+
+.settings-select-field {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+}
+
+.settings-select-field select {
+  width: 100%;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid #d7e6f0;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #28485f;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.settings-preferences-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.settings-preferences-actions button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 15px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.settings-reset-button {
+  border: 1px solid #d9e6ee;
+  background: #ffffff;
+  color: #557185;
+}
+
+.settings-save-button {
+  border: 0;
+  background: linear-gradient(135deg, #138fd5, #37a9dd);
+  color: #ffffff;
+  box-shadow: 0 7px 16px rgba(20, 143, 210, 0.2);
+}
+
+.settings-note {
+  display: flex;
+  gap: 11px;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 14px;
+  background: #f2f9fe;
+  color: #2586bf;
+}
+
+.settings-note > div {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-note strong {
+  color: #23516f;
+  font-size: 10px;
+}
+
+.settings-note p {
+  margin: 0;
+  color: #718b9d;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.settings-policy-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.settings-policy-list > div {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: #f8fbfd;
+  color: #547184;
+}
+
+.settings-policy-list svg {
+  flex: 0 0 auto;
+  color: #26a064;
+}
+
+.settings-policy-list span {
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .settings-health-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .settings-page {
+    padding: 18px;
+  }
+
+  .settings-grid,
+  .settings-preferences-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .settings-health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-hero {
+    align-items: flex-start;
+    padding: 22px;
+  }
+
+  .settings-hero-icon {
+    width: 48px;
+    height: 48px;
+  }
+}

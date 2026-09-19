@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { db } from "@/src/prisma/db";
 
 import {
@@ -129,6 +130,40 @@ async function getCompanies(): Promise<Company[]> {
     return [];
   }
 }
+
+/* =========================================================
+   FAST FOLLOW-UP SNAPSHOT
+   - Keeps the page dynamic.
+   - Reuses the database snapshot for 5 seconds.
+   - Avoids repeating four Neon queries on rapid navigation.
+========================================================= */
+
+const getFollowUpSnapshot = unstable_cache(
+  async () => {
+    const [
+      leads,
+      activities,
+      quotations,
+      companies,
+    ] = await Promise.all([
+      getLeads(),
+      getActivities(),
+      getQuotations(),
+      getCompanies(),
+    ]);
+
+    return {
+      leads,
+      activities,
+      quotations,
+      companies,
+    };
+  },
+  ["nexus-admin-follow-ups"],
+  {
+    revalidate: 5,
+  }
+);
 
 /* =========================================================
    HELPERS
@@ -452,17 +487,12 @@ function FollowUpSection({
 ========================================================= */
 
 export default async function FollowUpsPage() {
-  const [
+  const {
     leads,
     activities,
     quotations,
     companies,
-  ] = await Promise.all([
-    getLeads(),
-    getActivities(),
-    getQuotations(),
-    getCompanies(),
-  ]);
+  } = await getFollowUpSnapshot();
 
   const companyMap =
     new Map(
