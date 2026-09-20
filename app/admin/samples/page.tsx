@@ -73,9 +73,9 @@ type Quotation = {
 
 async function getSamples(): Promise<Sample[]> {
   try {
-    const samples = await db.orm.public.Sample
-      .orderBy((sample) => sample.createdAt.desc())
-      .all();
+    const samples = await db.orm.public.Sample.orderBy((sample) =>
+      sample.createdAt.desc(),
+    ).all();
 
     return samples as Sample[];
   } catch (error) {
@@ -129,10 +129,7 @@ function formatDate(value: string | null) {
 }
 
 function statusSlug(status: string) {
-  return status
-    .toLowerCase()
-    .replaceAll(" ", "-")
-    .replaceAll("/", "-");
+  return status.toLowerCase().replaceAll(" ", "-").replaceAll("/", "-");
 }
 
 /* =========================================================
@@ -150,15 +147,10 @@ export default async function SamplesPage() {
      MAPS
   ======================================================= */
 
-  const companyMap = new Map(
-    companies.map((company) => [company.id, company])
-  );
+  const companyMap = new Map(companies.map((company) => [company.id, company]));
 
   const quotationMap = new Map(
-    quotations.map((quotation) => [
-      quotation.id,
-      quotation,
-    ])
+    quotations.map((quotation) => [quotation.id, quotation]),
   );
 
   /* =======================================================
@@ -168,38 +160,45 @@ export default async function SamplesPage() {
   const totalSampleRecords = samples.length;
 
   const totalPhysicalSamples = samples.reduce(
-    (total, sample) =>
-      total + Number(sample.sampleCount || 0),
-    0
+    (total, sample) => total + Number(sample.sampleCount || 0),
+    0,
   );
 
-  const collectedSamples = samples.filter(
-    (sample) => sample.status === "Collected"
-  ).length;
+  function sumSampleQuantity(predicate: (sample: Sample) => boolean) {
+    return samples.reduce((total, sample) => {
+      if (!predicate(sample)) {
+        return total;
+      }
 
-  const transitSamples = samples.filter(
+      return total + Number(sample.sampleCount || 0);
+    }, 0);
+  }
+
+  const collectedSamples = sumSampleQuantity(
+    (sample) => sample.status === "Collected",
+  );
+
+  const transitSamples = sumSampleQuantity(
     (sample) =>
-      sample.status === "Dispatched" ||
-      sample.status === "Received at Lab"
-  ).length;
+      sample.status === "Dispatched" || sample.status === "Received at Lab",
+  );
 
-  const testingSamples = samples.filter(
-    (sample) => sample.status === "Testing"
-  ).length;
+  const testingSamples = sumSampleQuantity(
+    (sample) => sample.status === "Testing",
+  );
 
-  const completedSamples = samples.filter(
+  const completedSamples = sumSampleQuantity(
     (sample) =>
-      sample.status === "Completed" ||
-      sample.status === "Report Delivered"
-  ).length;
+      sample.status === "Completed" || sample.status === "Report Delivered",
+  );
 
-  const pendingReports = samples.filter(
-    (sample) => sample.reportStatus !== "Delivered"
-  ).length;
+  const pendingReports = sumSampleQuantity(
+    (sample) => sample.reportStatus !== "Delivered",
+  );
 
-  const deliveredReports = samples.filter(
-    (sample) => sample.reportStatus === "Delivered"
-  ).length;
+  const deliveredReports = sumSampleQuantity(
+    (sample) => sample.reportStatus === "Delivered",
+  );
 
   return (
     <div className="samples-premium-page">
@@ -213,23 +212,18 @@ export default async function SamplesPage() {
             <span className="samples-premium-eyebrow-icon">
               <Sparkles size={12} />
             </span>
-
             Laboratory Operations
           </div>
 
           <h1>Samples</h1>
 
           <p>
-            Track sample collection, movement, laboratory
-            testing and report delivery from one operational
-            workspace.
+            Track sample collection, movement, laboratory testing and report
+            delivery from one operational workspace.
           </p>
         </div>
 
-        <Link
-          href="/admin/samples/new"
-          className="samples-premium-add"
-        >
+        <Link href="/admin/samples/new" className="samples-premium-add">
           <Plus size={17} />
           <span>Add Sample</span>
           <ArrowRight size={15} />
@@ -304,10 +298,7 @@ export default async function SamplesPage() {
             <div>
               <span>Sample Lifecycle</span>
               <h2>Laboratory Operations</h2>
-              <p>
-                Collection → Dispatch → Laboratory → Testing
-                → Report
-              </p>
+              <p>Collection → Dispatch → Laboratory → Testing → Report</p>
             </div>
           </div>
 
@@ -327,9 +318,8 @@ export default async function SamplesPage() {
             <h3>No samples yet</h3>
 
             <p>
-              Once an order is confirmed and sample collection
-              is planned, create the sample here to track its
-              complete laboratory lifecycle.
+              Once an order is confirmed and sample collection is planned,
+              create the sample here to track its complete laboratory lifecycle.
             </p>
 
             <Link href="/admin/samples/new">
@@ -341,8 +331,7 @@ export default async function SamplesPage() {
         ) : (
           <div className="samples-premium-list">
             {samples.map((sample) => {
-              const company =
-                companyMap.get(sample.companyId);
+              const company = companyMap.get(sample.companyId);
 
               const quotation = sample.quotationId
                 ? quotationMap.get(sample.quotationId)
@@ -352,7 +341,7 @@ export default async function SamplesPage() {
                 <article
                   key={sample.id}
                   className={`samples-premium-card sample-status-${statusSlug(
-                    sample.status
+                    sample.status,
                   )}`}
                 >
                   {/* TOP */}
@@ -371,7 +360,7 @@ export default async function SamplesPage() {
 
                           <span
                             className={`samples-premium-status ${statusSlug(
-                              sample.status
+                              sample.status,
                             )}`}
                           >
                             {sample.status}
@@ -379,7 +368,7 @@ export default async function SamplesPage() {
 
                           <span
                             className={`samples-premium-report-status ${statusSlug(
-                              sample.reportStatus
+                              sample.reportStatus,
                             )}`}
                           >
                             Report: {sample.reportStatus}
@@ -394,8 +383,7 @@ export default async function SamplesPage() {
                         >
                           <Building2 size={14} />
 
-                          {company?.name ||
-                            "Unknown Company"}
+                          {company?.name || "Unknown Company"}
 
                           <ArrowRight size={12} />
                         </Link>
@@ -408,9 +396,7 @@ export default async function SamplesPage() {
                       <strong>{sample.sampleCount}</strong>
 
                       <small>
-                        {sample.sampleCount === 1
-                          ? "Sample"
-                          : "Samples"}
+                        {sample.sampleCount === 1 ? "Sample" : "Samples"}
                       </small>
                     </div>
                   </div>
@@ -420,36 +406,28 @@ export default async function SamplesPage() {
                   <div className="samples-premium-info-grid">
                     <SampleInfo
                       label="Collection Date"
-                      value={formatDate(
-                        sample.collectionDate
-                      )}
+                      value={formatDate(sample.collectionDate)}
                       icon={<CalendarDays size={15} />}
                       type="collection"
                     />
 
                     <SampleInfo
                       label="Expected Completion"
-                      value={formatDate(
-                        sample.expectedCompletionDate
-                      )}
+                      value={formatDate(sample.expectedCompletionDate)}
                       icon={<FileClock size={15} />}
                       type="expected"
                     />
 
                     <SampleInfo
                       label="Testing Location"
-                      value={
-                        sample.testingLocation || "—"
-                      }
+                      value={sample.testingLocation || "—"}
                       icon={<MapPin size={15} />}
                       type="location"
                     />
 
                     <SampleInfo
                       label="Report Delivered"
-                      value={formatDate(
-                        sample.reportDeliveredDate
-                      )}
+                      value={formatDate(sample.reportDeliveredDate)}
                       icon={<FileText size={15} />}
                       type="report"
                     />
@@ -467,9 +445,7 @@ export default async function SamplesPage() {
 
                           <span>
                             Collected By
-                            <strong>
-                              {sample.collectedBy}
-                            </strong>
+                            <strong>{sample.collectedBy}</strong>
                           </span>
                         </div>
                       )}
@@ -481,23 +457,16 @@ export default async function SamplesPage() {
                           </div>
 
                           <div>
-                            <span>
-                              Linked Quotation
-                            </span>
+                            <span>Linked Quotation</span>
 
-                            <strong>
-                              {quotation.quotationNumber}
-                            </strong>
+                            <strong>{quotation.quotationNumber}</strong>
 
                             <small>
-                              {quotation.service} •{" "}
-                              {quotation.status}
+                              {quotation.service} • {quotation.status}
                             </small>
                           </div>
 
-                          <Link
-                            href={`/admin/quotations/${quotation.id}`}
-                          >
+                          <Link href={`/admin/quotations/${quotation.id}`}>
                             View
                             <ArrowRight size={12} />
                           </Link>
@@ -552,19 +521,11 @@ function SampleMetric({
   value: number;
   helper: string;
   icon: React.ReactNode;
-  type:
-    | "navy"
-    | "cyan"
-    | "blue"
-    | "purple"
-    | "green"
-    | "orange";
+  type: "navy" | "cyan" | "blue" | "purple" | "green" | "orange";
 }) {
   return (
     <div className={`samples-premium-metric ${type}`}>
-      <div className="samples-premium-metric-icon">
-        {icon}
-      </div>
+      <div className="samples-premium-metric-icon">{icon}</div>
 
       <div>
         <span>{label}</span>
@@ -588,17 +549,11 @@ function SampleInfo({
   label: string;
   value: string;
   icon: React.ReactNode;
-  type:
-    | "collection"
-    | "expected"
-    | "location"
-    | "report";
+  type: "collection" | "expected" | "location" | "report";
 }) {
   return (
     <div className={`samples-premium-info ${type}`}>
-      <div className="samples-premium-info-icon">
-        {icon}
-      </div>
+      <div className="samples-premium-info-icon">{icon}</div>
 
       <div>
         <span>{label}</span>

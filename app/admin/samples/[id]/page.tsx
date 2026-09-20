@@ -1,15 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
-  useParams,
-  useRouter,
-} from "next/navigation";
+
+import { useEffect, useMemo, useState } from "react";
+
+import { useParams, useRouter } from "next/navigation";
 
 import {
   ArrowLeft,
@@ -34,254 +29,202 @@ import {
 
 type Sample = {
   id: string;
+
   companyId: string;
+
   quotationId: string | null;
 
   sampleNumber: string;
+
   sampleType: string;
+
   sampleCount: number;
 
   collectionDate: string | null;
+
   collectedBy: string | null;
 
   status: string;
 
   testingLocation: string | null;
+
   expectedCompletionDate: string | null;
 
   reportStatus: string;
+
   reportDeliveredDate: string | null;
 
   notes: string | null;
 
   createdAt: string;
+
   updatedAt: string;
 };
 
 type Company = {
   id: string;
+
   name: string;
+
   status: string;
 };
 
 type Quotation = {
   id: string;
+
   companyId: string;
+
   quotationNumber: string;
+
   service: string;
+
   status: string;
+
   totalAmount: number;
 };
 
 const sampleStatuses = [
   "Planned",
+
   "Collected",
+
   "Dispatched",
+
   "Received at Lab",
+
   "Testing",
+
   "Completed",
+
   "Report Delivered",
 ];
 
-const reportStatuses = [
-  "Pending",
-  "Partial Report",
-  "Ready",
-  "Delivered",
-];
+const reportStatuses = ["Pending", "Partial Report", "Ready", "Delivered"];
 
-function normalizeDate(
-  value: string | null | undefined
-) {
+function normalizeDate(value: string | null | undefined) {
   if (!value) return "";
+
   return value.slice(0, 10);
 }
 
-function formatCurrency(
-  value: number
-) {
+function formatCurrency(value: number) {
   return new Intl.NumberFormat(
     "en-IN",
+
     {
       style: "currency",
+
       currency: "INR",
+
       maximumFractionDigits: 2,
-    }
+    },
   ).format(value);
 }
 
 export default function SampleDetailPage() {
-  const params =
-    useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
 
   const router = useRouter();
 
   const sampleId = params.id;
 
-  const [
-    samples,
-    setSamples,
-  ] = useState<Sample[]>([]);
+  const [samples, setSamples] = useState<Sample[]>([]);
 
-  const [
-    companies,
-    setCompanies,
-  ] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
-  const [
-    quotations,
-    setQuotations,
-  ] = useState<Quotation[]>([]);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
 
-  const [
-    companyId,
-    setCompanyId,
-  ] = useState("");
+  const [companyId, setCompanyId] = useState("");
 
-  const [
-    quotationId,
-    setQuotationId,
-  ] = useState("");
+  const [quotationId, setQuotationId] = useState("");
 
-  const [
-    sampleNumber,
-    setSampleNumber,
-  ] = useState("");
+  const [sampleNumber, setSampleNumber] = useState("");
 
-  const [
-    sampleType,
-    setSampleType,
-  ] = useState("");
+  const [sampleType, setSampleType] = useState("");
 
-  const [
-    sampleCount,
-    setSampleCount,
-  ] = useState("1");
+  const [sampleCount, setSampleCount] = useState("1");
 
-  const [
-    collectionDate,
-    setCollectionDate,
-  ] = useState("");
+  const [collectionDate, setCollectionDate] = useState("");
 
-  const [
-    collectedBy,
-    setCollectedBy,
-  ] = useState("");
+  const [collectedBy, setCollectedBy] = useState("");
 
-  const [
-    status,
-    setStatus,
-  ] = useState("Planned");
+  const [status, setStatus] = useState("Planned");
 
-  const [
-    testingLocation,
-    setTestingLocation,
-  ] = useState("");
+  const [testingLocation, setTestingLocation] = useState("");
 
-  const [
-    expectedCompletionDate,
-    setExpectedCompletionDate,
-  ] = useState("");
+  const [expectedCompletionDate, setExpectedCompletionDate] = useState("");
 
-  const [
-    reportStatus,
-    setReportStatus,
-  ] = useState("Pending");
+  const [reportStatus, setReportStatus] = useState("Pending");
 
-  const [
-    reportDeliveredDate,
-    setReportDeliveredDate,
-  ] = useState("");
+  const [reportDeliveredDate, setReportDeliveredDate] = useState("");
 
-  const [
-    notes,
-    setNotes,
-  ] = useState("");
+  const [notes, setNotes] = useState("");
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    saving,
-    setSaving,
-  ] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [
-    error,
-    setError,
-  ] = useState("");
+  const [error, setError] = useState("");
 
-  const [
-    success,
-    setSuccess,
-  ] = useState("");
+  const [success, setSuccess] = useState("");
 
   /* =========================================================
+
      LOAD DATA
+
   ========================================================= */
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
+
         setError("");
 
-        const [
-          samplesResponse,
-          companiesResponse,
-          quotationsResponse,
-        ] = await Promise.all([
-          fetch(
-            "/api/samples",
-            {
-              cache: "no-store",
-            }
-          ),
+        const [samplesResponse, companiesResponse, quotationsResponse] =
+          await Promise.all([
+            fetch(
+              "/api/samples",
 
-          fetch(
-            "/api/companies",
-            {
-              cache: "no-store",
-            }
-          ),
+              {
+                cache: "no-store",
+              },
+            ),
 
-          fetch(
-            "/api/quotations",
-            {
-              cache: "no-store",
-            }
-          ),
-        ]);
+            fetch(
+              "/api/companies",
 
-        const samplesData =
-          await samplesResponse.json();
+              {
+                cache: "no-store",
+              },
+            ),
 
-        const companiesData =
-          await companiesResponse.json();
+            fetch(
+              "/api/quotations",
 
-        const quotationsData =
-          await quotationsResponse.json();
+              {
+                cache: "no-store",
+              },
+            ),
+          ]);
+
+        const samplesData = await samplesResponse.json();
+
+        const companiesData = await companiesResponse.json();
+
+        const quotationsData = await quotationsResponse.json();
 
         if (!samplesResponse.ok) {
-          throw new Error(
-            samplesData.message ||
-              "Unable to load sample."
-          );
+          throw new Error(samplesData.message || "Unable to load sample.");
         }
 
         if (!companiesResponse.ok) {
-          throw new Error(
-            companiesData.message ||
-              "Unable to load companies."
-          );
+          throw new Error(companiesData.message || "Unable to load companies.");
         }
 
         if (!quotationsResponse.ok) {
           throw new Error(
-            quotationsData.message ||
-              "Unable to load quotations."
+            quotationsData.message || "Unable to load quotations.",
           );
         }
 
@@ -290,97 +233,55 @@ export default function SampleDetailPage() {
           !Array.isArray(companiesData) ||
           !Array.isArray(quotationsData)
         ) {
-          throw new Error(
-            "Invalid CRM data received."
-          );
+          throw new Error("Invalid CRM data received.");
         }
 
-        const selectedSample =
-          (
-            samplesData as Sample[]
-          ).find(
-            (sample) =>
-              sample.id === sampleId
-          );
+        const selectedSample = (samplesData as Sample[]).find(
+          (sample) => sample.id === sampleId,
+        );
 
         if (!selectedSample) {
-          throw new Error(
-            "Sample not found."
-          );
+          throw new Error("Sample not found.");
         }
 
         setSamples(samplesData);
+
         setCompanies(companiesData);
+
         setQuotations(quotationsData);
 
-        setCompanyId(
-          selectedSample.companyId
-        );
+        setCompanyId(selectedSample.companyId);
 
-        setQuotationId(
-          selectedSample.quotationId ||
-            ""
-        );
+        setQuotationId(selectedSample.quotationId || "");
 
-        setSampleNumber(
-          selectedSample.sampleNumber
-        );
+        setSampleNumber(selectedSample.sampleNumber);
 
-        setSampleType(
-          selectedSample.sampleType
-        );
+        setSampleType(selectedSample.sampleType);
 
-        setSampleCount(
-          String(
-            selectedSample.sampleCount
-          )
-        );
+        setSampleCount(String(selectedSample.sampleCount));
 
-        setCollectionDate(
-          normalizeDate(
-            selectedSample.collectionDate
-          )
-        );
+        setCollectionDate(normalizeDate(selectedSample.collectionDate));
 
-        setCollectedBy(
-          selectedSample.collectedBy ||
-            ""
-        );
+        setCollectedBy(selectedSample.collectedBy || "");
 
-        setStatus(
-          selectedSample.status
-        );
+        setStatus(selectedSample.status);
 
-        setTestingLocation(
-          selectedSample.testingLocation ||
-            ""
-        );
+        setTestingLocation(selectedSample.testingLocation || "");
 
         setExpectedCompletionDate(
-          normalizeDate(
-            selectedSample.expectedCompletionDate
-          )
+          normalizeDate(selectedSample.expectedCompletionDate),
         );
 
-        setReportStatus(
-          selectedSample.reportStatus
-        );
+        setReportStatus(selectedSample.reportStatus);
 
         setReportDeliveredDate(
-          normalizeDate(
-            selectedSample.reportDeliveredDate
-          )
+          normalizeDate(selectedSample.reportDeliveredDate),
         );
 
-        setNotes(
-          selectedSample.notes ||
-            ""
-        );
+        setNotes(selectedSample.notes || "");
       } catch (error) {
         setError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load sample."
+          error instanceof Error ? error.message : "Unable to load sample.",
         );
       } finally {
         setLoading(false);
@@ -393,197 +294,173 @@ export default function SampleDetailPage() {
   }, [sampleId]);
 
   /* =========================================================
+
      DERIVED DATA
+
   ========================================================= */
 
-  const selectedSample =
-    useMemo(() => {
-      return samples.find(
-        (sample) =>
-          sample.id === sampleId
-      );
-    }, [samples, sampleId]);
+  const selectedSample = useMemo(() => {
+    return samples.find((sample) => sample.id === sampleId);
+  }, [samples, sampleId]);
 
-  const selectedCompany =
-    useMemo(() => {
-      return companies.find(
-        (company) =>
-          company.id === companyId
-      );
-    }, [
-      companies,
-      companyId,
-    ]);
+  const selectedCompany = useMemo(() => {
+    return companies.find((company) => company.id === companyId);
+  }, [companies, companyId]);
 
-  const companyQuotations =
-    useMemo(() => {
-      if (!companyId) {
-        return [];
-      }
+  const companyQuotations = useMemo(() => {
+    if (!companyId) {
+      return [];
+    }
 
-      return quotations.filter(
-        (quotation) =>
-          quotation.companyId ===
-          companyId
-      );
-    }, [
-      companyId,
-      quotations,
-    ]);
+    return quotations.filter((quotation) => quotation.companyId === companyId);
+  }, [companyId, quotations]);
 
-  const selectedQuotation =
-    useMemo(() => {
-      if (!quotationId) {
-        return undefined;
-      }
+  const selectedQuotation = useMemo(() => {
+    if (!quotationId) {
+      return undefined;
+    }
 
-      return quotations.find(
-        (quotation) =>
-          quotation.id ===
-          quotationId
-      );
-    }, [
-      quotationId,
-      quotations,
-    ]);
+    return quotations.find((quotation) => quotation.id === quotationId);
+  }, [quotationId, quotations]);
 
   /* =========================================================
+
      HANDLERS
+
   ========================================================= */
 
-  function handleCompanyChange(
-    value: string
-  ) {
+  function handleCompanyChange(value: string) {
     setCompanyId(value);
+
     setQuotationId("");
   }
 
-  function handleReportStatusChange(
-    value: string
-  ) {
+  function handleReportStatusChange(value: string) {
     setReportStatus(value);
 
-    if (value !== "Delivered") {
-      setReportDeliveredDate("");
+    if (value === "Delivered") {
+      setStatus("Report Delivered");
+
+      return;
     }
 
-    if (value === "Delivered") {
-      setStatus(
-        "Report Delivered"
-      );
-    }
+    setReportDeliveredDate("");
+
+    setStatus((currentStatus) =>
+      currentStatus === "Report Delivered" ? "Completed" : currentStatus,
+    );
   }
 
   /* =========================================================
+
      UPDATE SAMPLE
+
   ========================================================= */
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setSaving(true);
+
     setError("");
+
     setSuccess("");
 
     try {
-      const response =
-        await fetch(
-          "/api/samples",
-          {
-            method: "PUT",
+      const response = await fetch(
+        "/api/samples",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+        {
+          method: "PUT",
 
-            body: JSON.stringify({
-              id: sampleId,
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-              companyId,
-              quotationId,
+          body: JSON.stringify({
+            id: sampleId,
 
-              sampleNumber,
-              sampleType,
+            companyId,
 
-              sampleCount:
-                Number(sampleCount),
+            quotationId,
 
-              collectionDate,
-              collectedBy,
+            sampleNumber,
 
-              status,
+            sampleType,
 
-              testingLocation,
-              expectedCompletionDate,
+            sampleCount: Number(sampleCount),
 
-              reportStatus,
-              reportDeliveredDate,
+            collectionDate,
 
-              notes,
-            }),
-          }
-        );
+            collectedBy,
 
-      const data =
-        await response.json();
+            status,
+
+            testingLocation,
+
+            expectedCompletionDate,
+
+            reportStatus,
+
+            reportDeliveredDate,
+
+            notes,
+          }),
+        },
+      );
+
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Unable to update sample."
-        );
+        throw new Error(data.message || "Unable to update sample.");
       }
 
       setSuccess("Sample updated successfully.");
 
-if (data) {
-  setCompanyId(data.companyId || "");
-  setQuotationId(data.quotationId || "");
+      if (data?.sample) {
+        const updatedSample = data.sample as Sample;
 
-  setSampleNumber(data.sampleNumber || "");
-  setSampleType(data.sampleType || "");
-  setSampleCount(String(data.sampleCount || 1));
+        setSamples((currentSamples) =>
+          currentSamples.map((sample) =>
+            sample.id === updatedSample.id ? updatedSample : sample,
+          ),
+        );
 
-  setCollectionDate(
-    normalizeDate(data.collectionDate)
-  );
+        setCompanyId(updatedSample.companyId || "");
 
-  setCollectedBy(data.collectedBy || "");
+        setQuotationId(updatedSample.quotationId || "");
 
-  setStatus(data.status || "Planned");
+        setSampleNumber(updatedSample.sampleNumber || "");
 
-  setTestingLocation(
-    data.testingLocation || ""
-  );
+        setSampleType(updatedSample.sampleType || "");
 
-  setExpectedCompletionDate(
-    normalizeDate(
-      data.expectedCompletionDate
-    )
-  );
+        setSampleCount(String(updatedSample.sampleCount || 1));
 
-  setReportStatus(
-    data.reportStatus || "Pending"
-  );
+        setCollectionDate(normalizeDate(updatedSample.collectionDate));
 
-  setReportDeliveredDate(
-    normalizeDate(
-      data.reportDeliveredDate
-    )
-  );
+        setCollectedBy(updatedSample.collectedBy || "");
 
-  setNotes(data.notes || "");
-}
+        setStatus(updatedSample.status || "Planned");
 
-router.refresh();
+        setTestingLocation(updatedSample.testingLocation || "");
+
+        setExpectedCompletionDate(
+          normalizeDate(updatedSample.expectedCompletionDate),
+        );
+
+        setReportStatus(updatedSample.reportStatus || "Pending");
+
+        setReportDeliveredDate(
+          normalizeDate(updatedSample.reportDeliveredDate),
+        );
+
+        setNotes(updatedSample.notes || "");
+      }
+
+      router.refresh();
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to update sample."
+        error instanceof Error ? error.message : "Unable to update sample.",
       );
     } finally {
       setSaving(false);
@@ -591,7 +468,9 @@ router.refresh();
   }
 
   /* =========================================================
+
      LOADING
+
   ========================================================= */
 
   if (loading) {
@@ -600,16 +479,13 @@ router.refresh();
         <div>
           <Loader2
             size={22}
+
             className="animate-spin"
           />
 
           <span>
-            <strong>
-              Loading Sample
-            </strong>
-
-            Preparing laboratory
-            workflow...
+            <strong>Loading Sample</strong>
+            Preparing laboratory workflow...
           </span>
         </div>
       </div>
@@ -617,23 +493,18 @@ router.refresh();
   }
 
   /* =========================================================
+
      ERROR
+
   ========================================================= */
 
-  if (
-    error &&
-    !selectedSample
-  ) {
+  if (error && !selectedSample) {
     return (
       <div className="sample-edit-not-found">
         <div>
-          <FlaskConical
-            size={31}
-          />
+          <FlaskConical size={31} />
 
-          <h1>
-            Sample Not Found
-          </h1>
+          <h1>Sample Not Found</h1>
 
           <p>{error}</p>
 
@@ -647,7 +518,9 @@ router.refresh();
   }
 
   /* =========================================================
+
      PAGE
+
   ========================================================= */
 
   return (
@@ -658,6 +531,7 @@ router.refresh();
         <div>
           <Link
             href="/admin/samples"
+
             className="sample-edit-back"
           >
             <ArrowLeft size={14} />
@@ -672,25 +546,17 @@ router.refresh();
           <h1>Edit Sample</h1>
 
           <p>
-            Update sample collection,
-            movement, laboratory testing
-            and report delivery progress.
+            Update sample collection, movement, laboratory testing and report
+            delivery progress.
           </p>
         </div>
 
         <div className="sample-edit-header-side">
-          <span>
-            Sample Reference
-          </span>
+          <span>Sample Reference</span>
 
-          <strong>
-            {sampleNumber ||
-              "Sample"}
-          </strong>
+          <strong>{sampleNumber || "Sample"}</strong>
 
-          <small>
-            {status}
-          </small>
+          <small>{status}</small>
         </div>
       </header>
 
@@ -699,53 +565,42 @@ router.refresh();
       <div className="sample-edit-metrics">
         <SampleMetric
           label="Company"
-          value={
-            selectedCompany?.name ||
-            "—"
-          }
+
+          value={selectedCompany?.name || "—"}
+
           type="blue"
-          icon={
-            <Building2
-              size={16}
-            />
-          }
+
+          icon={<Building2 size={16} />}
         />
 
         <SampleMetric
           label="Sample Status"
+
           value={status || "—"}
+
           type="cyan"
-          icon={
-            <FlaskConical
-              size={16}
-            />
-          }
+
+          icon={<FlaskConical size={16} />}
         />
 
         <SampleMetric
           label="Report Status"
-          value={
-            reportStatus || "—"
-          }
+
+          value={reportStatus || "—"}
+
           type="green"
-          icon={
-            <FileText
-              size={16}
-            />
-          }
+
+          icon={<FileText size={16} />}
         />
 
         <SampleMetric
           label="Sample Count"
-          value={
-            sampleCount || "0"
-          }
+
+          value={sampleCount || "0"}
+
           type="purple"
-          icon={
-            <Layers3
-              size={16}
-            />
-          }
+
+          icon={<Layers3 size={16} />}
         />
       </div>
 
@@ -758,33 +613,19 @@ router.refresh();
           </div>
 
           <div className="sample-edit-linked-info">
-            <span>
-              Linked Quotation
-            </span>
+            <span>Linked Quotation</span>
 
-            <strong>
-              {
-                selectedQuotation.quotationNumber
-              }
-            </strong>
+            <strong>{selectedQuotation.quotationNumber}</strong>
 
             <small>
-              {
-                selectedQuotation.service
-              }{" "}
-              •{" "}
-              {
-                selectedQuotation.status
-              }{" "}
-              •{" "}
-              {formatCurrency(
-                selectedQuotation.totalAmount
-              )}
+              {selectedQuotation.service} • {selectedQuotation.status} •{" "}
+              {formatCurrency(selectedQuotation.totalAmount)}
             </small>
           </div>
 
           <Link
             href={`/admin/quotations/${selectedQuotation.id}`}
+
             className="sample-edit-linked-button"
           >
             View Quotation
@@ -800,9 +641,7 @@ router.refresh();
           <FileText size={16} />
 
           <div>
-            <strong>
-              Unable to update sample
-            </strong>
+            <strong>Unable to update sample</strong>
 
             <span>{error}</span>
           </div>
@@ -811,115 +650,87 @@ router.refresh();
 
       {success && (
         <div className="sample-edit-message success">
-          <CheckCircle2
-            size={16}
-          />
+          <CheckCircle2 size={16} />
 
           <div>
-            <strong>
-              Sample Updated
-            </strong>
+            <strong>Sample Updated</strong>
 
-            <span>
-              {success}
-            </span>
+            <span>{success}</span>
           </div>
         </div>
       )}
 
       <form
         onSubmit={handleSubmit}
+
         className="sample-edit-main"
       >
         {/* CLIENT */}
 
         <SampleEditSection
-          icon={
-            <Building2 size={18} />
-          }
+          icon={<Building2 size={18} />}
+
           eyebrow="Client"
+
           title="Company & Reference"
+
           description="Manage the company relationship and linked quotation."
+
           type="blue"
         >
           <div className="sample-edit-grid two">
             <SampleEditField
               label="Company"
+
               required
-              icon={
-                <Building2
-                  size={14}
-                />
-              }
+
+              icon={<Building2 size={14} />}
             >
               <select
                 value={companyId}
-                onChange={(e) =>
-                  handleCompanyChange(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => handleCompanyChange(e.target.value)}
+
                 required
               >
-                <option value="">
-                  Select company
-                </option>
+                <option value="">Select company</option>
 
-                {companies.map(
-                  (company) => (
-                    <option
-                      key={company.id}
-                      value={company.id}
-                    >
-                      {company.name} —{" "}
-                      {company.status}
-                    </option>
-                  )
-                )}
+                {companies.map((company) => (
+                  <option
+                    key={company.id}
+
+                    value={company.id}
+                  >
+                    {company.name} — {company.status}
+                  </option>
+                ))}
               </select>
             </SampleEditField>
 
             <SampleEditField
               label="Linked Quotation"
-              icon={
-                <Link2 size={14} />
-              }
+
+              icon={<Link2 size={14} />}
             >
               <select
                 value={quotationId}
-                onChange={(e) =>
-                  setQuotationId(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => setQuotationId(e.target.value)}
+
                 disabled={!companyId}
               >
-                <option value="">
-                  No quotation linked
-                </option>
+                <option value="">No quotation linked</option>
 
-                {companyQuotations.map(
-                  (quotation) => (
-                    <option
-                      key={quotation.id}
-                      value={
-                        quotation.id
-                      }
-                    >
-                      {
-                        quotation.quotationNumber
-                      }{" "}
-                      —{" "}
-                      {
-                        quotation.service
-                      }{" "}
-                      —{" "}
-                      {
-                        quotation.status
-                      }
-                    </option>
-                  )
-                )}
+                {companyQuotations.map((quotation) => (
+                  <option
+                    key={quotation.id}
+
+                    value={quotation.id}
+                  >
+                    {quotation.quotationNumber} — {quotation.service} —{" "}
+                    {quotation.status}
+                  </option>
+                ))}
               </select>
             </SampleEditField>
           </div>
@@ -927,36 +738,20 @@ router.refresh();
           {selectedCompany && (
             <div className="sample-edit-company-preview">
               <div>
-                <Building2
-                  size={15}
-                />
+                <Building2 size={15} />
               </div>
 
               <span>
-                <small>
-                  Selected Client
-                </small>
+                <small>Selected Client</small>
 
-                <strong>
-                  {
-                    selectedCompany.name
-                  }
-                </strong>
+                <strong>{selectedCompany.name}</strong>
 
-                <em>
-                  {
-                    selectedCompany.status
-                  }
-                </em>
+                <em>{selectedCompany.status}</em>
               </span>
 
-              <Link
-                href={`/admin/companies/${selectedCompany.id}`}
-              >
+              <Link href={`/admin/companies/${selectedCompany.id}`}>
                 View Company
-                <ArrowRight
-                  size={13}
-                />
+                <ArrowRight size={13} />
               </Link>
             </div>
           )}
@@ -965,74 +760,71 @@ router.refresh();
         {/* SAMPLE DETAILS */}
 
         <SampleEditSection
-          icon={
-            <TestTube2 size={18} />
-          }
+          icon={<TestTube2 size={18} />}
+
           eyebrow="Sample"
+
           title="Sample Details"
+
           description="Update the laboratory sample reference, type and quantity."
+
           type="cyan"
         >
           <div className="sample-edit-grid three">
             <SampleEditField
               label="Sample Number"
+
               required
-              icon={
-                <Hash size={14} />
-              }
+
+              icon={<Hash size={14} />}
             >
               <input
                 type="text"
+
                 value={sampleNumber}
-                onChange={(e) =>
-                  setSampleNumber(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => setSampleNumber(e.target.value)}
+
                 required
               />
             </SampleEditField>
 
             <SampleEditField
               label="Sample Type"
+
               required
-              icon={
-                <FlaskConical
-                  size={14}
-                />
-              }
+
+              icon={<FlaskConical size={14} />}
             >
               <input
                 type="text"
+
                 value={sampleType}
-                onChange={(e) =>
-                  setSampleType(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => setSampleType(e.target.value)}
+
                 placeholder="Water, Food, Air..."
+
                 required
               />
             </SampleEditField>
 
             <SampleEditField
               label="Sample Count"
+
               required
-              icon={
-                <Layers3
-                  size={14}
-                />
-              }
+
+              icon={<Layers3 size={14} />}
             >
               <input
                 type="number"
+
                 min="1"
+
                 value={sampleCount}
-                onChange={(e) =>
-                  setSampleCount(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => setSampleCount(e.target.value)}
+
                 required
               />
             </SampleEditField>
@@ -1042,145 +834,114 @@ router.refresh();
         {/* COLLECTION */}
 
         <SampleEditSection
-          icon={
-            <PackageCheck
-              size={18}
-            />
-          }
+          icon={<PackageCheck size={18} />}
+
           eyebrow="Movement"
+
           title="Collection & Progress"
+
           description="Track sample collection, custody and movement toward the laboratory."
+
           type="orange"
         >
           <div className="sample-edit-grid three">
             <SampleEditField
               label="Collection Date"
-              icon={
-                <CalendarDays
-                  size={14}
-                />
-              }
+
+              icon={<CalendarDays size={14} />}
             >
               <input
                 type="date"
-                value={
-                  collectionDate
-                }
-                onChange={(e) =>
-                  setCollectionDate(
-                    e.target.value
-                  )
-                }
+
+                value={collectionDate}
+
+                onChange={(e) => setCollectionDate(e.target.value)}
               />
             </SampleEditField>
 
             <SampleEditField
               label="Collected By"
-              icon={
-                <UserRound
-                  size={14}
-                />
-              }
+
+              icon={<UserRound size={14} />}
             >
               <input
                 type="text"
+
                 value={collectedBy}
-                onChange={(e) =>
-                  setCollectedBy(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => setCollectedBy(e.target.value)}
+
                 placeholder="Collector name"
               />
             </SampleEditField>
 
             <SampleEditField
               label="Sample Status"
-              icon={
-                <PackageCheck
-                  size={14}
-                />
-              }
+
+              icon={<PackageCheck size={14} />}
             >
               <select
                 value={status}
-                onChange={(e) =>
-                  setStatus(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => setStatus(e.target.value)}
               >
-                {sampleStatuses.map(
-                  (item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </option>
-                  )
-                )}
+                {sampleStatuses.map((item) => (
+                  <option
+                    key={item}
+
+                    value={item}
+                  >
+                    {item}
+                  </option>
+                ))}
               </select>
             </SampleEditField>
           </div>
 
-          <SampleLifecycle
-            currentStatus={status}
-          />
+          <SampleLifecycle currentStatus={status} />
         </SampleEditSection>
 
         {/* TESTING */}
 
         <SampleEditSection
-          icon={
-            <FlaskConical
-              size={18}
-            />
-          }
+          icon={<FlaskConical size={18} />}
+
           eyebrow="Laboratory"
+
           title="Testing Details"
+
           description="Track testing location and expected completion."
+
           type="purple"
         >
           <div className="sample-edit-grid two">
             <SampleEditField
               label="Testing Location"
-              icon={
-                <MapPin size={14} />
-              }
+
+              icon={<MapPin size={14} />}
             >
               <input
                 type="text"
-                value={
-                  testingLocation
-                }
-                onChange={(e) =>
-                  setTestingLocation(
-                    e.target.value
-                  )
-                }
+
+                value={testingLocation}
+
+                onChange={(e) => setTestingLocation(e.target.value)}
+
                 placeholder="Bangalore Laboratory"
               />
             </SampleEditField>
 
             <SampleEditField
               label="Expected Completion Date"
-              icon={
-                <CalendarDays
-                  size={14}
-                />
-              }
+
+              icon={<CalendarDays size={14} />}
             >
               <input
                 type="date"
-                value={
-                  expectedCompletionDate
-                }
-                onChange={(e) =>
-                  setExpectedCompletionDate(
-                    e.target.value
-                  )
-                }
+
+                value={expectedCompletionDate}
+
+                onChange={(e) => setExpectedCompletionDate(e.target.value)}
               />
             </SampleEditField>
           </div>
@@ -1189,73 +950,57 @@ router.refresh();
         {/* REPORT */}
 
         <SampleEditSection
-          icon={
-            <FileText size={18} />
-          }
+          icon={<FileText size={18} />}
+
           eyebrow="Reporting"
+
           title="Report Tracking"
+
           description="Update report preparation and delivery progress."
+
           type="green"
         >
           <div className="sample-edit-grid two">
             <SampleEditField
               label="Report Status"
-              icon={
-                <FileText
-                  size={14}
-                />
-              }
+
+              icon={<FileText size={14} />}
             >
               <select
                 value={reportStatus}
-                onChange={(e) =>
-                  handleReportStatusChange(
-                    e.target.value
-                  )
-                }
+
+                onChange={(e) => handleReportStatusChange(e.target.value)}
               >
-                {reportStatuses.map(
-                  (item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </option>
-                  )
-                )}
+                {reportStatuses.map((item) => (
+                  <option
+                    key={item}
+
+                    value={item}
+                  >
+                    {item}
+                  </option>
+                ))}
               </select>
             </SampleEditField>
 
             <SampleEditField
               label="Report Delivered Date"
-              icon={
-                <CalendarDays
-                  size={14}
-                />
-              }
+
+              icon={<CalendarDays size={14} />}
             >
               <input
                 type="date"
-                value={
-                  reportDeliveredDate
-                }
-                onChange={(e) =>
-                  setReportDeliveredDate(
-                    e.target.value
-                  )
-                }
-                disabled={
-                  reportStatus !==
-                  "Delivered"
-                }
+
+                value={reportDeliveredDate}
+
+                onChange={(e) => setReportDeliveredDate(e.target.value)}
+
+                disabled={reportStatus !== "Delivered"}
               />
 
-              {reportStatus !==
-                "Delivered" && (
+              {reportStatus !== "Delivered" && (
                 <small className="sample-edit-help">
-                  Select Delivered
-                  to enable this date.
+                  Select Delivered to enable this date.
                 </small>
               )}
             </SampleEditField>
@@ -1263,33 +1008,21 @@ router.refresh();
 
           <div
             className={`sample-edit-report-state ${
-              reportStatus ===
-              "Delivered"
-                ? "delivered"
-                : ""
+              reportStatus === "Delivered" ? "delivered" : ""
             }`}
           >
             <div>
-              {reportStatus ===
-              "Delivered" ? (
-                <CheckCircle2
-                  size={17}
-                />
+              {reportStatus === "Delivered" ? (
+                <CheckCircle2 size={17} />
               ) : (
-                <FileText
-                  size={17}
-                />
+                <FileText size={17} />
               )}
             </div>
 
             <span>
-              <small>
-                Report Status
-              </small>
+              <small>Report Status</small>
 
-              <strong>
-                {reportStatus}
-              </strong>
+              <strong>{reportStatus}</strong>
             </span>
           </div>
         </SampleEditSection>
@@ -1297,32 +1030,28 @@ router.refresh();
         {/* NOTES */}
 
         <SampleEditSection
-          icon={
-            <NotebookPen
-              size={18}
-            />
-          }
+          icon={<NotebookPen size={18} />}
+
           eyebrow="Internal"
+
           title="Sample Notes"
+
           description="Record sample condition, courier details, laboratory updates and client notes."
+
           type="navy"
         >
           <SampleEditField
             label="Notes"
-            icon={
-              <NotebookPen
-                size={14}
-              />
-            }
+
+            icon={<NotebookPen size={14} />}
           >
             <textarea
               rows={5}
+
               value={notes}
-              onChange={(e) =>
-                setNotes(
-                  e.target.value
-                )
-              }
+
+              onChange={(e) => setNotes(e.target.value)}
+
               placeholder="Sample condition, courier details, laboratory updates or client report notes..."
             />
           </SampleEditField>
@@ -1337,21 +1066,16 @@ router.refresh();
             </div>
 
             <span>
-              <strong>
-                Update this sample
-              </strong>
+              <strong>Update this sample</strong>
 
-              <small>
-                Save collection,
-                testing and report
-                progress.
-              </small>
+              <small>Save collection, testing and report progress.</small>
             </span>
           </div>
 
           <div className="sample-edit-submit-actions">
             <Link
               href="/admin/samples"
+
               className="sample-edit-cancel"
             >
               Cancel
@@ -1359,29 +1083,24 @@ router.refresh();
 
             <button
               type="submit"
+
               disabled={saving}
+
               className="sample-edit-submit"
             >
               {saving ? (
                 <Loader2
                   size={17}
+
                   className="animate-spin"
                 />
               ) : (
                 <Save size={17} />
               )}
 
-              <span>
-                {saving
-                  ? "Saving Changes..."
-                  : "Save Changes"}
-              </span>
+              <span>{saving ? "Saving Changes..." : "Save Changes"}</span>
 
-              {!saving && (
-                <ArrowRight
-                  size={15}
-                />
-              )}
+              {!saving && <ArrowRight size={15} />}
             </button>
           </div>
         </div>
@@ -1391,40 +1110,40 @@ router.refresh();
 }
 
 /* =========================================================
+
    SECTION
+
 ========================================================= */
 
 function SampleEditSection({
   icon,
+
   eyebrow,
+
   title,
+
   description,
+
   type,
+
   children,
 }: {
   icon: React.ReactNode;
+
   eyebrow: string;
+
   title: string;
+
   description: string;
 
-  type:
-    | "blue"
-    | "cyan"
-    | "orange"
-    | "purple"
-    | "green"
-    | "navy";
+  type: "blue" | "cyan" | "orange" | "purple" | "green" | "navy";
 
   children: React.ReactNode;
 }) {
   return (
-    <section
-      className={`sample-edit-section ${type}`}
-    >
+    <section className={`sample-edit-section ${type}`}>
       <div className="sample-edit-section-head">
-        <div className="sample-edit-section-icon">
-          {icon}
-        </div>
+        <div className="sample-edit-section-icon">{icon}</div>
 
         <div>
           <span>{eyebrow}</span>
@@ -1435,37 +1154,42 @@ function SampleEditSection({
         </div>
       </div>
 
-      <div className="sample-edit-section-body">
-        {children}
-      </div>
+      <div className="sample-edit-section-body">{children}</div>
     </section>
   );
 }
 
 /* =========================================================
+
    FIELD
+
 ========================================================= */
 
 function SampleEditField({
   label,
+
   required = false,
+
   icon,
+
   children,
 }: {
   label: string;
+
   required?: boolean;
+
   icon?: React.ReactNode;
+
   children: React.ReactNode;
 }) {
   return (
     <label className="sample-edit-field">
       <span className="sample-edit-label">
         {icon}
+
         {label}
 
-        {required && (
-          <em>*</em>
-        )}
+        {required && <em>*</em>}
       </span>
 
       {children}
@@ -1474,114 +1198,84 @@ function SampleEditField({
 }
 
 /* =========================================================
+
    METRIC
+
 ========================================================= */
 
 function SampleMetric({
   label,
+
   value,
+
   type,
+
   icon,
 }: {
   label: string;
+
   value: string;
-  type:
-    | "blue"
-    | "cyan"
-    | "green"
-    | "purple";
+
+  type: "blue" | "cyan" | "green" | "purple";
+
   icon: React.ReactNode;
 }) {
   return (
-    <div
-      className={`sample-edit-metric ${type}`}
-    >
-      <div>
-        {icon}
-      </div>
+    <div className={`sample-edit-metric ${type}`}>
+      <div>{icon}</div>
 
       <span>
-        <small>
-          {label}
-        </small>
+        <small>{label}</small>
 
-        <strong>
-          {value}
-        </strong>
+        <strong>{value}</strong>
       </span>
     </div>
   );
 }
 
 /* =========================================================
+
    SAMPLE LIFECYCLE
+
 ========================================================= */
 
-function SampleLifecycle({
-  currentStatus,
-}: {
-  currentStatus: string;
-}) {
-  const activeIndex =
-    sampleStatuses.indexOf(
-      currentStatus
-    );
+function SampleLifecycle({ currentStatus }: { currentStatus: string }) {
+  const activeIndex = sampleStatuses.indexOf(currentStatus);
 
   return (
     <div className="sample-edit-lifecycle">
       <div className="sample-edit-lifecycle-title">
-        <span>
-          Sample Lifecycle
-        </span>
+        <span>Sample Lifecycle</span>
 
-        <strong>
-          {currentStatus}
-        </strong>
+        <strong>{currentStatus}</strong>
       </div>
 
       <div className="sample-edit-lifecycle-track">
-        {sampleStatuses.map(
-          (stage, index) => {
-            const active =
-              index <= activeIndex;
+        {sampleStatuses.map((stage, index) => {
+          const active = index <= activeIndex;
 
-            const current =
-              index === activeIndex;
+          const current = index === activeIndex;
 
-            return (
-              <div
-                key={stage}
-                className={`sample-edit-lifecycle-stage ${
-                  active
-                    ? "active"
-                    : ""
-                } ${
-                  current
-                    ? "current"
-                    : ""
-                }`}
-              >
-                <div>
-                  {active &&
-                  index <
-                    activeIndex ? (
-                    <CheckCircle2
-                      size={11}
-                    />
-                  ) : (
-                    <span>
-                      {index + 1}
-                    </span>
-                  )}
-                </div>
+          return (
+            <div
+              key={stage}
 
-                <small>
-                  {stage}
-                </small>
+              className={`sample-edit-lifecycle-stage ${
+                active ? "active" : ""
+              } ${current ? "current" : ""}`}
+            >
+              <div>
+                {active && index < activeIndex ? (
+                  <CheckCircle2 size={11} />
+                ) : (
+                  <span>{index + 1}</span>
+                )}
               </div>
-            );
-          }
-        )}
+
+              <small>{stage}</small>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

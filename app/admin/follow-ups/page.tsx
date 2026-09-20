@@ -504,15 +504,16 @@ export default async function FollowUpsPage() {
       )
     );
 
-  const activeLeadStatuses = [
-    "New Lead",
-    "Contacted",
-    "Meeting",
-    "Meeting Scheduled",
-    "Requirement Identified",
-    "Quotation Sent",
-    "Follow-up",
-  ];
+ const activeLeadStatuses = [
+  "New Lead",
+  "Contacted",
+  "Visited",
+  "Meeting",
+  "Meeting Scheduled",
+  "Requirement Identified",
+  "Quotation Sent",
+  "Follow-up",
+];
 
   const leadItems: FollowUpItem[] =
     leads

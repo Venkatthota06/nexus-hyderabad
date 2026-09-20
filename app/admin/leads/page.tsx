@@ -3,6 +3,8 @@ import { db } from "@/src/prisma/db";
 
 import {
   Building2,
+  CalendarClock,
+  CheckCircle2,
   CircleDollarSign,
   Mail,
   Phone,
@@ -17,25 +19,45 @@ type Lead = {
   id: string;
   name: string;
   company: string;
+  companyId: string | null;
   phone: string;
   email: string;
   service: string;
   requirement: string;
   source: string;
   status: string;
+  isRead: boolean;
   notes: string | null;
   nextFollowUp: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
+type SearchParams = Promise<{
+  q?: string;
+  status?: string;
+}>;
+
+const CLOSED_STATUSES = new Set(["Won", "Lost"]);
+
+const STATUS_OPTIONS = [
+  "All",
+  "New Lead",
+  "Contacted",
+  "Visited",
+  "Meeting Scheduled",
+  "Requirement Identified",
+  "Quotation Sent",
+  "Follow-up",
+  "Won",
+  "Lost",
+];
+
 async function getLeads(): Promise<Lead[]> {
   try {
-    const leads = await db.orm.public.Lead
+    return (await db.orm.public.Lead
       .orderBy((lead) => lead.createdAt.desc())
-      .all();
-
-    return leads as Lead[];
+      .all()) as Lead[];
   } catch (error) {
     console.error("Admin leads getLeads error:", error);
     return [];
@@ -54,60 +76,115 @@ function getStatusClass(status: string) {
   switch (status) {
     case "Won":
       return "won";
-
     case "Lost":
       return "lost";
-
     case "Quotation Sent":
       return "quotation";
-
     case "Contacted":
       return "contacted";
-
+    case "Visited":
+      return "contacted";
     case "Follow-up":
       return "followup";
-
     case "Meeting Scheduled":
       return "meeting";
-
     case "Requirement Identified":
       return "requirement";
-
     default:
       return "new";
   }
 }
 
-export default async function LeadsPage() {
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function getFollowUpState(lead: Lead) {
+  if (CLOSED_STATUSES.has(lead.status) || !lead.nextFollowUp) {
+    return "none";
+  }
+
+  const followUp = new Date(lead.nextFollowUp);
+  const followUpDay = new Date(
+    followUp.getFullYear(),
+    followUp.getMonth(),
+    followUp.getDate()
+  );
+  const today = startOfToday();
+
+  if (followUpDay.getTime() < today.getTime()) {
+    return "overdue";
+  }
+
+  if (followUpDay.getTime() === today.getTime()) {
+    return "today";
+  }
+
+  return "upcoming";
+}
+
+function matchesSearch(lead: Lead, query: string) {
+  if (!query) return true;
+
+  const haystack = [
+    lead.name,
+    lead.company,
+    lead.phone,
+    lead.email,
+    lead.service,
+    lead.requirement,
+    lead.source,
+    lead.status,
+    lead.notes ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(query.toLowerCase());
+}
+
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const leads = await getLeads();
+  const params = await searchParams;
 
-  const newLeads = leads.filter(
-    (lead) => lead.status === "New Lead"
-  ).length;
+  const query = (params.q ?? "").trim();
+  const selectedStatus = params.status ?? "All";
 
-  const contacted = leads.filter(
-    (lead) => lead.status === "Contacted"
-  ).length;
-
-  const quotations = leads.filter(
+  const activeLeads = leads.filter(
+    (lead) => !CLOSED_STATUSES.has(lead.status)
+  );
+  const wonLeads = leads.filter((lead) => lead.status === "Won").length;
+  const quotationLeads = leads.filter(
     (lead) => lead.status === "Quotation Sent"
   ).length;
+  const overdueFollowUps = activeLeads.filter(
+    (lead) => getFollowUpState(lead) === "overdue"
+  ).length;
+  const dueToday = activeLeads.filter(
+    (lead) => getFollowUpState(lead) === "today"
+  ).length;
+
+  const filteredLeads = leads.filter((lead) => {
+    const statusMatch =
+      selectedStatus === "All" || lead.status === selectedStatus;
+
+    return statusMatch && matchesSearch(lead, query);
+  });
 
   return (
     <div className="leads-page-content">
-      {/* =========================================
-          PAGE HEADER
-      ========================================= */}
-
       <header className="leads-page-header">
         <div>
           <span>Nexus Hyderabad CRM</span>
-
           <h1>Lead Management</h1>
-
           <p>
-            Track website enquiries, prospects and
-            business opportunities in one place.
+            Track enquiries, sales prospects, follow-ups and business
+            opportunities without mixing them with operational customers.
           </p>
         </div>
 
@@ -117,67 +194,105 @@ export default async function LeadsPage() {
         </div>
       </header>
 
-      {/* =========================================
-          METRICS
-      ========================================= */}
-
       <div className="leads-metrics">
         <LeadMetricCard
-          title="Total Leads"
-          value={leads.length}
+          title="Active Leads"
+          value={activeLeads.length}
           icon={<Target size={21} />}
         />
 
         <LeadMetricCard
-          title="New Leads"
-          value={newLeads}
+          title="Overdue Follow-ups"
+          value={overdueFollowUps}
+          icon={<CalendarClock size={21} />}
+        />
+
+        <LeadMetricCard
+          title="Due Today"
+          value={dueToday}
           icon={<Users size={21} />}
         />
 
         <LeadMetricCard
-          title="Contacted"
-          value={contacted}
-          icon={<Phone size={21} />}
+          title="Quotation Sent"
+          value={quotationLeads}
+          icon={<CircleDollarSign size={21} />}
         />
 
         <LeadMetricCard
-          title="Quotations"
-          value={quotations}
-          icon={<CircleDollarSign size={21} />}
+          title="Won"
+          value={wonLeads}
+          icon={<CheckCircle2 size={21} />}
         />
       </div>
-
-      {/* =========================================
-          LEADS TABLE PANEL
-      ========================================= */}
 
       <section className="leads-panel">
         <div className="leads-panel-header">
           <div>
-            <span className="leads-panel-eyebrow">
-              Lead Database
-            </span>
-
-            <h2>Website Leads</h2>
-
+            <span className="leads-panel-eyebrow">Sales Pipeline</span>
+            <h2>Leads & Opportunities</h2>
             <p>
-              Enquiries received through the Nexus
-              Hyderabad website.
+              Website enquiries and manually tracked sales opportunities.
             </p>
           </div>
 
-          <div className="leads-search">
+          <form className="leads-search" method="GET">
             <Search size={16} />
 
             <input
-              type="text"
+              type="search"
+              name="q"
+              defaultValue={query}
               placeholder="Search leads..."
-              disabled
+              aria-label="Search leads"
             />
-          </div>
+
+            {selectedStatus !== "All" && (
+              <input type="hidden" name="status" value={selectedStatus} />
+            )}
+          </form>
         </div>
 
-        {leads.length > 0 ? (
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+            padding: "0 0 18px",
+          }}
+        >
+          {STATUS_OPTIONS.map((status) => {
+            const active = status === selectedStatus;
+            const href =
+              status === "All"
+                ? query
+                  ? `/admin/leads?q=${encodeURIComponent(query)}`
+                  : "/admin/leads"
+                : `/admin/leads?status=${encodeURIComponent(status)}${
+                    query ? `&q=${encodeURIComponent(query)}` : ""
+                  }`;
+
+            return (
+              <Link
+                key={status}
+                href={href}
+                className={`leads-status ${getStatusClass(
+                  status === "All" ? "New Lead" : status
+                )}`}
+                style={{
+                  textDecoration: "none",
+                  opacity: active ? 1 : 0.68,
+                  outline: active ? "2px solid currentColor" : "none",
+                  outlineOffset: "2px",
+                }}
+              >
+                {status}
+              </Link>
+            );
+          })}
+        </div>
+
+        {filteredLeads.length > 0 ? (
           <div className="leads-table-wrapper">
             <table className="leads-table">
               <thead>
@@ -187,120 +302,148 @@ export default async function LeadsPage() {
                   <th>Service</th>
                   <th>Contact</th>
                   <th>Status</th>
-                  <th>Date</th>
+                  <th>Follow-up</th>
                   <th>Requirement</th>
                 </tr>
               </thead>
 
               <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id}>
-                    {/* LEAD */}
+                {filteredLeads.map((lead) => {
+                  const followUpState = getFollowUpState(lead);
 
-                    <td>
-                      <div className="leads-person">
-                        <div className="leads-avatar">
-                          {lead.name
-                            .charAt(0)
-                            .toUpperCase()}
+                  return (
+                    <tr key={lead.id}>
+                      <td>
+                        <div className="leads-person">
+                          <div className="leads-avatar">
+                            {lead.name.charAt(0).toUpperCase()}
+                          </div>
+
+                          <div className="leads-person-details">
+                            <Link
+                              href={`/admin/leads/${lead.id}`}
+                              className="leads-name"
+                            >
+                              {lead.name}
+                            </Link>
+
+                            <span>
+                              {lead.source}
+                              {!lead.isRead ? " · New" : ""}
+                            </span>
+                          </div>
                         </div>
+                      </td>
 
-                        <div className="leads-person-details">
-                          <Link
-                            href={`/admin/leads/${lead.id}`}
-                            className="leads-name"
-                          >
-                            {lead.name}
-                          </Link>
-
-                          <span>{lead.source}</span>
+                      <td>
+                        <div className="leads-company">
+                          <Building2 size={14} />
+                          {lead.companyId ? (
+                            <Link href={`/admin/companies/${lead.companyId}`}>
+                              {lead.company}
+                            </Link>
+                          ) : (
+                            <span>{lead.company}</span>
+                          )}
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* COMPANY */}
+                      <td>
+                        <span className="leads-service">{lead.service}</span>
+                      </td>
 
-                    <td>
-                      <div className="leads-company">
-                        <Building2 size={14} />
+                      <td>
+                        <div className="leads-contact">
+                          {lead.phone ? (
+                            <a href={`tel:${lead.phone}`}>
+                              <Phone size={12} />
+                              <span>{lead.phone}</span>
+                            </a>
+                          ) : (
+                            <span>Phone not available</span>
+                          )}
 
-                        <span>{lead.company}</span>
-                      </div>
-                    </td>
+                          {lead.email ? (
+                            <a href={`mailto:${lead.email}`}>
+                              <Mail size={12} />
+                              <span>{lead.email}</span>
+                            </a>
+                          ) : (
+                            <span>Email not available</span>
+                          )}
+                        </div>
+                      </td>
 
-                    {/* SERVICE */}
+                      <td>
+                        <span
+                          className={`leads-status ${getStatusClass(
+                            lead.status
+                          )}`}
+                        >
+                          {lead.status}
+                        </span>
+                      </td>
 
-                    <td>
-                      <span className="leads-service">
-                        {lead.service}
-                      </span>
-                    </td>
+                      <td>
+                        {lead.nextFollowUp &&
+                        !CLOSED_STATUSES.has(lead.status) ? (
+                          <div>
+                            <span className="leads-date">
+                              {formatDate(lead.nextFollowUp)}
+                            </span>
 
-                    {/* CONTACT */}
+                            {followUpState !== "none" && (
+                              <div
+                                style={{
+                                  marginTop: "4px",
+                                  fontSize: "11px",
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                }}
+                              >
+                                {followUpState === "overdue"
+                                  ? "Overdue"
+                                  : followUpState === "today"
+                                    ? "Due today"
+                                    : "Upcoming"}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="leads-date">Not scheduled</span>
+                        )}
+                      </td>
 
-                    <td>
-                      <div className="leads-contact">
-                        <a href={`tel:${lead.phone}`}>
-                          <Phone size={12} />
-                          <span>{lead.phone}</span>
-                        </a>
-
-                        <a href={`mailto:${lead.email}`}>
-                          <Mail size={12} />
-                          <span>{lead.email}</span>
-                        </a>
-                      </div>
-                    </td>
-
-                    {/* STATUS */}
-
-                    <td>
-                      <span
-                        className={`leads-status ${getStatusClass(
-                          lead.status
-                        )}`}
-                      >
-                        {lead.status}
-                      </span>
-                    </td>
-
-                    {/* DATE */}
-
-                    <td>
-                      <span className="leads-date">
-                        {formatDate(lead.createdAt)}
-                      </span>
-                    </td>
-
-                    {/* REQUIREMENT */}
-
-                    <td>
-                      <Link
-                        href={`/admin/leads/${lead.id}`}
-                        className="leads-requirement"
-                      >
-                        {lead.requirement}
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                      <td>
+                        <Link
+                          href={`/admin/leads/${lead.id}`}
+                          className="leads-requirement"
+                        >
+                          {lead.requirement}
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : leads.length === 0 ? (
           <div className="leads-empty">
             <Target size={42} />
-
             <h3>No leads yet</h3>
-
             <p>
-              New website enquiries will appear here
-              automatically.
+              Website enquiries and future sales opportunities will appear
+              here.
             </p>
-
-            <Link href="/#contact">
-              Submit Test Enquiry
-            </Link>
+            <Link href="/#contact">Submit Test Enquiry</Link>
+          </div>
+        ) : (
+          <div className="leads-empty">
+            <Search size={42} />
+            <h3>No matching leads</h3>
+            <p>Try another search term or remove the current status filter.</p>
+            <Link href="/admin/leads">Clear Filters</Link>
           </div>
         )}
       </section>
@@ -319,10 +462,7 @@ function LeadMetricCard({
 }) {
   return (
     <div className="leads-metric-card">
-      <div className="leads-metric-icon">
-        {icon}
-      </div>
-
+      <div className="leads-metric-icon">{icon}</div>
       <div>
         <span>{title}</span>
         <strong>{value}</strong>

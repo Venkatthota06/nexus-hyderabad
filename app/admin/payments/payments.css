@@ -98,11 +98,17 @@
 }
 
 .payments-metric strong {
-  overflow: hidden;
   color: #163f61;
-  font-size: 18px;
+  font-size: clamp(14px, 1.25vw, 18px);
   font-weight: 900;
-  text-overflow: ellipsis;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  font-variant-numeric: tabular-nums;
+}
+.payments-metric.green strong {
+  font-size: clamp(13px, 1.15vw, 17px);
 }
 
 .payments-metric small {

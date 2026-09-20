@@ -5,6 +5,10 @@ import { db } from "@/src/prisma/db";
 
 export const runtime = "nodejs";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
 type SampleRequestBody = {
   id?: string;
   companyId?: string;
@@ -28,6 +32,47 @@ type SampleRequestBody = {
   notes?: string;
 };
 
+/* =========================================================
+   ALLOWED WORKFLOW VALUES
+========================================================= */
+
+const SAMPLE_STATUSES = [
+  "Planned",
+  "Collected",
+  "Dispatched",
+  "Received at Lab",
+  "Testing",
+  "Completed",
+  "Report Delivered",
+] as const;
+
+const REPORT_STATUSES = [
+  "Pending",
+  "Partial Report",
+  "Ready",
+  "Delivered",
+] as const;
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function isValidSampleStatus(value: string) {
+  return SAMPLE_STATUSES.includes(
+    value as (typeof SAMPLE_STATUSES)[number]
+  );
+}
+
+function isValidReportStatus(value: string) {
+  return REPORT_STATUSES.includes(
+    value as (typeof REPORT_STATUSES)[number]
+  );
+}
+
+/* =========================================================
+   GET
+========================================================= */
+
 export async function GET() {
   const session = await auth();
 
@@ -42,13 +87,9 @@ export async function GET() {
   }
 
   try {
-    const samples =
-      await db.orm.public.Sample
-        .orderBy(
-          (sample) =>
-            sample.createdAt.desc()
-        )
-        .all();
+    const samples = await db.orm.public.Sample
+      .orderBy((sample) => sample.createdAt.desc())
+      .all();
 
     return NextResponse.json(samples);
   } catch (error) {
@@ -60,17 +101,18 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to load samples.",
+        message: "Unable to load samples.",
       },
       { status: 500 }
     );
   }
 }
 
-export async function POST(
-  request: Request
-) {
+/* =========================================================
+   POST
+========================================================= */
+
+export async function POST(request: Request) {
   const session = await auth();
 
   if (!session?.user) {
@@ -87,6 +129,10 @@ export async function POST(
     const body: SampleRequestBody =
       await request.json();
 
+    /* =====================================================
+       BASIC VALUES
+    ===================================================== */
+
     const companyId =
       body.companyId?.trim() ?? "";
 
@@ -100,9 +146,11 @@ export async function POST(
       body.sampleType?.trim() ?? "";
 
     const sampleCount =
-      Number(
-        body.sampleCount ?? 1
-      );
+      Number(body.sampleCount ?? 1);
+
+    /* =====================================================
+       REQUIRED FIELDS
+    ===================================================== */
 
     if (
       !companyId ||
@@ -119,10 +167,12 @@ export async function POST(
       );
     }
 
+    /* =====================================================
+       SAMPLE COUNT VALIDATION
+    ===================================================== */
+
     if (
-      !Number.isFinite(
-        sampleCount
-      ) ||
+      !Number.isFinite(sampleCount) ||
       sampleCount < 1
     ) {
       return NextResponse.json(
@@ -134,6 +184,32 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    /* =====================================================
+       DUPLICATE SAMPLE NUMBER CHECK
+    ===================================================== */
+
+    const duplicateSample =
+      await db.orm.public.Sample
+        .where({
+          sampleNumber,
+        })
+        .first();
+
+    if (duplicateSample) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "This sample number already exists. Please use a unique sample reference.",
+        },
+        { status: 409 }
+      );
+    }
+
+    /* =====================================================
+       COMPANY VALIDATION
+    ===================================================== */
 
     const company =
       await db.orm.public.Company
@@ -152,6 +228,10 @@ export async function POST(
         { status: 404 }
       );
     }
+
+    /* =====================================================
+       QUOTATION VALIDATION
+    ===================================================== */
 
     if (quotationId) {
       const quotation =
@@ -173,8 +253,7 @@ export async function POST(
       }
 
       if (
-        quotation.companyId !==
-        companyId
+        quotation.companyId !== companyId
       ) {
         return NextResponse.json(
           {
@@ -187,49 +266,94 @@ export async function POST(
       }
     }
 
-    const sample =
-      await db.orm.public.Sample.create(
+    /* =====================================================
+       STATUS VALIDATION
+    ===================================================== */
+
+    let status =
+      body.status?.trim() || "Planned";
+
+    const reportStatus =
+      body.reportStatus?.trim() ||
+      "Pending";
+
+    if (!isValidSampleStatus(status)) {
+      return NextResponse.json(
         {
-          companyId,
-          quotationId,
-
-          sampleNumber,
-          sampleType,
-          sampleCount,
-
-          collectionDate:
-            body.collectionDate?.trim() ||
-            null,
-
-          collectedBy:
-            body.collectedBy?.trim() ||
-            null,
-
-          status:
-            body.status?.trim() ||
-            "Planned",
-
-          testingLocation:
-            body.testingLocation?.trim() ||
-            null,
-
-          expectedCompletionDate:
-            body.expectedCompletionDate?.trim() ||
-            null,
-
-          reportStatus:
-            body.reportStatus?.trim() ||
-            "Pending",
-
-          reportDeliveredDate:
-            body.reportDeliveredDate?.trim() ||
-            null,
-
-          notes:
-            body.notes?.trim() ||
-            null,
-        }
+          success: false,
+          message:
+            "Invalid sample status.",
+        },
+        { status: 400 }
       );
+    }
+
+    if (
+      !isValidReportStatus(reportStatus)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid report status.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* =====================================================
+       REPORT CONSISTENCY
+    ===================================================== */
+
+    let reportDeliveredDate =
+      body.reportDeliveredDate?.trim() ||
+      null;
+
+    if (reportStatus !== "Delivered") {
+      reportDeliveredDate = null;
+    }
+
+    if (reportStatus === "Delivered") {
+      status = "Report Delivered";
+    }
+
+    /* =====================================================
+       CREATE SAMPLE
+    ===================================================== */
+
+    const sample =
+      await db.orm.public.Sample.create({
+        companyId,
+        quotationId,
+
+        sampleNumber,
+        sampleType,
+        sampleCount,
+
+        collectionDate:
+          body.collectionDate?.trim() ||
+          null,
+
+        collectedBy:
+          body.collectedBy?.trim() ||
+          null,
+
+        status,
+
+        testingLocation:
+          body.testingLocation?.trim() ||
+          null,
+
+        expectedCompletionDate:
+          body.expectedCompletionDate?.trim() ||
+          null,
+
+        reportStatus,
+        reportDeliveredDate,
+
+        notes:
+          body.notes?.trim() || null,
+      });
 
     return NextResponse.json(
       {
@@ -257,9 +381,11 @@ export async function POST(
   }
 }
 
-export async function PUT(
-  request: Request
-) {
+/* =========================================================
+   PUT
+========================================================= */
+
+export async function PUT(request: Request) {
   const session = await auth();
 
   if (!session?.user) {
@@ -279,6 +405,10 @@ export async function PUT(
     const id =
       body.id?.trim();
 
+    /* =====================================================
+       SAMPLE ID VALIDATION
+    ===================================================== */
+
     if (!id) {
       return NextResponse.json(
         {
@@ -290,9 +420,15 @@ export async function PUT(
       );
     }
 
+    /* =====================================================
+       EXISTING SAMPLE
+    ===================================================== */
+
     const existingSample =
       await db.orm.public.Sample
-        .where({ id })
+        .where({
+          id,
+        })
         .first();
 
     if (!existingSample) {
@@ -305,6 +441,10 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    /* =====================================================
+       COMPANY
+    ===================================================== */
 
     const companyId =
       body.companyId?.trim() ||
@@ -328,9 +468,12 @@ export async function PUT(
       );
     }
 
+    /* =====================================================
+       QUOTATION
+    ===================================================== */
+
     const quotationId =
-      body.quotationId !==
-      undefined
+      body.quotationId !== undefined
         ? body.quotationId.trim() ||
           null
         : existingSample.quotationId;
@@ -355,8 +498,7 @@ export async function PUT(
       }
 
       if (
-        quotation.companyId !==
-        companyId
+        quotation.companyId !== companyId
       ) {
         return NextResponse.json(
           {
@@ -369,25 +511,59 @@ export async function PUT(
       }
     }
 
+    /* =====================================================
+       SAMPLE NUMBER
+    ===================================================== */
+
     const sampleNumber =
       body.sampleNumber?.trim() ||
       existingSample.sampleNumber;
+
+    if (
+      sampleNumber !==
+      existingSample.sampleNumber
+    ) {
+      const duplicateSample =
+        await db.orm.public.Sample
+          .where({
+            sampleNumber,
+          })
+          .first();
+
+      if (
+        duplicateSample &&
+        duplicateSample.id !== id
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "This sample number already exists. Please use a unique sample reference.",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    /* =====================================================
+       SAMPLE TYPE
+    ===================================================== */
 
     const sampleType =
       body.sampleType?.trim() ||
       existingSample.sampleType;
 
+    /* =====================================================
+       SAMPLE COUNT
+    ===================================================== */
+
     const sampleCount =
       body.sampleCount !== undefined
-        ? Number(
-            body.sampleCount
-          )
+        ? Number(body.sampleCount)
         : existingSample.sampleCount;
 
     if (
-      !Number.isFinite(
-        sampleCount
-      ) ||
+      !Number.isFinite(sampleCount) ||
       sampleCount < 1
     ) {
       return NextResponse.json(
@@ -400,27 +576,47 @@ export async function PUT(
       );
     }
 
+    /* =====================================================
+       COLLECTION DETAILS
+    ===================================================== */
+
     const collectionDate =
-      body.collectionDate !==
-      undefined
+      body.collectionDate !== undefined
         ? body.collectionDate.trim() ||
           null
         : existingSample.collectionDate;
 
     const collectedBy =
-      body.collectedBy !==
-      undefined
+      body.collectedBy !== undefined
         ? body.collectedBy.trim() ||
           null
         : existingSample.collectedBy;
 
-    const status =
+    /* =====================================================
+       SAMPLE STATUS
+    ===================================================== */
+
+    let status =
       body.status?.trim() ||
       existingSample.status;
 
+    if (!isValidSampleStatus(status)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid sample status.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* =====================================================
+       TESTING DETAILS
+    ===================================================== */
+
     const testingLocation =
-      body.testingLocation !==
-      undefined
+      body.testingLocation !== undefined
         ? body.testingLocation.trim() ||
           null
         : existingSample.testingLocation;
@@ -430,28 +626,68 @@ export async function PUT(
       undefined
         ? body.expectedCompletionDate.trim() ||
           null
-        : existingSample.expectedCompletionDate;
+        : existingSample
+            .expectedCompletionDate;
+
+    /* =====================================================
+       REPORT STATUS
+    ===================================================== */
 
     const reportStatus =
       body.reportStatus?.trim() ||
       existingSample.reportStatus;
 
-    const reportDeliveredDate =
+    if (
+      !isValidReportStatus(reportStatus)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid report status.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* =====================================================
+       REPORT DELIVERY
+    ===================================================== */
+
+    let reportDeliveredDate =
       body.reportDeliveredDate !==
       undefined
         ? body.reportDeliveredDate.trim() ||
           null
-        : existingSample.reportDeliveredDate;
+        : existingSample
+            .reportDeliveredDate;
+
+    if (reportStatus !== "Delivered") {
+      reportDeliveredDate = null;
+    }
+
+    if (reportStatus === "Delivered") {
+      status = "Report Delivered";
+    }
+
+    /* =====================================================
+       NOTES
+    ===================================================== */
 
     const notes =
       body.notes !== undefined
-        ? body.notes.trim() ||
-          null
+        ? body.notes.trim() || null
         : existingSample.notes;
+
+    /* =====================================================
+       UPDATE SAMPLE
+    ===================================================== */
 
     const updatedSample =
       await db.orm.public.Sample
-        .where({ id })
+        .where({
+          id,
+        })
         .update({
           companyId,
           quotationId,
@@ -495,4 +731,4 @@ export async function PUT(
       { status: 500 }
     );
   }
-} 
+}
