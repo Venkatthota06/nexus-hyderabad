@@ -21,22 +21,46 @@ type SearchResult = {
   companyId: string | null;
 };
 
+/* =========================================================
+   SEARCH NORMALIZATION
+
+   Makes searches such as:
+   WeWork
+   wework
+   we work
+   we-work
+
+   behave consistently.
+========================================================= */
+
+function normalizeSearchValue(
+  value: string | number | null | undefined
+) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 function matches(
   query: string,
-  ...values: Array<
-    string | number | null | undefined
-  >
+  ...values: Array<string | number | null | undefined>
 ) {
+  const normalizedQuery = normalizeSearchValue(query);
+
+  if (!normalizedQuery) {
+    return false;
+  }
+
   return values.some((value) =>
-    String(value ?? "")
-      .toLowerCase()
-      .includes(query)
+    normalizeSearchValue(value).includes(normalizedQuery)
   );
 }
 
-export async function GET(
-  request: Request
-) {
+/* =========================================================
+   GLOBAL CRM SEARCH
+========================================================= */
+
+export async function GET(request: Request) {
   const session = await auth();
 
   if (!session?.user) {
@@ -51,8 +75,7 @@ export async function GET(
   }
 
   try {
-    const { searchParams } =
-      new URL(request.url);
+    const { searchParams } = new URL(request.url);
 
     const rawQuery =
       searchParams.get("q")?.trim() ?? "";
@@ -60,12 +83,16 @@ export async function GET(
     if (rawQuery.length < 2) {
       return NextResponse.json({
         query: rawQuery,
+        total: 0,
         results: [],
       });
     }
 
-    const query =
-      rawQuery.toLowerCase();
+    const query = rawQuery.toLowerCase();
+
+    /* =====================================================
+       LOAD CRM DATA
+    ===================================================== */
 
     const [
       companies,
@@ -82,6 +109,10 @@ export async function GET(
       db.orm.public.Sample.all(),
       db.orm.public.Report.all(),
     ]);
+
+    /* =====================================================
+       LOOKUP MAPS
+    ===================================================== */
 
     const companyMap = new Map(
       companies.map((company) => [
@@ -124,8 +155,7 @@ export async function GET(
           type: "company",
           title: company.name,
           subtitle:
-            company.industry ||
-            "Company",
+            company.industry || "Company",
           detail: [
             company.city,
             company.state,
@@ -317,7 +347,8 @@ export async function GET(
         results.push({
           id: report.id,
           type: "report",
-          title: report.reportNumber,
+          title:
+            report.reportNumber,
           subtitle:
             report.reportType,
           detail:
@@ -331,7 +362,7 @@ export async function GET(
     }
 
     /* =====================================================
-       RESULT LIMIT
+       RETURN RESULTS
     ===================================================== */
 
     return NextResponse.json({

@@ -1,9 +1,6 @@
 import Link from "next/link";
-
-import type { ElementType } from "react";
-
-import Next30DaysPlan from "./Next30DaysPlan";
-
+import DashboardSearch from "./DashboardSearch";
+import NotificationBell from "./NotificationBell";
 import {
   Activity,
   ArrowRight,
@@ -22,62 +19,42 @@ import {
 } from "lucide-react";
 
 import { db } from "@/src/prisma/db";
-
 import "./admin-dashboard.css";
 
 export const dynamic = "force-dynamic";
 
 type Company = {
   id: string;
-
   name: string;
-
   industry: string | null;
-
   status: string;
-
   createdAt: string;
 };
 
 type Location = {
   id: string;
-
   companyId: string;
-
   name: string;
-
   status: string;
 };
 
 type RecurringService = {
   id: string;
-
   companyId: string;
-
   locationId: string | null;
-
   service: string;
-
   sampleType: string;
-
   samplesPerMonth: number;
-
   status: string;
 };
 
 type WorkOrder = {
   id: string;
-
   companyId: string;
-
   workOrderNumber: string;
-
   service: string;
-
   totalAmount: number;
-
   status: string;
-
   confirmedDate: string;
 };
 
@@ -93,178 +70,62 @@ type Payment = {
 
 type Quotation = {
   id: string;
-
   companyId: string;
-
   quotationNumber: string;
-
   service: string;
-
   totalAmount: number;
-
   status: string;
-
   nextFollowUp: string | null;
-
   createdAt: string;
 };
 
 type ActivityRow = {
   id: string;
-
   companyId: string;
-
   type: string;
-
   title: string;
-
   description: string | null;
-
   activityDate: string;
-
   nextAction: string | null;
-
   nextFollowUp: string | null;
 };
 
 type Lead = {
   id: string;
-
   companyId: string | null;
-
   name: string;
-
   company: string;
-
   service: string;
-
   status: string;
-
   nextFollowUp: string | null;
-
   createdAt: string;
 };
 
 type Sample = {
   id: string;
-
   companyId: string;
-
   sampleNumber: string;
-
   sampleType: string;
-
   sampleCount: number;
-
   status: string;
-
   createdAt: string;
 };
 
-async function getCompanies(): Promise<Company[]> {
+type PlanItem = {
+  id: string;
+  companyId: string | null;
+  title: string;
+  category: string;
+  priority: string;
+  status: string;
+  dueDate: string | null;
+};
+
+async function safeAll<T>(fn: () => Promise<T[]>, label: string): Promise<T[]> {
   try {
-    return (await db.orm.public.Company.orderBy((row) => row.createdAt.desc())
-
-      .all()) as Company[];
+    return await fn();
   } catch (error) {
-    console.error("Dashboard companies:", error);
-
-    return [];
-  }
-}
-
-async function getLocations(): Promise<Location[]> {
-  try {
-    return (await db.orm.public.Location.all()) as Location[];
-  } catch (error) {
-    console.error("Dashboard locations:", error);
-
-    return [];
-  }
-}
-
-async function getRecurringServices(): Promise<RecurringService[]> {
-  try {
-    return (await db.orm.public.RecurringService.all()) as RecurringService[];
-  } catch (error) {
-    console.error("Dashboard recurring:", error);
-
-    return [];
-  }
-}
-
-async function getWorkOrders(): Promise<WorkOrder[]> {
-  try {
-    return (await db.orm.public.WorkOrder.orderBy((row) =>
-      row.confirmedDate.desc(),
-    )
-
-      .all()) as WorkOrder[];
-  } catch (error) {
-    console.error("Dashboard work orders:", error);
-
-    return [];
-  }
-}
-
-async function getPayments(): Promise<Payment[]> {
-  try {
-    return (await db.orm.public.Payment.orderBy((row) => row.paymentDate.desc())
-
-      .all()) as Payment[];
-  } catch (error) {
-    console.error("Dashboard payments:", error);
-
-    return [];
-  }
-}
-
-async function getQuotations(): Promise<Quotation[]> {
-  try {
-    return (await db.orm.public.Quotation.orderBy((row) => row.createdAt.desc())
-
-      .all()) as Quotation[];
-  } catch (error) {
-    console.error("Dashboard quotations:", error);
-
-    return [];
-  }
-}
-
-async function getActivities(): Promise<ActivityRow[]> {
-  try {
-    return (await db.orm.public.Activity.orderBy((row) =>
-      row.activityDate.desc(),
-    )
-
-      .all()) as ActivityRow[];
-  } catch (error) {
-    console.error("Dashboard activities:", error);
-
-    return [];
-  }
-}
-
-async function getLeads(): Promise<Lead[]> {
-  try {
-    return (await db.orm.public.Lead.orderBy((row) => row.createdAt.desc())
-
-      .all()) as Lead[];
-  } catch (error) {
-    console.error("Dashboard leads:", error);
-
-    return [];
-  }
-}
-
-async function getSamples(): Promise<Sample[]> {
-  try {
-    return (await db.orm.public.Sample.orderBy((row) => row.createdAt.desc())
-
-      .all()) as Sample[];
-  } catch (error) {
-    console.error("Dashboard samples:", error);
-
+    console.error(`Dashboard ${label}:`, error);
     return [];
   }
 }
@@ -272,9 +133,7 @@ async function getSamples(): Promise<Sample[]> {
 function money(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
-
     currency: "INR",
-
     maximumFractionDigits: 0,
   }).format(value);
 }
@@ -282,57 +141,41 @@ function money(value: number) {
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
     day: "2-digit",
-
     month: "short",
-
     year: "numeric",
   }).format(new Date(value));
 }
 
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function isActiveStatus(status: string) {
-  const value = status.toLowerCase();
-
-  return ![
-    "inactive",
-
-    "cancelled",
-
-    "canceled",
-
-    "closed",
-
-    "rejected",
-
-    "void",
-  ].includes(value);
+  return !["inactive", "cancelled", "canceled", "closed", "rejected", "void"].includes(
+    status.toLowerCase(),
+  );
 }
 
 function isOpenQuotation(status: string) {
-  const value = status.toLowerCase();
-
   return ![
     "accepted",
-
     "approved",
-
     "won",
-
     "closed",
-
     "rejected",
-
     "cancelled",
-
     "canceled",
-
     "expired",
-  ].includes(value);
+  ].includes(status.toLowerCase());
 }
 
 function isValidWorkOrder(status: string) {
-  const value = status.toLowerCase();
-
-  return !["cancelled", "canceled", "rejected", "void"].includes(value);
+  return !["cancelled", "canceled", "rejected", "void"].includes(
+    status.toLowerCase(),
+  );
 }
 
 function isReceivedPayment(status: string) {
@@ -341,39 +184,73 @@ function isReceivedPayment(status: string) {
   );
 }
 
-function Kpi({
+function statusClass(status: string) {
+  const s = status.toLowerCase();
+  if (["accepted", "completed", "delivered", "received", "paid", "collected"].some((x) => s.includes(x))) return "green";
+  if (["sent", "new", "ready"].some((x) => s.includes(x))) return "blue";
+  if (["follow", "review", "meeting"].some((x) => s.includes(x))) return "purple";
+  if (["pending", "discussion", "identified", "contacted", "visited"].some((x) => s.includes(x))) return "amber";
+  return "slate";
+}
+
+function Donut({
+  segments,
+  centerTop,
+  centerBottom,
+}: {
+  segments: { value: number; color: string }[];
+  centerTop: string;
+  centerBottom: string;
+}) {
+  const total = segments.reduce((sum, item) => sum + item.value, 0);
+  let cursor = 0;
+  const stops = segments
+    .filter((item) => item.value > 0)
+    .map((item) => {
+      const start = total ? (cursor / total) * 360 : 0;
+      cursor += item.value;
+      const end = total ? (cursor / total) * 360 : 0;
+      return `${item.color} ${start}deg ${end}deg`;
+    })
+    .join(", ");
+
+  return (
+    <div
+      className="v3-donut"
+      style={{
+        background: total
+          ? `conic-gradient(${stops})`
+          : "conic-gradient(#e8eef5 0deg 360deg)",
+      }}
+    >
+      <div className="v3-donut-hole">
+        <strong>{centerTop}</strong>
+        <span>{centerBottom}</span>
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({
+  icon,
   title,
-
   value,
-
   note,
-
-  icon: Icon,
-
   tone,
 }: {
+  icon: React.ReactNode;
   title: string;
-
   value: string | number;
-
-  note: string;
-
-  icon: ElementType;
-
+  note: React.ReactNode;
   tone: string;
 }) {
   return (
-    <article className={`hyd-kpi hyd-kpi-${tone}`}>
-      <span className="hyd-kpi-icon">
-        <Icon size={21} />
-      </span>
-
-      <div>
-        <p>{title}</p>
-
+    <article className={`v3-kpi v3-kpi-${tone}`}>
+      <div className="v3-kpi-icon">{icon}</div>
+      <div className="v3-kpi-copy">
+        <span>{title}</span>
         <strong>{value}</strong>
-
-        <span>{note}</span>
+        <small>{note}</small>
       </div>
     </article>
   );
@@ -382,55 +259,56 @@ function Kpi({
 export default async function AdminDashboardPage() {
   const [
     companies,
-
     locations,
-
     recurringServices,
-
     workOrders,
-
     payments,
-
     quotations,
-
     activities,
-
     leads,
-
     samples,
+    planItems,
   ] = await Promise.all([
-    getCompanies(),
-
-    getLocations(),
-
-    getRecurringServices(),
-
-    getWorkOrders(),
-
-    getPayments(),
-
-    getQuotations(),
-
-    getActivities(),
-
-    getLeads(),
-
-    getSamples(),
+    safeAll<Company>(
+      async () => (await db.orm.public.Company.orderBy((row) => row.createdAt.desc()).all()) as Company[],
+      "companies",
+    ),
+    safeAll<Location>(async () => (await db.orm.public.Location.all()) as Location[], "locations"),
+    safeAll<RecurringService>(
+      async () => (await db.orm.public.RecurringService.all()) as RecurringService[],
+      "recurring",
+    ),
+    safeAll<WorkOrder>(
+      async () => (await db.orm.public.WorkOrder.orderBy((row) => row.confirmedDate.desc()).all()) as WorkOrder[],
+      "work orders",
+    ),
+    safeAll<Payment>(
+      async () => (await db.orm.public.Payment.orderBy((row) => row.paymentDate.desc()).all()) as Payment[],
+      "payments",
+    ),
+    safeAll<Quotation>(
+      async () => (await db.orm.public.Quotation.orderBy((row) => row.createdAt.desc()).all()) as Quotation[],
+      "quotations",
+    ),
+    safeAll<ActivityRow>(
+      async () => (await db.orm.public.Activity.orderBy((row) => row.activityDate.desc()).all()) as ActivityRow[],
+      "activities",
+    ),
+    safeAll<Lead>(
+      async () => (await db.orm.public.Lead.orderBy((row) => row.createdAt.desc()).all()) as Lead[],
+      "leads",
+    ),
+    safeAll<Sample>(
+      async () => (await db.orm.public.Sample.orderBy((row) => row.createdAt.desc()).all()) as Sample[],
+      "samples",
+    ),
+    safeAll<PlanItem>(
+      async () => (await db.orm.public.PlanItem.orderBy((row) => row.createdAt.desc()).all()) as PlanItem[],
+      "plan",
+    ),
   ]);
 
-  const companyMap = new Map(
-    companies.map((company) => [company.id, company.name]),
-  );
-
-  /*
-
-   * Recurring operations KPIs must come only from active
-
-   * RecurringService records. This prevents one-time locations
-
-   * such as Qubic / SEI from inflating recurring customer totals.
-
-   */
+  const companyMap = new Map(companies.map((company) => [company.id, company.name]));
 
   const activeRecurring = recurringServices.filter(
     (service) => service.status.toLowerCase() === "active",
@@ -438,9 +316,7 @@ export default async function AdminDashboardPage() {
 
   const recurringLocationIds = new Set(
     activeRecurring
-
       .map((service) => service.locationId)
-
       .filter((id): id is string => Boolean(id)),
   );
 
@@ -450,49 +326,29 @@ export default async function AdminDashboardPage() {
       location.status.toLowerCase() === "active",
   );
 
+  const recurringCompanyIds = new Set(activeRecurring.map((service) => service.companyId));
+
   const recurringSamples = activeRecurring.reduce(
     (total, service) => total + Number(service.samplesPerMonth || 0),
-
     0,
   );
 
-  const recurringMix = activeRecurring.reduce(
+  const sampleMix = activeRecurring.reduce(
     (result, service) => {
       const type = service.sampleType.toLowerCase();
-
       const count = Number(service.samplesPerMonth || 0);
-
-      if (type.includes("water") || type.includes("ro")) {
-        result.water += count;
-      } else if (type.includes("food") || type.includes("meal")) {
-        result.food += count;
-      } else if (type.includes("swab")) {
-        result.swab += count;
-      } else {
-        result.other += count;
-      }
-
+      if (type.includes("water") || type.includes("ro")) result.water += count;
+      else if (type.includes("food") || type.includes("meal")) result.food += count;
+      else if (type.includes("swab")) result.swab += count;
+      else result.other += count;
       return result;
     },
-
-    {
-      water: 0,
-
-      food: 0,
-
-      swab: 0,
-
-      other: 0,
-    },
+    { water: 0, food: 0, swab: 0, other: 0 },
   );
 
-  const validOrders = workOrders.filter((order) =>
-    isValidWorkOrder(order.status),
-  );
-
+  const validOrders = workOrders.filter((order) => isValidWorkOrder(order.status));
   const businessValue = validOrders.reduce(
     (total, order) => total + Number(order.totalAmount || 0),
-
     0,
   );
 
@@ -500,54 +356,30 @@ export default async function AdminDashboardPage() {
     isReceivedPayment(payment.status),
   );
 
-  /*
-   * Total money actually received across all verified payment records.
-   * This includes both WorkOrder-linked and Quotation-linked payments.
-   */
   const collectedAmount = receivedPayments.reduce(
     (total, payment) => total + Number(payment.amount || 0),
     0,
   );
 
-  /*
-   * Outstanding confirmed WorkOrder balance.
-   * Each order is reduced only by payments explicitly linked to that order.
-   * Quotation-linked payments therefore cannot reduce unrelated WorkOrders.
-   */
   const pendingAmount = validOrders.reduce((total, order) => {
     const orderPayments = receivedPayments
       .filter((payment) => payment.workOrderId === order.id)
-      .reduce(
-        (paymentTotal, payment) => paymentTotal + Number(payment.amount || 0),
-        0,
-      );
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
 
-    const orderPending = Math.max(
-      Number(order.totalAmount || 0) - orderPayments,
-      0,
-    );
-
-    return total + orderPending;
+    return total + Math.max(Number(order.totalAmount || 0) - orderPayments, 0);
   }, 0);
 
-  /*
-   * Collection rate is calculated against confirmed WorkOrders only.
-   * Quotation-linked receipts remain in Amount Collected but do not distort
-   * the WorkOrder collection percentage.
-   */
-  const collectedAgainstOrders = validOrders.reduce((total, order) => {
-    const orderPayments = receivedPayments
+  const orderCollected = validOrders.reduce((total, order) => {
+    const linked = receivedPayments
       .filter((payment) => payment.workOrderId === order.id)
-      .reduce(
-        (paymentTotal, payment) => paymentTotal + Number(payment.amount || 0),
-        0,
-      );
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
 
-    return total + Math.min(orderPayments, Number(order.totalAmount || 0));
+    return total + Math.min(linked, Number(order.totalAmount || 0));
   }, 0);
 
-  const collectionRate =
-    businessValue > 0 ? (collectedAgainstOrders / businessValue) * 100 : 0;
+  const collectionRate = businessValue
+    ? (orderCollected / businessValue) * 100
+    : 0;
 
   const openQuotations = quotations.filter((quotation) =>
     isOpenQuotation(quotation.status),
@@ -555,651 +387,454 @@ export default async function AdminDashboardPage() {
 
   const activeLeads = leads.filter((lead) => isActiveStatus(lead.status));
 
-  /*
+  const followups = [
+    ...leads
+      .filter((lead) => lead.nextFollowUp)
+      .map((lead) => ({
+        id: `lead-${lead.id}`,
+        title: lead.company || lead.name || "Lead",
+        purpose: lead.service || "Lead follow-up",
+        date: lead.nextFollowUp!,
+        status: lead.status,
+        href: `/admin/leads/${lead.id}`,
+      })),
+    ...activities
+      .filter((activity) => activity.nextFollowUp)
+      .map((activity) => ({
+        id: `activity-${activity.id}`,
+        title: companyMap.get(activity.companyId) || "Client",
+        purpose: activity.nextAction || activity.title,
+        date: activity.nextFollowUp!,
+        status: "Follow-up",
+        href: `/admin/companies/${activity.companyId}`,
+      })),
+    ...quotations
+      .filter((quotation) => quotation.nextFollowUp && isOpenQuotation(quotation.status))
+      .map((quotation) => ({
+        id: `quotation-${quotation.id}`,
+        title: companyMap.get(quotation.companyId) || "Client",
+        purpose: quotation.service,
+        date: quotation.nextFollowUp!,
+        status: quotation.status,
+        href: `/admin/quotations/${quotation.id}`,
+      })),
+  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-   * Dashboard "Monthly Sample Mix" represents the verified
+  const recentClients = companies.slice(0, 5);
+  const recentActivities = activities.slice(0, 5);
+  const activeQuotes = openQuotations.slice(0, 5);
+  const upcomingFollowups = followups.slice(0, 5);
+  const activePlan = planItems
+    .filter((item) => item.status.toLowerCase() !== "completed")
+    .slice(0, 6);
 
-   * recurring monthly schedule, not only Sample rows physically
+  const recurringLocationCountByCompany = new Map<string, number>();
+  recurringLocations.forEach((location) => {
+    recurringLocationCountByCompany.set(
+      location.companyId,
+      (recurringLocationCountByCompany.get(location.companyId) || 0) + 1,
+    );
+  });
 
-   * entered during the current calendar month.
+  const recurringClientGroups = [...recurringCompanyIds].map((companyId) => ({
+    companyId,
+    name: companyMap.get(companyId) || "Client",
+    locations: recurringLocationCountByCompany.get(companyId) || 0,
+  }));
 
-   */
+  const weWorkLocations = recurringClientGroups
+    .filter((item) => item.name.toLowerCase().includes("wework"))
+    .reduce((sum, item) => sum + item.locations, 0);
 
-  const sampleMix = recurringMix;
+  const corporateLocations = Math.max(recurringLocations.length - weWorkLocations, 0);
 
   const monthSampleTotal =
     sampleMix.water + sampleMix.food + sampleMix.swab + sampleMix.other;
 
-  const recentCompanies = companies.slice(0, 5);
-
-  const recentQuotations = openQuotations.slice(0, 5);
-
-  const recentActivities = activities.slice(0, 5);
-
-  const followups = [
-    ...leads
-
-      .filter((lead) => lead.nextFollowUp)
-
-      .map((lead) => ({
-        id: `lead-${lead.id}`,
-
-        title: lead.company || lead.name,
-
-        subtitle: lead.service,
-
-        date: lead.nextFollowUp!,
-
-        href: `/admin/leads/${lead.id}`,
-      })),
-
-    ...activities
-
-      .filter((activity) => activity.nextFollowUp)
-
-      .map((activity) => ({
-        id: `activity-${activity.id}`,
-
-        title: companyMap.get(activity.companyId) || "Client",
-
-        subtitle: activity.nextAction || activity.title,
-
-        date: activity.nextFollowUp!,
-
-        href: `/admin/companies/${activity.companyId}`,
-      })),
-
-    ...quotations
-
-      .filter(
-        (quotation) =>
-          quotation.nextFollowUp && isOpenQuotation(quotation.status),
-      )
-
-      .map((quotation) => ({
-        id: `quotation-${quotation.id}`,
-
-        title: companyMap.get(quotation.companyId) || "Client",
-
-        subtitle: quotation.service,
-
-        date: quotation.nextFollowUp!,
-
-        href: `/admin/quotations/${quotation.id}`,
-      })),
-  ];
-
-  const startOfToday = new Date();
-
-  startOfToday.setHours(0, 0, 0, 0);
-
-  const startOfTomorrow = new Date(startOfToday);
-
-  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
-
-  const overdueFollowups = followups
-
-    .filter(
-      (followup) => new Date(followup.date).getTime() < startOfToday.getTime(),
-    )
-
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const todayFollowups = followups
-
-    .filter((followup) => {
-      const followupDate = new Date(followup.date).getTime();
-
-      return (
-        followupDate >= startOfToday.getTime() &&
-        followupDate < startOfTomorrow.getTime()
-      );
-    })
-
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const upcomingFollowups = followups
-
-    .filter(
-      (followup) =>
-        new Date(followup.date).getTime() >= startOfTomorrow.getTime(),
-    )
-
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const overdueCount = overdueFollowups.length;
-
-  const todayCount = todayFollowups.length;
-
-  const upcomingCount = upcomingFollowups.length;
-
-  const activeLeadCount = activeLeads.length;
-
-  const visibleFollowups = [
-    ...overdueFollowups,
-
-    ...todayFollowups,
-
-    ...upcomingFollowups,
-  ].slice(0, 5);
+  const today = new Date();
+  const todayLabel = new Intl.DateTimeFormat("en-GB", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(today);
 
   return (
-    <div className="hyd-dashboard">
-      {/* TOP BAR */}
-
-      <header className="hyd-topbar">
-        <div className="hyd-top-search">
-          <Search size={17} />
-
-          <span>Hyderabad Operations Overview</span>
-        </div>
-
-        <div className="hyd-user">
-          <div className="hyd-user-avatar">V</div>
-
-          <div>
-            <strong>Venkat</strong>
-
-            <span>Hyderabad Operations</span>
+    <div className="v3-dashboard">
+      <header className="v3-topbar">
+        <DashboardSearch />
+        <div className="v3-top-actions">
+          <NotificationBell />
+          <div className="v3-profile">
+            <div className="v3-avatar">V</div>
+            <div>
+              <strong>Venkat</strong>
+              <span>Hyderabad Operations</span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* HERO */}
-
-      <section className="hyd-hero">
-        <div>
-          <span className="hyd-eyebrow">NEXUS TEST LABS · HYDERABAD</span>
-
-          <h1>Welcome back, Venkat 👋</h1>
-
+      <section className="v3-hero">
+        <div className="v3-hero-copy">
+          <h1>Welcome back, Venkat <span>👋</span></h1>
           <h2>Hyderabad Operations Dashboard</h2>
-
-          <p>
-            Recurring operations, sales pipeline, collections, client activity
-            and growth overview.
-          </p>
+          <p>Recurring operations, sales pipeline, collections, client activity and growth overview.</p>
         </div>
-
-        <div className="hyd-hero-side">
-          <MapPin size={22} />
-
+        <div className="v3-hero-art" aria-hidden="true">
+          <div className="v3-city-line" />
+          <span>Serving a<br />Healthier Hyderabad</span>
+        </div>
+        <div className="v3-date-card">
+          <CalendarDays size={23} />
           <div>
-            <strong>Serving Hyderabad</strong>
-
-            <span>Live CRM Operations</span>
+            <strong>{todayLabel}</strong>
+            <span>Hyderabad Operations</span>
           </div>
         </div>
       </section>
 
-      {/* TODAY'S PRIORITIES */}
-
-      <section className="hyd-priority-grid">
-        <Kpi
-          title="Overdue Follow-ups"
-
-          value={overdueCount}
-
-          note="Needs attention"
-
-          icon={CalendarDays}
-
-          tone="rose"
-        />
-
-        <Kpi
-          title="Due Today"
-
-          value={todayCount}
-
-          note="Actions scheduled today"
-
-          icon={Activity}
-
-          tone="yellow"
-        />
-
-        <Kpi
-          title="Upcoming"
-
-          value={upcomingCount}
-
-          note="Future follow-ups"
-
-          icon={CalendarDays}
-
-          tone="blue"
-        />
-
-        <Kpi
-          title="Active Leads"
-
-          value={activeLeadCount}
-
-          note="Open sales opportunities"
-
-          icon={Target}
-
-          tone="green"
-        />
-      </section>
-
-      {/* KPI */}
-
-      <section className="hyd-kpi-grid">
-        <Kpi
+      <section className="v3-kpi-grid">
+        <KpiCard
+          icon={<Building2 size={27} />}
           title="Existing Customer Locations"
-
           value={recurringLocations.length}
-
           note="Active recurring locations"
-
-          icon={Building2}
-
           tone="blue"
         />
-
-        <Kpi
+        <KpiCard
+          icon={<FlaskConical size={27} />}
           title="Recurring Samples / Month"
-
           value={recurringSamples}
-
-          note="Active recurring services"
-
-          icon={FlaskConical}
-
+          note={`${sampleMix.water} Water · ${sampleMix.food} Food · ${sampleMix.swab} Swabs`}
           tone="green"
         />
-
-        <Kpi
+        <KpiCard
+          icon={<FileText size={27} />}
           title="Orders Closed"
-
           value={validOrders.length}
-
           note={`${money(businessValue)} business value`}
-
-          icon={CheckCircle2}
-
           tone="rose"
         />
-
-        <Kpi
+        <KpiCard
+          icon={<TrendingUp size={27} />}
           title="Amount Collected"
-
           value={money(collectedAmount)}
-
-          note={`${collectionRate.toFixed(1)}% collection rate`}
-
-          icon={TrendingUp}
-
+          note={`${collectionRate.toFixed(1)}% against confirmed orders`}
           tone="mint"
         />
-
-        <Kpi
+        <KpiCard
+          icon={<WalletCards size={27} />}
           title="Pending Amount"
-
           value={money(pendingAmount)}
-
           note="Against confirmed orders"
-
-          icon={WalletCards}
-
-          tone="yellow"
+          tone="amber"
         />
-
-        <Kpi
+        <KpiCard
+          icon={<Target size={27} />}
           title="Active Opportunities"
-
           value={openQuotations.length}
-
           note={`${activeLeads.length} active leads`}
-
-          icon={Target}
-
           tone="purple"
         />
       </section>
 
-      {/* OVERVIEW */}
-
-      <section className="hyd-three-grid">
-        <article className="hyd-panel">
-          <div className="hyd-panel-head">
-            <div>
-              <span>Sample Operations</span>
-
-              <h3>Monthly Sample Mix</h3>
+      <section className="v3-analytics-grid">
+        <article className="v3-card v3-chart-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <CalendarDays size={20} />
+              <div>
+                <h3>Monthly Sample Mix</h3>
+                <span>Active recurring samples / month</span>
+              </div>
             </div>
-
-            <FlaskConical size={19} />
+            <span className="v3-filter">This Month⌄</span>
           </div>
-
-          <div className="hyd-big-number">{monthSampleTotal}</div>
-
-          <p className="hyd-muted">Active recurring samples / month</p>
-
-          <div className="hyd-stat-list">
-            <div>
-              <span>Water</span>
-
-              <strong>{sampleMix.water}</strong>
-            </div>
-
-            <div>
-              <span>Food</span>
-
-              <strong>{sampleMix.food}</strong>
-            </div>
-
-            <div>
-              <span>Swabs</span>
-
-              <strong>{sampleMix.swab}</strong>
-            </div>
-
-            <div>
-              <span>Other</span>
-
-              <strong>{sampleMix.other}</strong>
-            </div>
-          </div>
-        </article>
-
-        <article className="hyd-panel">
-          <div className="hyd-panel-head">
-            <div>
-              <span>Client Database</span>
-
-              <h3>Client Overview</h3>
-            </div>
-
-            <Users size={19} />
-          </div>
-
-          <div className="hyd-big-number">{companies.length}</div>
-
-          <p className="hyd-muted">Companies currently in CRM</p>
-
-          <div className="hyd-stat-list">
-            <div>
-              <span>Active Locations</span>
-
-              <strong>{recurringLocations.length}</strong>
-            </div>
-
-            <div>
-              <span>Active Leads</span>
-
-              <strong>{activeLeads.length}</strong>
-            </div>
-
-            <div>
-              <span>Open Quotations</span>
-
-              <strong>{openQuotations.length}</strong>
-            </div>
-
-            <div>
-              <span>Recurring Services</span>
-
-              <strong>{activeRecurring.length}</strong>
+          <div className="v3-chart-body">
+            <Donut
+              centerTop={String(monthSampleTotal)}
+              centerBottom="Samples"
+              segments={[
+                { value: sampleMix.water, color: "#179cf0" },
+                { value: sampleMix.food, color: "#58b947" },
+                { value: sampleMix.swab, color: "#9a50e8" },
+                { value: sampleMix.other, color: "#cbd5e1" },
+              ]}
+            />
+            <div className="v3-legend">
+              {[
+                ["Water", sampleMix.water, "#179cf0"],
+                ["Food", sampleMix.food, "#58b947"],
+                ["Swabs", sampleMix.swab, "#9a50e8"],
+              ].map(([label, value, color]) => (
+                <div className="v3-legend-row" key={String(label)}>
+                  <i style={{ background: String(color) }} />
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                  <em>
+                    {monthSampleTotal
+                      ? `(${((Number(value) / monthSampleTotal) * 100).toFixed(1)}%)`
+                      : "(0%)"}
+                  </em>
+                </div>
+              ))}
             </div>
           </div>
         </article>
 
-        <article className="hyd-panel">
-          <div className="hyd-panel-head">
-            <div>
-              <span>Financial Position</span>
-
-              <h3>Collection Status</h3>
+        <article className="v3-card v3-chart-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <Users size={20} />
+              <div>
+                <h3>Client Type Distribution</h3>
+                <span>Across {recurringLocations.length} active locations</span>
+              </div>
             </div>
-
-            <CircleDollarSign size={19} />
+            <span className="v3-filter">All Locations⌄</span>
           </div>
-
-          <div className="hyd-money-main">{money(businessValue)}</div>
-
-          <p className="hyd-muted">Confirmed business value</p>
-
-          <div className="hyd-finance-row">
-            <div>
-              <span>Collected</span>
-
-              <strong>{money(collectedAmount)}</strong>
+          <div className="v3-chart-body">
+            <Donut
+              centerTop={String(recurringLocations.length)}
+              centerBottom="Locations"
+              segments={[
+                { value: weWorkLocations, color: "#12a7d9" },
+                { value: corporateLocations, color: "#58b947" },
+              ]}
+            />
+            <div className="v3-legend">
+              <div className="v3-legend-row">
+                <i style={{ background: "#12a7d9" }} />
+                <span>WeWork</span>
+                <strong>{weWorkLocations}</strong>
+                <em>
+                  {recurringLocations.length
+                    ? `(${((weWorkLocations / recurringLocations.length) * 100).toFixed(1)}%)`
+                    : "(0%)"}
+                </em>
+              </div>
+              <div className="v3-legend-row">
+                <i style={{ background: "#58b947" }} />
+                <span>Corporate</span>
+                <strong>{corporateLocations}</strong>
+                <em>
+                  {recurringLocations.length
+                    ? `(${((corporateLocations / recurringLocations.length) * 100).toFixed(1)}%)`
+                    : "(0%)"}
+                </em>
+              </div>
             </div>
+          </div>
+        </article>
 
-            <div>
-              <span>Pending</span>
-
-              <strong>{money(pendingAmount)}</strong>
+        <article className="v3-card v3-chart-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <CircleDollarSign size={20} />
+              <div>
+                <h3>Collection Status</h3>
+                <span>Total confirmed order value: {money(businessValue)}</span>
+              </div>
+            </div>
+            <span className="v3-filter">This Month⌄</span>
+          </div>
+          <div className="v3-chart-body">
+            <Donut
+              centerTop={money(businessValue)}
+              centerBottom="Order Value"
+              segments={[
+                { value: orderCollected, color: "#25ad69" },
+                { value: pendingAmount, color: "#f7b928" },
+              ]}
+            />
+            <div className="v3-legend">
+              <div className="v3-legend-row">
+                <i style={{ background: "#25ad69" }} />
+                <span>Collected</span>
+                <strong>{money(orderCollected)}</strong>
+              </div>
+              <div className="v3-legend-row">
+                <i style={{ background: "#f7b928" }} />
+                <span>Pending</span>
+                <strong>{money(pendingAmount)}</strong>
+              </div>
+              <small className="v3-legend-note">
+                Total received across all recorded payments: {money(collectedAmount)}
+              </small>
             </div>
           </div>
         </article>
       </section>
 
-      {/* RECENT CONTENT */}
-
-      <section className="hyd-content-grid">
-        <article className="hyd-panel">
-          <div className="hyd-section-title">
-            <div>
-              <Users size={18} />
-
-              <div>
-                <h3>Recent Clients</h3>
-
-                <span>Latest company records</span>
-              </div>
+      <section className="v3-mid-grid">
+        <article className="v3-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <Users size={20} />
+              <h3>Recent Clients &amp; Sample Activity</h3>
             </div>
-
-            <Link href="/admin/companies">
-              View All
-              <ArrowRight size={14} />
-            </Link>
+            <Link href="/admin/companies">View All <ArrowRight size={14} /></Link>
           </div>
-
-          <div className="hyd-list">
-            {recentCompanies.length ? (
-              recentCompanies.map((company) => {
-                const companySamples = samples
-
-                  .filter((sample) => sample.companyId === company.id)
-
-                  .reduce(
-                    (total, sample) => total + Number(sample.sampleCount || 0),
-
-                    0,
+          <div className="v3-table-wrap">
+            <table className="v3-table">
+              <thead>
+                <tr><th>#</th><th>Client Name</th><th>Type</th><th>Samples</th><th>Recent Activity</th></tr>
+              </thead>
+              <tbody>
+                {recentClients.length ? recentClients.map((company, index) => {
+                  const count = samples
+                    .filter((sample) => sample.companyId === company.id)
+                    .reduce((sum, sample) => sum + Number(sample.sampleCount || 0), 0);
+                  const lastActivity = activities.find((activity) => activity.companyId === company.id);
+                  return (
+                    <tr key={company.id}>
+                      <td>{index + 1}</td>
+                      <td><Link href={`/admin/companies/${company.id}`}>{company.name}</Link></td>
+                      <td>{company.industry || "—"}</td>
+                      <td>{count || "—"}</td>
+                      <td>{lastActivity?.title || "No recent activity"}</td>
+                    </tr>
                   );
-
-                return (
-                  <Link
-                    href={`/admin/companies/${company.id}`}
-
-                    className="hyd-list-row"
-
-                    key={company.id}
-                  >
-                    <div className="hyd-list-avatar">
-                      {company.name
-
-                        .charAt(0)
-
-                        .toUpperCase()}
-                    </div>
-
-                    <div className="hyd-list-main">
-                      <strong>{company.name}</strong>
-
-                      <span>{company.industry || "Industry not set"}</span>
-                    </div>
-
-                    <div className="hyd-list-right">
-                      <strong>{companySamples}</strong>
-
-                      <span>samples</span>
-                    </div>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className="hyd-empty">No client records yet.</div>
-            )}
+                }) : (
+                  <tr><td colSpan={5} className="v3-empty">No client records yet.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </article>
 
-        <article className="hyd-panel">
-          <div className="hyd-section-title">
-            <div>
-              <FileText size={18} />
-
-              <div>
-                <h3>Active Quotations</h3>
-
-                <span>Current opportunities</span>
-              </div>
+        <article className="v3-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <FileText size={20} />
+              <h3>Active Quotations &amp; Opportunities</h3>
             </div>
-
-            <Link href="/admin/quotations">
-              View All
-              <ArrowRight size={14} />
-            </Link>
+            <Link href="/admin/quotations">View All <ArrowRight size={14} /></Link>
           </div>
+          <div className="v3-table-wrap">
+            <table className="v3-table">
+              <thead>
+                <tr><th>Client Name</th><th>Service</th><th>Amount</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                {activeQuotes.length ? activeQuotes.map((quotation) => (
+                  <tr key={quotation.id}>
+                    <td><Link href={`/admin/quotations/${quotation.id}`}>{companyMap.get(quotation.companyId) || "Client"}</Link></td>
+                    <td>{quotation.service}</td>
+                    <td>{money(quotation.totalAmount)}</td>
+                    <td><span className={`v3-status ${statusClass(quotation.status)}`}>{quotation.status}</span></td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={4} className="v3-empty">No active quotations.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </article>
 
-          <div className="hyd-list">
-            {recentQuotations.length ? (
-              recentQuotations.map((quotation) => (
-                <Link
-                  href={`/admin/quotations/${quotation.id}`}
-
-                  className="hyd-list-row"
-
-                  key={quotation.id}
-                >
-                  <div className="hyd-list-avatar quote">Q</div>
-
-                  <div className="hyd-list-main">
-                    <strong>
-                      {companyMap.get(quotation.companyId) || "Client"}
-                    </strong>
-
-                    <span>{quotation.service}</span>
-                  </div>
-
-                  <div className="hyd-list-right">
-                    <strong>{money(quotation.totalAmount)}</strong>
-
-                    <span>{quotation.status}</span>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="hyd-empty">No active quotations.</div>
-            )}
+        <article className="v3-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <Activity size={20} />
+              <h3>Recent Activities</h3>
+            </div>
+            <Link href="/admin/follow-ups">View All <ArrowRight size={14} /></Link>
+          </div>
+          <div className="v3-activity-list">
+            {recentActivities.length ? recentActivities.map((activity) => (
+              <Link href={`/admin/companies/${activity.companyId}`} className="v3-activity-row" key={activity.id}>
+                <i />
+                <div>
+                  <strong>{activity.title}</strong>
+                  <span>{companyMap.get(activity.companyId) || activity.type}</span>
+                </div>
+                <time>{formatTime(activity.activityDate)}</time>
+              </Link>
+            )) : <div className="v3-empty-block">No recent activities.</div>}
           </div>
         </article>
       </section>
 
-      <section className="hyd-content-grid">
-        <article className="hyd-panel">
-          <div className="hyd-section-title">
-            <div>
-              <Activity size={18} />
-
-              <div>
-                <h3>Recent Activities</h3>
-
-                <span>CRM activity history</span>
-              </div>
+      <section className="v3-bottom-grid">
+        <article className="v3-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <CalendarDays size={20} />
+              <h3>Upcoming Follow-ups</h3>
             </div>
+            <Link href="/admin/follow-ups">View All <ArrowRight size={14} /></Link>
           </div>
-
-          <div className="hyd-list">
-            {recentActivities.length ? (
-              recentActivities.map((activity) => (
-                <Link
-                  href={`/admin/companies/${activity.companyId}`}
-
-                  className="hyd-list-row"
-
-                  key={activity.id}
-                >
-                  <div className="hyd-activity-dot" />
-
-                  <div className="hyd-list-main">
-                    <strong>{activity.title}</strong>
-
-                    <span>
-                      {companyMap.get(activity.companyId) || activity.type}
-                    </span>
-                  </div>
-
-                  <div className="hyd-list-right">
-                    <span>{formatDate(activity.activityDate)}</span>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="hyd-empty">No recent activities.</div>
-            )}
+          <div className="v3-table-wrap">
+            <table className="v3-table">
+              <thead><tr><th>Date</th><th>Client</th><th>Purpose</th><th>Status</th></tr></thead>
+              <tbody>
+                {upcomingFollowups.length ? upcomingFollowups.map((item) => (
+                  <tr key={item.id}>
+                    <td>{formatDate(item.date)}</td>
+                    <td><Link href={item.href}>{item.title}</Link></td>
+                    <td>{item.purpose}</td>
+                    <td><span className={`v3-status ${statusClass(item.status)}`}>{item.status}</span></td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={4} className="v3-empty">No follow-ups scheduled.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </article>
 
-        <article className="hyd-panel">
-          <div className="hyd-section-title">
-            <div>
-              <CalendarDays size={18} />
-
-              <div>
-                <h3>Upcoming Follow-ups</h3>
-
-                <span>Next CRM actions</span>
-              </div>
+        <article className="v3-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <TrendingUp size={20} />
+              <h3>This Month Collection Summary</h3>
             </div>
-
-            <Link href="/admin/follow-ups">
-              View All
-              <ArrowRight size={14} />
-            </Link>
+            <Link href="/admin/payments">View All <ArrowRight size={14} /></Link>
           </div>
+          <div className="v3-table-wrap">
+            <table className="v3-table">
+              <thead><tr><th>Client</th><th>Collected</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody>
+                {receivedPayments.slice(0, 5).length ? receivedPayments.slice(0, 5).map((payment) => (
+                  <tr key={payment.id}>
+                    <td>{companyMap.get(payment.companyId) || "Client"}</td>
+                    <td className="v3-money-green">{money(payment.amount)}</td>
+                    <td>{formatDate(payment.paymentDate)}</td>
+                    <td><span className={`v3-status ${statusClass(payment.status)}`}>{payment.status}</span></td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={4} className="v3-empty">No received payments yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </article>
 
-          <div className="hyd-list">
-            {visibleFollowups.length ? (
-              visibleFollowups.map((followup) => (
-                <Link
-                  href={followup.href}
-
-                  className="hyd-list-row"
-
-                  key={followup.id}
-                >
-                  <div className="hyd-list-avatar follow">
-                    <CalendarDays size={15} />
-                  </div>
-
-                  <div className="hyd-list-main">
-                    <strong>{followup.title}</strong>
-
-                    <span>{followup.subtitle}</span>
-                  </div>
-
-                  <div className="hyd-list-right">
-                    <strong>{formatDate(followup.date)}</strong>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="hyd-empty">No follow-ups scheduled.</div>
-            )}
+        <article className="v3-card">
+          <div className="v3-card-head">
+            <div className="v3-title">
+              <Target size={20} />
+              <h3>Next 30 Days Plan</h3>
+            </div>
+            <Link href="/admin/monthly-plan">View All <ArrowRight size={14} /></Link>
+          </div>
+          <div className="v3-plan-list">
+            {activePlan.length ? activePlan.map((item) => (
+              <Link href="/admin/monthly-plan" className="v3-plan-row" key={item.id}>
+                <span className="v3-checkbox" />
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.dueDate ? `Due ${formatDate(item.dueDate)}` : `${item.category} · ${item.priority}`}</span>
+                </div>
+              </Link>
+            )) : <div className="v3-empty-block">No upcoming plan items.</div>}
           </div>
         </article>
       </section>
 
-      <Next30DaysPlan />
-
-      <footer className="hyd-footer">
-        <span>© 2026 Nexus Test Labs Pvt. Ltd. · Hyderabad Operations</span>
-
+      <footer className="v3-footer">
+        <span>© 2026 Nexus Test Labs Pvt. Ltd. &nbsp;|&nbsp; Hyderabad Operations</span>
         <strong>Testing for a Healthier Tomorrow</strong>
       </footer>
     </div>
