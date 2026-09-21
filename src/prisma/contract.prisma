@@ -440,3 +440,24 @@ model Document {
   createdAt       TimestamptzString   @default(now())
   updatedAt       temporal.updatedAtString()
 }
+
+// =========================================================
+// NOTIFICATIONS
+// =========================================================
+
+model Notification {
+  id          String            @id @default(uuid())
+
+  type        String
+  title       String
+  message     String?
+
+  entityType  String?
+  entityId    String?
+  actionUrl   String?
+
+  isRead      Boolean           @default(false)
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+}

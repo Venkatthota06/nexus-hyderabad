@@ -3,6 +3,65 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/src/prisma/db";
 
+export const dynamic = "force-dynamic";
+
+/* =========================================================
+   NOTIFICATION HELPER
+========================================================= */
+
+async function createQuotationNotification({
+  quotationId,
+  companyName,
+  quotationNumber,
+  service,
+  totalAmount,
+  status,
+  type,
+  title,
+}: {
+  quotationId: string;
+  companyName: string;
+  quotationNumber: string;
+  service: string;
+  totalAmount: number;
+  status: string;
+  type:
+    | "QUOTATION_CREATED"
+    | "QUOTATION_STATUS_CHANGED";
+  title: string;
+}) {
+  try {
+    await db.orm.public.Notification.create({
+      type,
+      title,
+
+      message:
+        `${companyName} - ${quotationNumber} - ` +
+        `${service} - ₹${totalAmount.toLocaleString(
+          "en-IN"
+        )} - ${status}`,
+
+      entityType: "Quotation",
+      entityId: quotationId,
+      actionUrl: `/admin/quotations/${quotationId}`,
+      isRead: false,
+    });
+  } catch (error) {
+    /*
+     * Notification failure must never cause a
+     * quotation operation itself to fail.
+     */
+    console.error(
+      "Quotation notification creation error:",
+      error
+    );
+  }
+}
+
+/* =========================================================
+   GET
+========================================================= */
+
 export async function GET() {
   const session = await auth();
 
@@ -42,6 +101,10 @@ export async function GET() {
     );
   }
 }
+
+/* =========================================================
+   POST
+========================================================= */
 
 export async function POST(
   request: Request
@@ -88,6 +151,10 @@ export async function POST(
         ? Number(body.gstPercent)
         : 18;
 
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
+
     if (
       !companyId ||
       !quotationNumber ||
@@ -109,6 +176,10 @@ export async function POST(
       );
     }
 
+    /* =====================================================
+       COMPANY
+    ===================================================== */
+
     const company =
       await db.orm.public.Company
         .where({
@@ -128,11 +199,25 @@ export async function POST(
       );
     }
 
+    /* =====================================================
+       FINANCIAL VALUES
+    ===================================================== */
+
     const gstAmount =
       (amount * gstPercent) / 100;
 
     const totalAmount =
       amount + gstAmount;
+
+    const status =
+      typeof body.status === "string" &&
+      body.status.trim()
+        ? body.status.trim()
+        : "Draft";
+
+    /* =====================================================
+       CREATE QUOTATION
+    ===================================================== */
 
     const quotation =
       await db.orm.public.Quotation.create(
@@ -158,12 +243,7 @@ export async function POST(
 
           totalAmount,
 
-          status:
-            typeof body.status ===
-              "string" &&
-            body.status.trim()
-              ? body.status.trim()
-              : "Draft",
+          status,
 
           quotationDate,
 
@@ -190,6 +270,21 @@ export async function POST(
         }
       );
 
+    /* =====================================================
+       CREATE NOTIFICATION
+    ===================================================== */
+
+    await createQuotationNotification({
+      quotationId: quotation.id,
+      companyName: company.name,
+      quotationNumber,
+      service,
+      totalAmount,
+      status,
+      type: "QUOTATION_CREATED",
+      title: "Quotation created",
+    });
+
     return NextResponse.json(
       quotation,
       {
@@ -213,6 +308,10 @@ export async function POST(
     );
   }
 }
+
+/* =========================================================
+   PUT
+========================================================= */
 
 export async function PUT(
   request: Request
@@ -247,6 +346,10 @@ export async function PUT(
       );
     }
 
+    /* =====================================================
+       EXISTING QUOTATION
+    ===================================================== */
+
     const existingQuotation =
       await db.orm.public.Quotation
         .where({
@@ -265,6 +368,10 @@ export async function PUT(
         }
       );
     }
+
+    /* =====================================================
+       COMPANY
+    ===================================================== */
 
     const companyId =
       typeof body.companyId ===
@@ -291,6 +398,10 @@ export async function PUT(
         }
       );
     }
+
+    /* =====================================================
+       FINANCIAL VALUES
+    ===================================================== */
 
     const amount =
       body.amount !== undefined
@@ -325,12 +436,27 @@ export async function PUT(
     const totalAmount =
       amount + gstAmount;
 
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
     const status =
       typeof body.status ===
         "string" &&
       body.status.trim()
         ? body.status.trim()
         : existingQuotation.status;
+
+    /*
+     * We capture the status transition before updating.
+     * Ordinary edits will therefore not create alerts.
+     */
+    const statusChanged =
+      existingQuotation.status !== status;
+
+    /* =====================================================
+       FOLLOW-UP
+    ===================================================== */
 
     const terminalStatuses = [
       "Accepted",
@@ -348,6 +474,10 @@ export async function PUT(
             ? body.nextFollowUp
             : null
           : existingQuotation.nextFollowUp;
+
+    /* =====================================================
+       UPDATE QUOTATION
+    ===================================================== */
 
     await db.orm.public.Quotation
       .where({
@@ -417,6 +547,10 @@ export async function PUT(
             : existingQuotation.notes,
       });
 
+    /* =====================================================
+       LOAD UPDATED QUOTATION
+    ===================================================== */
+
     const updatedQuotation =
       await db.orm.public.Quotation
         .where({
@@ -434,6 +568,37 @@ export async function PUT(
           status: 500,
         }
       );
+    }
+
+    /* =====================================================
+       STATUS CHANGE NOTIFICATION
+    ===================================================== */
+
+    if (statusChanged) {
+      await createQuotationNotification({
+        quotationId: id,
+        companyName: company.name,
+        quotationNumber:
+          updatedQuotation.quotationNumber,
+        service:
+          updatedQuotation.service,
+        totalAmount:
+          Number(
+            updatedQuotation.totalAmount
+          ),
+        status:
+          updatedQuotation.status,
+        type:
+          "QUOTATION_STATUS_CHANGED",
+        title:
+          updatedQuotation.status ===
+          "Accepted"
+            ? "Quotation accepted"
+            : updatedQuotation.status ===
+                "Rejected"
+              ? "Quotation rejected"
+              : `Quotation status: ${updatedQuotation.status}`,
+      });
     }
 
     return NextResponse.json(

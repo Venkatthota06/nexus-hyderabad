@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-
 import { db } from "@/src/prisma/db";
 
 export const runtime = "nodejs";
@@ -32,6 +31,184 @@ const PHONE_REGEX =
   /^[0-9+\-()\s]{7,20}$/;
 
 /* =========================================================
+   NOTIFICATION HELPERS
+========================================================= */
+
+function normalizeDateValue(
+  value: string | null | undefined
+) {
+  if (!value) {
+    return null;
+  }
+
+  return value.slice(0, 10);
+}
+
+function formatFollowUpDate(
+  value: string
+) {
+  const normalized =
+    normalizeDateValue(value);
+
+  if (!normalized) {
+    return value;
+  }
+
+  const [year, month, day] =
+    normalized.split("-").map(Number);
+
+  if (
+    !year ||
+    !month ||
+    !day
+  ) {
+    return normalized;
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  ).format(
+    new Date(
+      year,
+      month - 1,
+      day
+    )
+  );
+}
+
+async function createLeadNotification({
+  leadId,
+  leadName,
+  companyName,
+  service,
+  status,
+  nextFollowUp,
+  statusChanged,
+  followUpChanged,
+}: {
+  leadId: string;
+  leadName: string;
+  companyName: string;
+  service: string;
+  status: string;
+  nextFollowUp: string | null;
+  statusChanged: boolean;
+  followUpChanged: boolean;
+}) {
+  try {
+    let type =
+      "LEAD_UPDATED";
+
+    let title =
+      "Lead updated";
+
+    let message =
+      `${leadName} - ${companyName} - ` +
+      `${service}`;
+
+    /*
+     * Both lead status and follow-up changed
+     * in the same update.
+     */
+    if (
+      statusChanged &&
+      followUpChanged &&
+      nextFollowUp
+    ) {
+      type =
+        "LEAD_STATUS_AND_FOLLOW_UP_CHANGED";
+
+      title =
+        "Lead status & follow-up updated";
+
+      message =
+        `${leadName} - ${companyName} - ` +
+        `${status} - Follow-up ${formatFollowUpDate(
+          nextFollowUp
+        )}`;
+    }
+
+    /*
+     * Only the follow-up changed.
+     */
+    else if (
+      followUpChanged &&
+      nextFollowUp
+    ) {
+      type =
+        "FOLLOW_UP_SCHEDULED";
+
+      title =
+        "Lead follow-up scheduled";
+
+      message =
+        `${leadName} - ${companyName} - ` +
+        `${formatFollowUpDate(
+          nextFollowUp
+        )}`;
+    }
+
+    /*
+     * Follow-up was removed.
+     */
+    else if (
+      followUpChanged &&
+      !nextFollowUp
+    ) {
+      type =
+        "FOLLOW_UP_CLEARED";
+
+      title =
+        "Lead follow-up cleared";
+
+      message =
+        `${leadName} - ${companyName} - ` +
+        `${status}`;
+    }
+
+    /*
+     * Only the lead status changed.
+     */
+    else if (statusChanged) {
+      type =
+        "LEAD_STATUS_CHANGED";
+
+      title =
+        `Lead status: ${status}`;
+
+      message =
+        `${leadName} - ${companyName} - ` +
+        `${service}`;
+    }
+
+    await db.orm.public.Notification.create({
+      type,
+      title,
+      message,
+      entityType: "Lead",
+      entityId: leadId,
+      actionUrl:
+        `/admin/leads/${leadId}`,
+      isRead: false,
+    });
+  } catch (error) {
+    /*
+     * Notification failure must never cause
+     * the lead update itself to fail.
+     */
+    console.error(
+      "Lead notification creation error:",
+      error
+    );
+  }
+}
+
+/* =========================================================
    GET ALL LEADS - ADMIN ONLY
 ========================================================= */
 
@@ -57,7 +234,9 @@ export async function GET() {
         )
         .all();
 
-    return NextResponse.json(leads);
+    return NextResponse.json(
+      leads
+    );
   } catch (error) {
     console.error(
       "GET /api/leads error:",
@@ -199,7 +378,9 @@ export async function POST(
        EMAIL VALIDATION
     ----------------------------------------------------- */
 
-    if (!EMAIL_REGEX.test(email)) {
+    if (
+      !EMAIL_REGEX.test(email)
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -214,7 +395,9 @@ export async function POST(
        PHONE VALIDATION
     ----------------------------------------------------- */
 
-    if (!PHONE_REGEX.test(phone)) {
+    if (
+      !PHONE_REGEX.test(phone)
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -244,10 +427,20 @@ export async function POST(
           "Nexus Hyderabad Website",
 
         // CRM pipeline status
-        status: "New Lead",
+        status:
+          "New Lead",
 
-        // NEW NOTIFICATION:
-        // Every website enquiry starts unread.
+        /*
+         * Phase-1 notification system.
+         *
+         * Keep this exactly as the source of
+         * website lead notifications.
+         *
+         * We intentionally DO NOT create a
+         * Notification table record here,
+         * otherwise the same website enquiry
+         * would appear twice in the bell.
+         */
         isRead: false,
 
         notes: null,
@@ -287,7 +480,8 @@ export async function POST(
 export async function PUT(
   request: Request
 ) {
-  const session = await auth();
+  const session =
+    await auth();
 
   if (!session?.user) {
     return NextResponse.json(
@@ -317,9 +511,15 @@ export async function PUT(
       );
     }
 
+    /* =====================================================
+       EXISTING LEAD
+    ===================================================== */
+
     const existingLead =
       await db.orm.public.Lead
-        .where({ id })
+        .where({
+          id,
+        })
         .first();
 
     if (!existingLead) {
@@ -332,6 +532,10 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    /* =====================================================
+       STATUS / NOTES / FOLLOW-UP
+    ===================================================== */
 
     const status =
       body.status?.trim() ||
@@ -367,7 +571,8 @@ export async function PUT(
         const company =
           await db.orm.public.Company
             .where({
-              id: requestedCompanyId,
+              id:
+                requestedCompanyId,
             })
             .first();
 
@@ -389,9 +594,14 @@ export async function PUT(
       }
     }
 
-    /* Won / Lost should not have
-       an active follow-up */
+    /* =====================================================
+       TERMINAL LEAD STATUS
+    ===================================================== */
 
+    /*
+     * Won / Lost leads should not keep an
+     * active follow-up.
+     */
     if (
       status === "Won" ||
       status === "Lost"
@@ -399,15 +609,100 @@ export async function PUT(
       nextFollowUp = null;
     }
 
+    /* =====================================================
+       DETECT MEANINGFUL CHANGES
+    ===================================================== */
+
+    const statusChanged =
+      existingLead.status !==
+      status;
+
+    const oldFollowUp =
+      normalizeDateValue(
+        existingLead.nextFollowUp
+      );
+
+    const newFollowUp =
+      normalizeDateValue(
+        nextFollowUp
+      );
+
+    const followUpChanged =
+      oldFollowUp !==
+      newFollowUp;
+
+    /* =====================================================
+       UPDATE LEAD
+    ===================================================== */
+
     const updatedLead =
       await db.orm.public.Lead
-        .where({ id })
+        .where({
+          id,
+        })
         .update({
           status,
           notes,
           nextFollowUp,
           companyId,
         });
+
+    /* =====================================================
+       CREATE PHASE-2 NOTIFICATION
+    ===================================================== */
+
+    if (
+      statusChanged ||
+      followUpChanged
+    ) {
+      /*
+       * Prefer the linked CRM Company name
+       * when the lead has been associated
+       * with a Company record.
+       */
+      let companyName =
+        existingLead.company;
+
+      if (companyId) {
+        try {
+          const linkedCompany =
+            await db.orm.public.Company
+              .where({
+                id: companyId,
+              })
+              .first();
+
+          if (linkedCompany?.name) {
+            companyName =
+              linkedCompany.name;
+          }
+        } catch (error) {
+          console.error(
+            "Lead company lookup for notification error:",
+            error
+          );
+        }
+      }
+
+      await createLeadNotification({
+        leadId: id,
+
+        leadName:
+          existingLead.name,
+
+        companyName,
+
+        service:
+          existingLead.service,
+
+        status,
+
+        nextFollowUp,
+
+        statusChanged,
+        followUpChanged,
+      });
+    }
 
     return NextResponse.json({
       success: true,

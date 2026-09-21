@@ -1,0 +1,2794 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.activity",
+    "label": "Create table \"activity\"",
+    "summary": "Creates table \"activity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "activity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"activity\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"activity\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"activity\"",
+        "sql": "CREATE TABLE \"public\".\"activity\" (\n  \"activityDate\" timestamptz NOT NULL,\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"nextAction\" text,\n  \"nextFollowUp\" timestamptz,\n  \"outcome\" text,\n  \"title\" text NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"activity\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"activity\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.company",
+    "label": "Create table \"company\"",
+    "summary": "Creates table \"company\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "company"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"company\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"company\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"company\"",
+        "sql": "CREATE TABLE \"public\".\"company\" (\n  \"address\" text,\n  \"city\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text,\n  \"id\" text NOT NULL,\n  \"industry\" text,\n  \"name\" text NOT NULL,\n  \"phone\" text,\n  \"source\" text,\n  \"state\" text,\n  \"status\" text DEFAULT 'Prospect' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"website\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"company\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"company\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.contact",
+    "label": "Create table \"contact\"",
+    "summary": "Creates table \"contact\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "contact"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"contact\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"contact\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"contact\"",
+        "sql": "CREATE TABLE \"public\".\"contact\" (\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"decisionMaker\" bool DEFAULT false NOT NULL,\n  \"designation\" text,\n  \"email\" text,\n  \"id\" text NOT NULL,\n  \"linkedin\" text,\n  \"name\" text NOT NULL,\n  \"phone\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"contact\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"contact\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.document",
+    "label": "Create table \"document\"",
+    "summary": "Creates table \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"document\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"document\"",
+        "sql": "CREATE TABLE \"public\".\"document\" (\n  \"companyId\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"documentNumber\" text,\n  \"documentType\" text NOT NULL,\n  \"expiryDate\" timestamptz,\n  \"fileName\" text,\n  \"fileReference\" text,\n  \"fileSize\" int4,\n  \"fileUrl\" text,\n  \"id\" text NOT NULL,\n  \"issueDate\" timestamptz,\n  \"mimeType\" text,\n  \"notes\" text,\n  \"paymentId\" text,\n  \"quotationId\" text,\n  \"reportId\" text,\n  \"sampleId\" text,\n  \"status\" text DEFAULT 'Active' NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"workOrderId\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"document\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.lead",
+    "label": "Create table \"lead\"",
+    "summary": "Creates table \"lead\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "lead"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"lead\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"lead\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"lead\"",
+        "sql": "CREATE TABLE \"public\".\"lead\" (\n  \"company\" text NOT NULL,\n  \"companyId\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"isRead\" bool DEFAULT false NOT NULL,\n  \"name\" text NOT NULL,\n  \"nextFollowUp\" timestamptz,\n  \"notes\" text,\n  \"phone\" text NOT NULL,\n  \"requirement\" text NOT NULL,\n  \"service\" text NOT NULL,\n  \"source\" text DEFAULT 'Nexus Hyderabad Website' NOT NULL,\n  \"status\" text DEFAULT 'New Lead' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"lead\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"lead\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.location",
+    "label": "Create table \"location\"",
+    "summary": "Creates table \"location\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "location"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"location\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"location\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"location\"",
+        "sql": "CREATE TABLE \"public\".\"location\" (\n  \"address\" text,\n  \"city\" text,\n  \"companyId\" text NOT NULL,\n  \"contactName\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text,\n  \"phone\" text,\n  \"state\" text,\n  \"status\" text DEFAULT 'Active' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"location\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"location\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.marketingProspect",
+    "label": "Create table \"marketingProspect\"",
+    "summary": "Creates table \"marketingProspect\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "marketingProspect"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"marketingProspect\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"marketingProspect\"",
+        "sql": "CREATE TABLE \"public\".\"marketingProspect\" (\n  \"companyId\" text,\n  \"companyName\" text NOT NULL,\n  \"contactName\" text,\n  \"converted\" bool DEFAULT false NOT NULL,\n  \"convertedDate\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"designation\" text,\n  \"email\" text,\n  \"id\" text NOT NULL,\n  \"industry\" text,\n  \"lastContacted\" timestamptz,\n  \"leadId\" text,\n  \"linkedin\" text,\n  \"nextFollowUp\" timestamptz,\n  \"notes\" text,\n  \"outreachStatus\" text DEFAULT 'Identified' NOT NULL,\n  \"phone\" text,\n  \"priority\" text DEFAULT 'Medium' NOT NULL,\n  \"source\" text DEFAULT 'LinkedIn' NOT NULL,\n  \"targetService\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"marketingProspect\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payment",
+    "label": "Create table \"payment\"",
+    "summary": "Creates table \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payment\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payment\"",
+        "sql": "CREATE TABLE \"public\".\"payment\" (\n  \"amount\" float8 NOT NULL,\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"notes\" text,\n  \"paymentDate\" timestamptz NOT NULL,\n  \"paymentMethod\" text,\n  \"quotationId\" text,\n  \"reference\" text,\n  \"status\" text DEFAULT 'Received' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"workOrderId\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payment\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.planItem",
+    "label": "Create table \"planItem\"",
+    "summary": "Creates table \"planItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "planItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"planItem\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"planItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"planItem\"",
+        "sql": "CREATE TABLE \"public\".\"planItem\" (\n  \"category\" text DEFAULT 'Operations' NOT NULL,\n  \"companyId\" text,\n  \"completedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"dueDate\" timestamptz,\n  \"id\" text NOT NULL,\n  \"notes\" text,\n  \"priority\" text DEFAULT 'Medium' NOT NULL,\n  \"status\" text DEFAULT 'Planned' NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"planItem\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"planItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.quotation",
+    "label": "Create table \"quotation\"",
+    "summary": "Creates table \"quotation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "quotation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"quotation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"quotation\"",
+        "sql": "CREATE TABLE \"public\".\"quotation\" (\n  \"amount\" float8 NOT NULL,\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"gstAmount\" float8 NOT NULL,\n  \"gstPercent\" float8 DEFAULT 18 NOT NULL,\n  \"id\" text NOT NULL,\n  \"nextFollowUp\" timestamptz,\n  \"notes\" text,\n  \"quotationDate\" timestamptz NOT NULL,\n  \"quotationNumber\" text NOT NULL,\n  \"sentDate\" timestamptz,\n  \"service\" text NOT NULL,\n  \"status\" text DEFAULT 'Draft' NOT NULL,\n  \"totalAmount\" float8 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"quotation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.quotationItem",
+    "label": "Create table \"quotationItem\"",
+    "summary": "Creates table \"quotationItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "quotationItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"quotationItem\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotationItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"quotationItem\"",
+        "sql": "CREATE TABLE \"public\".\"quotationItem\" (\n  \"amount\" float8 DEFAULT 0 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"quantity\" int4 DEFAULT 1 NOT NULL,\n  \"quotationId\" text NOT NULL,\n  \"service\" text NOT NULL,\n  \"unitPrice\" float8 DEFAULT 0 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"quotationItem\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotationItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.recurringService",
+    "label": "Create table \"recurringService\"",
+    "summary": "Creates table \"recurringService\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "recurringService"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"recurringService\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"recurringService\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"recurringService\"",
+        "sql": "CREATE TABLE \"public\".\"recurringService\" (\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"endDate\" timestamptz,\n  \"frequency\" text DEFAULT 'Monthly' NOT NULL,\n  \"id\" text NOT NULL,\n  \"locationId\" text,\n  \"notes\" text,\n  \"sampleType\" text NOT NULL,\n  \"samplesPerMonth\" int4 DEFAULT 1 NOT NULL,\n  \"service\" text NOT NULL,\n  \"startDate\" timestamptz,\n  \"status\" text DEFAULT 'Active' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"recurringService\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"recurringService\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.report",
+    "label": "Create table \"report\"",
+    "summary": "Creates table \"report\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "report"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"report\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"report\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"report\"",
+        "sql": "CREATE TABLE \"public\".\"report\" (\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"deliveredDate\" timestamptz,\n  \"deliveryMethod\" text,\n  \"fileReference\" text,\n  \"id\" text NOT NULL,\n  \"notes\" text,\n  \"reportDate\" timestamptz,\n  \"reportNumber\" text NOT NULL,\n  \"reportType\" text DEFAULT 'Final Report' NOT NULL,\n  \"sampleId\" text NOT NULL,\n  \"status\" text DEFAULT 'Pending' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"report\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"report\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.sample",
+    "label": "Create table \"sample\"",
+    "summary": "Creates table \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"sample\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"sample\"",
+        "sql": "CREATE TABLE \"public\".\"sample\" (\n  \"collectedBy\" text,\n  \"collectionDate\" timestamptz,\n  \"companyId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expectedCompletionDate\" timestamptz,\n  \"id\" text NOT NULL,\n  \"notes\" text,\n  \"quotationId\" text,\n  \"reportDeliveredDate\" timestamptz,\n  \"reportStatus\" text DEFAULT 'Pending' NOT NULL,\n  \"sampleCount\" int4 DEFAULT 1 NOT NULL,\n  \"sampleNumber\" text NOT NULL,\n  \"sampleType\" text NOT NULL,\n  \"status\" text DEFAULT 'Planned' NOT NULL,\n  \"testingLocation\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"workOrderId\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"sample\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.workOrder",
+    "label": "Create table \"workOrder\"",
+    "summary": "Creates table \"workOrder\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "workOrder"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"workOrder\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workOrder\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"workOrder\"",
+        "sql": "CREATE TABLE \"public\".\"workOrder\" (\n  \"amount\" float8 NOT NULL,\n  \"companyId\" text NOT NULL,\n  \"confirmedDate\" timestamptz NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"expectedEnd\" timestamptz,\n  \"expectedStart\" timestamptz,\n  \"gstAmount\" float8 NOT NULL,\n  \"gstPercent\" float8 DEFAULT 18 NOT NULL,\n  \"id\" text NOT NULL,\n  \"notes\" text,\n  \"quotationId\" text,\n  \"service\" text NOT NULL,\n  \"status\" text DEFAULT 'Confirmed' NOT NULL,\n  \"totalAmount\" float8 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"workOrderNumber\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"workOrder\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workOrder\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.marketingProspect.marketingProspect_leadId_key",
+    "label": "Add unique constraint on \"marketingProspect\" (leadId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "marketingProspect_leadId_key",
+        "table": "marketingProspect"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"marketingProspect_leadId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "marketingProspect_leadId_key",
+          "public",
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"marketingProspect_leadId_key\"",
+        "sql": "ALTER TABLE \"public\".\"marketingProspect\" ADD CONSTRAINT \"marketingProspect_leadId_key\" UNIQUE (\"leadId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"marketingProspect_leadId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "marketingProspect_leadId_key",
+          "public",
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.activity.activity_companyId_idx_33acc5ed",
+    "label": "Create index \"activity_companyId_idx_33acc5ed\" on \"activity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "activity_companyId_idx_33acc5ed",
+        "table": "activity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"activity_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"activity_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"activity_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"activity_companyId_idx_33acc5ed\" ON \"public\".\"activity\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"activity_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"activity_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.contact.contact_companyId_idx_33acc5ed",
+    "label": "Create index \"contact_companyId_idx_33acc5ed\" on \"contact\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "contact_companyId_idx_33acc5ed",
+        "table": "contact"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"contact_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"contact_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"contact_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"contact_companyId_idx_33acc5ed\" ON \"public\".\"contact\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"contact_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"contact_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.document.document_companyId_idx_33acc5ed",
+    "label": "Create index \"document_companyId_idx_33acc5ed\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "document_companyId_idx_33acc5ed",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"document_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"document_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"document_companyId_idx_33acc5ed\" ON \"public\".\"document\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"document_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.document.document_paymentId_idx_b2fe9a10",
+    "label": "Create index \"document_paymentId_idx_b2fe9a10\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "document_paymentId_idx_b2fe9a10",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"document_paymentId_idx_b2fe9a10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_paymentId_idx_b2fe9a10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"document_paymentId_idx_b2fe9a10\"",
+        "sql": "CREATE INDEX \"document_paymentId_idx_b2fe9a10\" ON \"public\".\"document\" (\"paymentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"document_paymentId_idx_b2fe9a10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_paymentId_idx_b2fe9a10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.document.document_quotationId_idx_951eb9ae",
+    "label": "Create index \"document_quotationId_idx_951eb9ae\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "document_quotationId_idx_951eb9ae",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"document_quotationId_idx_951eb9ae\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"document_quotationId_idx_951eb9ae\"",
+        "sql": "CREATE INDEX \"document_quotationId_idx_951eb9ae\" ON \"public\".\"document\" (\"quotationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"document_quotationId_idx_951eb9ae\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.document.document_reportId_idx_d163019e",
+    "label": "Create index \"document_reportId_idx_d163019e\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "document_reportId_idx_d163019e",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"document_reportId_idx_d163019e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_reportId_idx_d163019e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"document_reportId_idx_d163019e\"",
+        "sql": "CREATE INDEX \"document_reportId_idx_d163019e\" ON \"public\".\"document\" (\"reportId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"document_reportId_idx_d163019e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_reportId_idx_d163019e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.document.document_sampleId_idx_4b253cbd",
+    "label": "Create index \"document_sampleId_idx_4b253cbd\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "document_sampleId_idx_4b253cbd",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"document_sampleId_idx_4b253cbd\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_sampleId_idx_4b253cbd\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"document_sampleId_idx_4b253cbd\"",
+        "sql": "CREATE INDEX \"document_sampleId_idx_4b253cbd\" ON \"public\".\"document\" (\"sampleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"document_sampleId_idx_4b253cbd\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_sampleId_idx_4b253cbd\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.document.document_workOrderId_idx_136dd311",
+    "label": "Create index \"document_workOrderId_idx_136dd311\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "document_workOrderId_idx_136dd311",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"document_workOrderId_idx_136dd311\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_workOrderId_idx_136dd311\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"document_workOrderId_idx_136dd311\"",
+        "sql": "CREATE INDEX \"document_workOrderId_idx_136dd311\" ON \"public\".\"document\" (\"workOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"document_workOrderId_idx_136dd311\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"document_workOrderId_idx_136dd311\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.lead.lead_companyId_idx_33acc5ed",
+    "label": "Create index \"lead_companyId_idx_33acc5ed\" on \"lead\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "lead_companyId_idx_33acc5ed",
+        "table": "lead"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"lead_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"lead_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"lead_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"lead_companyId_idx_33acc5ed\" ON \"public\".\"lead\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"lead_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"lead_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.location.location_companyId_idx_33acc5ed",
+    "label": "Create index \"location_companyId_idx_33acc5ed\" on \"location\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "location_companyId_idx_33acc5ed",
+        "table": "location"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"location_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"location_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"location_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"location_companyId_idx_33acc5ed\" ON \"public\".\"location\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"location_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"location_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.marketingProspect.marketingProspect_companyId_idx_33acc5ed",
+    "label": "Create index \"marketingProspect_companyId_idx_33acc5ed\" on \"marketingProspect\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "marketingProspect_companyId_idx_33acc5ed",
+        "table": "marketingProspect"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"marketingProspect_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"marketingProspect_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"marketingProspect_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"marketingProspect_companyId_idx_33acc5ed\" ON \"public\".\"marketingProspect\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"marketingProspect_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"marketingProspect_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment.payment_companyId_idx_33acc5ed",
+    "label": "Create index \"payment_companyId_idx_33acc5ed\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_companyId_idx_33acc5ed",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"payment_companyId_idx_33acc5ed\" ON \"public\".\"payment\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment.payment_quotationId_idx_951eb9ae",
+    "label": "Create index \"payment_quotationId_idx_951eb9ae\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_quotationId_idx_951eb9ae",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_quotationId_idx_951eb9ae\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_quotationId_idx_951eb9ae\"",
+        "sql": "CREATE INDEX \"payment_quotationId_idx_951eb9ae\" ON \"public\".\"payment\" (\"quotationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_quotationId_idx_951eb9ae\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment.payment_workOrderId_idx_136dd311",
+    "label": "Create index \"payment_workOrderId_idx_136dd311\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_workOrderId_idx_136dd311",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_workOrderId_idx_136dd311\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_workOrderId_idx_136dd311\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_workOrderId_idx_136dd311\"",
+        "sql": "CREATE INDEX \"payment_workOrderId_idx_136dd311\" ON \"public\".\"payment\" (\"workOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_workOrderId_idx_136dd311\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_workOrderId_idx_136dd311\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.planItem.planItem_companyId_idx_33acc5ed",
+    "label": "Create index \"planItem_companyId_idx_33acc5ed\" on \"planItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "planItem_companyId_idx_33acc5ed",
+        "table": "planItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"planItem_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"planItem_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"planItem_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"planItem_companyId_idx_33acc5ed\" ON \"public\".\"planItem\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"planItem_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"planItem_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.quotation.quotation_companyId_idx_33acc5ed",
+    "label": "Create index \"quotation_companyId_idx_33acc5ed\" on \"quotation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "quotation_companyId_idx_33acc5ed",
+        "table": "quotation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"quotation_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotation_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"quotation_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"quotation_companyId_idx_33acc5ed\" ON \"public\".\"quotation\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"quotation_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotation_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.quotationItem.quotationItem_quotationId_idx_951eb9ae",
+    "label": "Create index \"quotationItem_quotationId_idx_951eb9ae\" on \"quotationItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "quotationItem_quotationId_idx_951eb9ae",
+        "table": "quotationItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"quotationItem_quotationId_idx_951eb9ae\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotationItem_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"quotationItem_quotationId_idx_951eb9ae\"",
+        "sql": "CREATE INDEX \"quotationItem_quotationId_idx_951eb9ae\" ON \"public\".\"quotationItem\" (\"quotationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"quotationItem_quotationId_idx_951eb9ae\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quotationItem_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.recurringService.recurringService_companyId_idx_33acc5ed",
+    "label": "Create index \"recurringService_companyId_idx_33acc5ed\" on \"recurringService\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "recurringService_companyId_idx_33acc5ed",
+        "table": "recurringService"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"recurringService_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"recurringService_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"recurringService_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"recurringService_companyId_idx_33acc5ed\" ON \"public\".\"recurringService\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"recurringService_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"recurringService_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.recurringService.recurringService_locationId_idx_7aae3038",
+    "label": "Create index \"recurringService_locationId_idx_7aae3038\" on \"recurringService\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "recurringService_locationId_idx_7aae3038",
+        "table": "recurringService"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"recurringService_locationId_idx_7aae3038\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"recurringService_locationId_idx_7aae3038\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"recurringService_locationId_idx_7aae3038\"",
+        "sql": "CREATE INDEX \"recurringService_locationId_idx_7aae3038\" ON \"public\".\"recurringService\" (\"locationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"recurringService_locationId_idx_7aae3038\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"recurringService_locationId_idx_7aae3038\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.report.report_companyId_idx_33acc5ed",
+    "label": "Create index \"report_companyId_idx_33acc5ed\" on \"report\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "report_companyId_idx_33acc5ed",
+        "table": "report"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"report_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"report_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"report_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"report_companyId_idx_33acc5ed\" ON \"public\".\"report\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"report_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"report_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.report.report_sampleId_idx_4b253cbd",
+    "label": "Create index \"report_sampleId_idx_4b253cbd\" on \"report\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "report_sampleId_idx_4b253cbd",
+        "table": "report"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"report_sampleId_idx_4b253cbd\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"report_sampleId_idx_4b253cbd\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"report_sampleId_idx_4b253cbd\"",
+        "sql": "CREATE INDEX \"report_sampleId_idx_4b253cbd\" ON \"public\".\"report\" (\"sampleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"report_sampleId_idx_4b253cbd\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"report_sampleId_idx_4b253cbd\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.sample.sample_companyId_idx_33acc5ed",
+    "label": "Create index \"sample_companyId_idx_33acc5ed\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "sample_companyId_idx_33acc5ed",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"sample_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"sample_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"sample_companyId_idx_33acc5ed\" ON \"public\".\"sample\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"sample_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.sample.sample_quotationId_idx_951eb9ae",
+    "label": "Create index \"sample_quotationId_idx_951eb9ae\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "sample_quotationId_idx_951eb9ae",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"sample_quotationId_idx_951eb9ae\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"sample_quotationId_idx_951eb9ae\"",
+        "sql": "CREATE INDEX \"sample_quotationId_idx_951eb9ae\" ON \"public\".\"sample\" (\"quotationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"sample_quotationId_idx_951eb9ae\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.sample.sample_workOrderId_idx_136dd311",
+    "label": "Create index \"sample_workOrderId_idx_136dd311\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "sample_workOrderId_idx_136dd311",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"sample_workOrderId_idx_136dd311\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_workOrderId_idx_136dd311\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"sample_workOrderId_idx_136dd311\"",
+        "sql": "CREATE INDEX \"sample_workOrderId_idx_136dd311\" ON \"public\".\"sample\" (\"workOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"sample_workOrderId_idx_136dd311\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_workOrderId_idx_136dd311\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workOrder.workOrder_companyId_idx_33acc5ed",
+    "label": "Create index \"workOrder_companyId_idx_33acc5ed\" on \"workOrder\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workOrder_companyId_idx_33acc5ed",
+        "table": "workOrder"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workOrder_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workOrder_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workOrder_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"workOrder_companyId_idx_33acc5ed\" ON \"public\".\"workOrder\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workOrder_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workOrder_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workOrder.workOrder_quotationId_idx_951eb9ae",
+    "label": "Create index \"workOrder_quotationId_idx_951eb9ae\" on \"workOrder\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workOrder_quotationId_idx_951eb9ae",
+        "table": "workOrder"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workOrder_quotationId_idx_951eb9ae\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workOrder_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workOrder_quotationId_idx_951eb9ae\"",
+        "sql": "CREATE INDEX \"workOrder_quotationId_idx_951eb9ae\" ON \"public\".\"workOrder\" (\"quotationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workOrder_quotationId_idx_951eb9ae\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workOrder_quotationId_idx_951eb9ae\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.activity.activity_companyId_fkey",
+    "label": "Add foreign key \"activity_companyId_fkey\" on \"activity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "activity_companyId_fkey",
+        "table": "activity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"activity_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "activity_companyId_fkey",
+          "public",
+          "\"public\".\"activity\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"activity_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"activity\"\nADD CONSTRAINT \"activity_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"activity_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "activity_companyId_fkey",
+          "public",
+          "\"public\".\"activity\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.contact.contact_companyId_fkey",
+    "label": "Add foreign key \"contact_companyId_fkey\" on \"contact\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "contact_companyId_fkey",
+        "table": "contact"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"contact_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "contact_companyId_fkey",
+          "public",
+          "\"public\".\"contact\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"contact_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"contact\"\nADD CONSTRAINT \"contact_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"contact_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "contact_companyId_fkey",
+          "public",
+          "\"public\".\"contact\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.document.document_companyId_fkey",
+    "label": "Add foreign key \"document_companyId_fkey\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "document_companyId_fkey",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"document_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_companyId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"document_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"document\"\nADD CONSTRAINT \"document_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"document_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_companyId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.document.document_quotationId_fkey",
+    "label": "Add foreign key \"document_quotationId_fkey\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "document_quotationId_fkey",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"document_quotationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_quotationId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"document_quotationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"document\"\nADD CONSTRAINT \"document_quotationId_fkey\"\nFOREIGN KEY (\"quotationId\")\nREFERENCES \"public\".\"quotation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"document_quotationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_quotationId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.document.document_workOrderId_fkey",
+    "label": "Add foreign key \"document_workOrderId_fkey\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "document_workOrderId_fkey",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"document_workOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_workOrderId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"document_workOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"document\"\nADD CONSTRAINT \"document_workOrderId_fkey\"\nFOREIGN KEY (\"workOrderId\")\nREFERENCES \"public\".\"workOrder\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"document_workOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_workOrderId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.document.document_sampleId_fkey",
+    "label": "Add foreign key \"document_sampleId_fkey\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "document_sampleId_fkey",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"document_sampleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_sampleId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"document_sampleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"document\"\nADD CONSTRAINT \"document_sampleId_fkey\"\nFOREIGN KEY (\"sampleId\")\nREFERENCES \"public\".\"sample\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"document_sampleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_sampleId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.document.document_reportId_fkey",
+    "label": "Add foreign key \"document_reportId_fkey\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "document_reportId_fkey",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"document_reportId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_reportId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"document_reportId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"document\"\nADD CONSTRAINT \"document_reportId_fkey\"\nFOREIGN KEY (\"reportId\")\nREFERENCES \"public\".\"report\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"document_reportId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_reportId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.document.document_paymentId_fkey",
+    "label": "Add foreign key \"document_paymentId_fkey\" on \"document\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "document_paymentId_fkey",
+        "table": "document"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"document_paymentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_paymentId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"document_paymentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"document\"\nADD CONSTRAINT \"document_paymentId_fkey\"\nFOREIGN KEY (\"paymentId\")\nREFERENCES \"public\".\"payment\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"document_paymentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "document_paymentId_fkey",
+          "public",
+          "\"public\".\"document\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.lead.lead_companyId_fkey",
+    "label": "Add foreign key \"lead_companyId_fkey\" on \"lead\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "lead_companyId_fkey",
+        "table": "lead"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"lead_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "lead_companyId_fkey",
+          "public",
+          "\"public\".\"lead\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"lead_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"lead\"\nADD CONSTRAINT \"lead_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"lead_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "lead_companyId_fkey",
+          "public",
+          "\"public\".\"lead\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.location.location_companyId_fkey",
+    "label": "Add foreign key \"location_companyId_fkey\" on \"location\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "location_companyId_fkey",
+        "table": "location"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"location_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "location_companyId_fkey",
+          "public",
+          "\"public\".\"location\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"location_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"location\"\nADD CONSTRAINT \"location_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"location_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "location_companyId_fkey",
+          "public",
+          "\"public\".\"location\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.marketingProspect.marketingProspect_companyId_fkey",
+    "label": "Add foreign key \"marketingProspect_companyId_fkey\" on \"marketingProspect\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "marketingProspect_companyId_fkey",
+        "table": "marketingProspect"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"marketingProspect_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "marketingProspect_companyId_fkey",
+          "public",
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"marketingProspect_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"marketingProspect\"\nADD CONSTRAINT \"marketingProspect_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"marketingProspect_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "marketingProspect_companyId_fkey",
+          "public",
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.marketingProspect.marketingProspect_leadId_fkey",
+    "label": "Add foreign key \"marketingProspect_leadId_fkey\" on \"marketingProspect\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "marketingProspect_leadId_fkey",
+        "table": "marketingProspect"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"marketingProspect_leadId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "marketingProspect_leadId_fkey",
+          "public",
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"marketingProspect_leadId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"marketingProspect\"\nADD CONSTRAINT \"marketingProspect_leadId_fkey\"\nFOREIGN KEY (\"leadId\")\nREFERENCES \"public\".\"lead\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"marketingProspect_leadId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "marketingProspect_leadId_fkey",
+          "public",
+          "\"public\".\"marketingProspect\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payment.payment_companyId_fkey",
+    "label": "Add foreign key \"payment_companyId_fkey\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payment_companyId_fkey",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payment_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_companyId_fkey",
+          "public",
+          "\"public\".\"payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payment_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payment\"\nADD CONSTRAINT \"payment_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payment_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_companyId_fkey",
+          "public",
+          "\"public\".\"payment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payment.payment_quotationId_fkey",
+    "label": "Add foreign key \"payment_quotationId_fkey\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payment_quotationId_fkey",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payment_quotationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_quotationId_fkey",
+          "public",
+          "\"public\".\"payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payment_quotationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payment\"\nADD CONSTRAINT \"payment_quotationId_fkey\"\nFOREIGN KEY (\"quotationId\")\nREFERENCES \"public\".\"quotation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payment_quotationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_quotationId_fkey",
+          "public",
+          "\"public\".\"payment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payment.payment_workOrderId_fkey",
+    "label": "Add foreign key \"payment_workOrderId_fkey\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payment_workOrderId_fkey",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payment_workOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_workOrderId_fkey",
+          "public",
+          "\"public\".\"payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payment_workOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payment\"\nADD CONSTRAINT \"payment_workOrderId_fkey\"\nFOREIGN KEY (\"workOrderId\")\nREFERENCES \"public\".\"workOrder\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payment_workOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_workOrderId_fkey",
+          "public",
+          "\"public\".\"payment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.planItem.planItem_companyId_fkey",
+    "label": "Add foreign key \"planItem_companyId_fkey\" on \"planItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "planItem_companyId_fkey",
+        "table": "planItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"planItem_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "planItem_companyId_fkey",
+          "public",
+          "\"public\".\"planItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"planItem_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"planItem\"\nADD CONSTRAINT \"planItem_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"planItem_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "planItem_companyId_fkey",
+          "public",
+          "\"public\".\"planItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.quotation.quotation_companyId_fkey",
+    "label": "Add foreign key \"quotation_companyId_fkey\" on \"quotation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "quotation_companyId_fkey",
+        "table": "quotation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"quotation_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quotation_companyId_fkey",
+          "public",
+          "\"public\".\"quotation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"quotation_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"quotation\"\nADD CONSTRAINT \"quotation_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"quotation_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quotation_companyId_fkey",
+          "public",
+          "\"public\".\"quotation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.quotationItem.quotationItem_quotationId_fkey",
+    "label": "Add foreign key \"quotationItem_quotationId_fkey\" on \"quotationItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "quotationItem_quotationId_fkey",
+        "table": "quotationItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"quotationItem_quotationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quotationItem_quotationId_fkey",
+          "public",
+          "\"public\".\"quotationItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"quotationItem_quotationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"quotationItem\"\nADD CONSTRAINT \"quotationItem_quotationId_fkey\"\nFOREIGN KEY (\"quotationId\")\nREFERENCES \"public\".\"quotation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"quotationItem_quotationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quotationItem_quotationId_fkey",
+          "public",
+          "\"public\".\"quotationItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.recurringService.recurringService_companyId_fkey",
+    "label": "Add foreign key \"recurringService_companyId_fkey\" on \"recurringService\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "recurringService_companyId_fkey",
+        "table": "recurringService"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"recurringService_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "recurringService_companyId_fkey",
+          "public",
+          "\"public\".\"recurringService\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"recurringService_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"recurringService\"\nADD CONSTRAINT \"recurringService_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"recurringService_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "recurringService_companyId_fkey",
+          "public",
+          "\"public\".\"recurringService\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.recurringService.recurringService_locationId_fkey",
+    "label": "Add foreign key \"recurringService_locationId_fkey\" on \"recurringService\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "recurringService_locationId_fkey",
+        "table": "recurringService"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"recurringService_locationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "recurringService_locationId_fkey",
+          "public",
+          "\"public\".\"recurringService\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"recurringService_locationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"recurringService\"\nADD CONSTRAINT \"recurringService_locationId_fkey\"\nFOREIGN KEY (\"locationId\")\nREFERENCES \"public\".\"location\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"recurringService_locationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "recurringService_locationId_fkey",
+          "public",
+          "\"public\".\"recurringService\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.report.report_companyId_fkey",
+    "label": "Add foreign key \"report_companyId_fkey\" on \"report\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "report_companyId_fkey",
+        "table": "report"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"report_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "report_companyId_fkey",
+          "public",
+          "\"public\".\"report\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"report_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"report\"\nADD CONSTRAINT \"report_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"report_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "report_companyId_fkey",
+          "public",
+          "\"public\".\"report\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.report.report_sampleId_fkey",
+    "label": "Add foreign key \"report_sampleId_fkey\" on \"report\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "report_sampleId_fkey",
+        "table": "report"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"report_sampleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "report_sampleId_fkey",
+          "public",
+          "\"public\".\"report\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"report_sampleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"report\"\nADD CONSTRAINT \"report_sampleId_fkey\"\nFOREIGN KEY (\"sampleId\")\nREFERENCES \"public\".\"sample\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"report_sampleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "report_sampleId_fkey",
+          "public",
+          "\"public\".\"report\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.sample.sample_companyId_fkey",
+    "label": "Add foreign key \"sample_companyId_fkey\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "sample_companyId_fkey",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"sample_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_companyId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"sample_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"sample\"\nADD CONSTRAINT \"sample_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"sample_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_companyId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.sample.sample_quotationId_fkey",
+    "label": "Add foreign key \"sample_quotationId_fkey\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "sample_quotationId_fkey",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"sample_quotationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_quotationId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"sample_quotationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"sample\"\nADD CONSTRAINT \"sample_quotationId_fkey\"\nFOREIGN KEY (\"quotationId\")\nREFERENCES \"public\".\"quotation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"sample_quotationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_quotationId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.sample.sample_workOrderId_fkey",
+    "label": "Add foreign key \"sample_workOrderId_fkey\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "sample_workOrderId_fkey",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"sample_workOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_workOrderId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"sample_workOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"sample\"\nADD CONSTRAINT \"sample_workOrderId_fkey\"\nFOREIGN KEY (\"workOrderId\")\nREFERENCES \"public\".\"workOrder\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"sample_workOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_workOrderId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.workOrder.workOrder_companyId_fkey",
+    "label": "Add foreign key \"workOrder_companyId_fkey\" on \"workOrder\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "workOrder_companyId_fkey",
+        "table": "workOrder"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"workOrder_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workOrder_companyId_fkey",
+          "public",
+          "\"public\".\"workOrder\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"workOrder_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"workOrder\"\nADD CONSTRAINT \"workOrder_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"company\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"workOrder_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workOrder_companyId_fkey",
+          "public",
+          "\"public\".\"workOrder\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.workOrder.workOrder_quotationId_fkey",
+    "label": "Add foreign key \"workOrder_quotationId_fkey\" on \"workOrder\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "workOrder_quotationId_fkey",
+        "table": "workOrder"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"workOrder_quotationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workOrder_quotationId_fkey",
+          "public",
+          "\"public\".\"workOrder\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"workOrder_quotationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"workOrder\"\nADD CONSTRAINT \"workOrder_quotationId_fkey\"\nFOREIGN KEY (\"quotationId\")\nREFERENCES \"public\".\"quotation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"workOrder_quotationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workOrder_quotationId_fkey",
+          "public",
+          "\"public\".\"workOrder\""
+        ]
+      }
+    ]
+  }
+]

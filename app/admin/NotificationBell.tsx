@@ -4,8 +4,12 @@ import { Bell, CheckCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type NotificationSource = "lead" | "notification";
+
 type NotificationItem = {
   id: string;
+  source: NotificationSource;
+  type: string;
   title: string;
   message: string;
   createdAt: string;
@@ -41,28 +45,36 @@ function relativeTime(value: string) {
 export default function NotificationBell() {
   const router = useRouter();
   const shellRef = useRef<HTMLDivElement | null>(null);
+
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function loadNotifications(silent = false) {
-    if (!silent) setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
 
     try {
       const response = await fetch("/api/notifications", {
         cache: "no-store",
       });
 
-      if (!response.ok) return;
+      if (!response.ok) {
+        return;
+      }
 
       const data = (await response.json()) as NotificationPayload;
+
       setUnreadCount(data.unreadCount ?? 0);
       setNotifications(data.notifications ?? []);
     } catch (error) {
       console.error("Notification load error:", error);
     } finally {
-      if (!silent) setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }
 
@@ -87,28 +99,59 @@ export default function NotificationBell() {
     }
 
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
   }, []);
 
-  async function markRead(id: string) {
+  async function markRead(
+    id: string,
+    source: NotificationSource
+  ) {
     try {
       const response = await fetch("/api/notifications", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          source,
+        }),
       });
 
-      if (!response.ok) return false;
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = (await response.json()) as {
+        unreadCount?: number;
+      };
 
       setNotifications((current) =>
         current.map((item) =>
-          item.id === id ? { ...item, isRead: true } : item
+          item.id === id && item.source === source
+            ? { ...item, isRead: true }
+            : item
         )
       );
-      setUnreadCount((current) => Math.max(0, current - 1));
+
+      if (typeof data.unreadCount === "number") {
+        setUnreadCount(data.unreadCount);
+      } else {
+        setUnreadCount((current) =>
+          Math.max(0, current - 1)
+        );
+      }
+
       return true;
     } catch (error) {
-      console.error("Mark notification read error:", error);
+      console.error(
+        "Mark notification read error:",
+        error
+      );
+
       return false;
     }
   }
@@ -117,24 +160,46 @@ export default function NotificationBell() {
     try {
       const response = await fetch("/api/notifications", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAll: true }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          markAll: true,
+        }),
       });
 
-      if (!response.ok) return;
+      if (!response.ok) {
+        return;
+      }
 
       setNotifications((current) =>
-        current.map((item) => ({ ...item, isRead: true }))
+        current.map((item) => ({
+          ...item,
+          isRead: true,
+        }))
       );
+
       setUnreadCount(0);
     } catch (error) {
-      console.error("Mark all notifications read error:", error);
+      console.error(
+        "Mark all notifications read error:",
+        error
+      );
     }
   }
 
-  async function openNotification(item: NotificationItem) {
+  async function openNotification(
+    item: NotificationItem
+  ) {
     if (!item.isRead) {
-      await markRead(item.id);
+      const marked = await markRead(
+        item.id,
+        item.source
+      );
+
+      if (!marked) {
+        return;
+      }
     }
 
     setOpen(false);
@@ -142,7 +207,10 @@ export default function NotificationBell() {
   }
 
   return (
-    <div className="v3-notification-shell" ref={shellRef}>
+    <div
+      className="v3-notification-shell"
+      ref={shellRef}
+    >
       <button
         type="button"
         className="v3-bell"
@@ -154,13 +222,19 @@ export default function NotificationBell() {
         aria-expanded={open}
         onClick={() => {
           setOpen((current) => !current);
-          if (!open) loadNotifications(true);
+
+          if (!open) {
+            loadNotifications(true);
+          }
         }}
       >
         <Bell size={19} />
+
         {unreadCount > 0 ? (
           <span className="v3-notification-badge">
-            {unreadCount > 99 ? "99+" : unreadCount}
+            {unreadCount > 99
+              ? "99+"
+              : unreadCount}
           </span>
         ) : null}
       </button>
@@ -170,6 +244,7 @@ export default function NotificationBell() {
           <div className="v3-notification-head">
             <div>
               <strong>Notifications</strong>
+
               <span>
                 {unreadCount
                   ? `${unreadCount} unread`
@@ -178,7 +253,10 @@ export default function NotificationBell() {
             </div>
 
             {unreadCount > 0 ? (
-              <button type="button" onClick={markAllRead}>
+              <button
+                type="button"
+                onClick={markAllRead}
+              >
                 <CheckCheck size={15} />
                 Mark all read
               </button>
@@ -194,17 +272,26 @@ export default function NotificationBell() {
               notifications.map((item) => (
                 <button
                   type="button"
-                  key={item.id}
+                  key={`${item.source}-${item.id}`}
                   className={`v3-notification-item ${
-                    item.isRead ? "" : "is-unread"
+                    item.isRead
+                      ? ""
+                      : "is-unread"
                   }`}
-                  onClick={() => openNotification(item)}
+                  onClick={() =>
+                    openNotification(item)
+                  }
                 >
                   <span className="v3-notification-dot" />
+
                   <span className="v3-notification-copy">
                     <strong>{item.title}</strong>
                     <span>{item.message}</span>
-                    <small>{relativeTime(item.createdAt)}</small>
+                    <small>
+                      {relativeTime(
+                        item.createdAt
+                      )}
+                    </small>
                   </span>
                 </button>
               ))

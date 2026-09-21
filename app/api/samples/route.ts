@@ -70,6 +70,55 @@ function isValidReportStatus(value: string) {
 }
 
 /* =========================================================
+   NOTIFICATION HELPER
+========================================================= */
+
+async function createSampleNotification({
+  sampleId,
+  companyName,
+  sampleNumber,
+  sampleType,
+  sampleCount,
+  status,
+  type,
+  title,
+}: {
+  sampleId: string;
+  companyName: string;
+  sampleNumber: string;
+  sampleType: string;
+  sampleCount: number;
+  status: string;
+  type: "SAMPLE_CREATED" | "SAMPLE_STATUS_CHANGED";
+  title: string;
+}) {
+  try {
+    await db.orm.public.Notification.create({
+      type,
+      title,
+      message:
+        `${companyName} - ${sampleNumber} - ` +
+        `${sampleType} - ${sampleCount} sample${
+          sampleCount === 1 ? "" : "s"
+        } - ${status}`,
+      entityType: "Sample",
+      entityId: sampleId,
+      actionUrl: `/admin/samples/${sampleId}`,
+      isRead: false,
+    });
+  } catch (error) {
+    /*
+     * Notification failure must never cause the
+     * sample operation itself to fail.
+     */
+    console.error(
+      "Sample notification creation error:",
+      error
+    );
+  }
+}
+
+/* =========================================================
    GET
 ========================================================= */
 
@@ -354,6 +403,21 @@ export async function POST(request: Request) {
         notes:
           body.notes?.trim() || null,
       });
+
+    /* =====================================================
+       CREATE NOTIFICATION
+    ===================================================== */
+
+    await createSampleNotification({
+      sampleId: sample.id,
+      companyName: company.name,
+      sampleNumber,
+      sampleType,
+      sampleCount,
+      status,
+      type: "SAMPLE_CREATED",
+      title: "Sample created",
+    });
 
     return NextResponse.json(
       {
@@ -679,6 +743,13 @@ export async function PUT(request: Request) {
         ? body.notes.trim() || null
         : existingSample.notes;
 
+    /*
+     * Capture whether the actual sample workflow status
+     * changed before performing the update.
+     */
+    const statusChanged =
+      existingSample.status !== status;
+
     /* =====================================================
        UPDATE SAMPLE
     ===================================================== */
@@ -709,6 +780,23 @@ export async function PUT(request: Request) {
 
           notes,
         });
+
+    /* =====================================================
+       STATUS CHANGE NOTIFICATION
+    ===================================================== */
+
+    if (statusChanged) {
+      await createSampleNotification({
+        sampleId: id,
+        companyName: company.name,
+        sampleNumber,
+        sampleType,
+        sampleCount,
+        status,
+        type: "SAMPLE_STATUS_CHANGED",
+        title: `Sample status: ${status}`,
+      });
+    }
 
     return NextResponse.json({
       success: true,
