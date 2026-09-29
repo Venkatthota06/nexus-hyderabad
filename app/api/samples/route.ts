@@ -12,6 +12,7 @@ export const runtime = "nodejs";
 type SampleRequestBody = {
   id?: string;
   companyId?: string;
+  locationId?: string;
   quotationId?: string;
 
   sampleNumber?: string;
@@ -19,6 +20,7 @@ type SampleRequestBody = {
   sampleCount?: number;
 
   collectionDate?: string;
+  collectionMonth?: string;
   collectedBy?: string;
 
   status?: string;
@@ -69,6 +71,67 @@ function isValidReportStatus(value: string) {
   );
 }
 
+/*
+ * Returns YYYY-MM.
+ *
+ * If collectionMonth is explicitly supplied, it is used.
+ * Otherwise, collectionDate is used to derive the month.
+ *
+ * Examples:
+ * 2026-09 -> 2026-09
+ * 2026-09-03 -> 2026-09
+ */
+function normalizeCollectionMonth(
+  collectionMonth?: string | null,
+  collectionDate?: string | null
+) {
+  const explicitMonth =
+    typeof collectionMonth === "string"
+      ? collectionMonth.trim()
+      : "";
+
+  if (explicitMonth) {
+    if (
+      !/^\d{4}-(0[1-9]|1[0-2])$/.test(
+        explicitMonth
+      )
+    ) {
+      return {
+        valid: false as const,
+        value: null,
+      };
+    }
+
+    return {
+      valid: true as const,
+      value: explicitMonth,
+    };
+  }
+
+  const date =
+    typeof collectionDate === "string"
+      ? collectionDate.trim()
+      : "";
+
+  if (date) {
+    const match = date.match(
+      /^(\d{4})-(0[1-9]|1[0-2])/
+    );
+
+    if (match) {
+      return {
+        valid: true as const,
+        value: `${match[1]}-${match[2]}`,
+      };
+    }
+  }
+
+  return {
+    valid: true as const,
+    value: null,
+  };
+}
+
 /* =========================================================
    NOTIFICATION HELPER
 ========================================================= */
@@ -89,7 +152,9 @@ async function createSampleNotification({
   sampleType: string;
   sampleCount: number;
   status: string;
-  type: "SAMPLE_CREATED" | "SAMPLE_STATUS_CHANGED";
+  type:
+    | "SAMPLE_CREATED"
+    | "SAMPLE_STATUS_CHANGED";
   title: string;
 }) {
   try {
@@ -136,9 +201,12 @@ export async function GET() {
   }
 
   try {
-    const samples = await db.orm.public.Sample
-      .orderBy((sample) => sample.createdAt.desc())
-      .all();
+    const samples =
+      await db.orm.public.Sample
+        .orderBy(
+          (sample) => sample.createdAt.desc()
+        )
+        .all();
 
     return NextResponse.json(samples);
   } catch (error) {
@@ -183,19 +251,35 @@ export async function POST(request: Request) {
     ===================================================== */
 
     const companyId =
-      body.companyId?.trim() ?? "";
+      typeof body.companyId === "string"
+        ? body.companyId.trim()
+        : "";
+
+    const locationId =
+      typeof body.locationId === "string" &&
+      body.locationId.trim()
+        ? body.locationId.trim()
+        : null;
 
     const quotationId =
-      body.quotationId?.trim() || null;
+      typeof body.quotationId === "string" &&
+      body.quotationId.trim()
+        ? body.quotationId.trim()
+        : null;
 
     const sampleNumber =
-      body.sampleNumber?.trim() ?? "";
+      typeof body.sampleNumber === "string"
+        ? body.sampleNumber.trim()
+        : "";
 
     const sampleType =
-      body.sampleType?.trim() ?? "";
+      typeof body.sampleType === "string"
+        ? body.sampleType.trim()
+        : "";
 
-    const sampleCount =
-      Number(body.sampleCount ?? 1);
+    const sampleCount = Number(
+      body.sampleCount ?? 1
+    );
 
     /* =====================================================
        REQUIRED FIELDS
@@ -279,6 +363,43 @@ export async function POST(request: Request) {
     }
 
     /* =====================================================
+       LOCATION VALIDATION
+    ===================================================== */
+
+    if (locationId) {
+      const location =
+        await db.orm.public.Location
+          .where({
+            id: locationId,
+          })
+          .first();
+
+      if (!location) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Selected location was not found.",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (
+        location.companyId !== companyId
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Selected location does not belong to the selected company.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    /* =====================================================
        QUOTATION VALIDATION
     ===================================================== */
 
@@ -320,18 +441,22 @@ export async function POST(request: Request) {
     ===================================================== */
 
     let status =
-      body.status?.trim() || "Planned";
+      typeof body.status === "string" &&
+      body.status.trim()
+        ? body.status.trim()
+        : "Planned";
 
     const reportStatus =
-      body.reportStatus?.trim() ||
-      "Pending";
+      typeof body.reportStatus === "string" &&
+      body.reportStatus.trim()
+        ? body.reportStatus.trim()
+        : "Pending";
 
     if (!isValidSampleStatus(status)) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Invalid sample status.",
+          message: "Invalid sample status.",
         },
         { status: 400 }
       );
@@ -343,8 +468,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Invalid report status.",
+          message: "Invalid report status.",
         },
         { status: 400 }
       );
@@ -355,8 +479,11 @@ export async function POST(request: Request) {
     ===================================================== */
 
     let reportDeliveredDate =
-      body.reportDeliveredDate?.trim() ||
-      null;
+      typeof body.reportDeliveredDate ===
+        "string" &&
+      body.reportDeliveredDate.trim()
+        ? body.reportDeliveredDate.trim()
+        : null;
 
     if (reportStatus !== "Delivered") {
       reportDeliveredDate = null;
@@ -367,41 +494,84 @@ export async function POST(request: Request) {
     }
 
     /* =====================================================
+       COLLECTION DETAILS
+    ===================================================== */
+
+    const collectionDate =
+      typeof body.collectionDate ===
+        "string" &&
+      body.collectionDate.trim()
+        ? body.collectionDate.trim()
+        : null;
+
+    const normalizedCollectionMonth =
+      normalizeCollectionMonth(
+        body.collectionMonth,
+        collectionDate
+      );
+
+    if (!normalizedCollectionMonth.valid) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Collection month must use YYYY-MM format.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const collectionMonth =
+      normalizedCollectionMonth.value;
+
+    const collectedBy =
+      typeof body.collectedBy === "string" &&
+      body.collectedBy.trim()
+        ? body.collectedBy.trim()
+        : null;
+
+    /* =====================================================
        CREATE SAMPLE
     ===================================================== */
 
     const sample =
       await db.orm.public.Sample.create({
         companyId,
+        locationId,
         quotationId,
 
         sampleNumber,
         sampleType,
         sampleCount,
 
-        collectionDate:
-          body.collectionDate?.trim() ||
-          null,
-
-        collectedBy:
-          body.collectedBy?.trim() ||
-          null,
+        collectionDate,
+        collectionMonth,
+        collectedBy,
 
         status,
 
         testingLocation:
-          body.testingLocation?.trim() ||
-          null,
+          typeof body.testingLocation ===
+            "string" &&
+          body.testingLocation.trim()
+            ? body.testingLocation.trim()
+            : null,
 
         expectedCompletionDate:
-          body.expectedCompletionDate?.trim() ||
-          null,
+          typeof body.expectedCompletionDate ===
+            "string" &&
+          body.expectedCompletionDate.trim()
+            ? body.expectedCompletionDate.trim()
+            : null,
 
         reportStatus,
         reportDeliveredDate,
 
         notes:
-          body.notes?.trim() || null,
+          typeof body.notes === "string" &&
+          body.notes.trim()
+            ? body.notes.trim()
+            : null,
       });
 
     /* =====================================================
@@ -467,7 +637,9 @@ export async function PUT(request: Request) {
       await request.json();
 
     const id =
-      body.id?.trim();
+      typeof body.id === "string"
+        ? body.id.trim()
+        : "";
 
     /* =====================================================
        SAMPLE ID VALIDATION
@@ -511,8 +683,10 @@ export async function PUT(request: Request) {
     ===================================================== */
 
     const companyId =
-      body.companyId?.trim() ||
-      existingSample.companyId;
+      typeof body.companyId === "string" &&
+      body.companyId.trim()
+        ? body.companyId.trim()
+        : existingSample.companyId;
 
     const company =
       await db.orm.public.Company
@@ -538,8 +712,11 @@ export async function PUT(request: Request) {
 
     const quotationId =
       body.quotationId !== undefined
-        ? body.quotationId.trim() ||
-          null
+        ? typeof body.quotationId ===
+              "string" &&
+          body.quotationId.trim()
+          ? body.quotationId.trim()
+          : null
         : existingSample.quotationId;
 
     if (quotationId) {
@@ -576,12 +753,60 @@ export async function PUT(request: Request) {
     }
 
     /* =====================================================
+       LOCATION
+    ===================================================== */
+
+    const locationId =
+      body.locationId !== undefined
+        ? typeof body.locationId ===
+              "string" &&
+          body.locationId.trim()
+          ? body.locationId.trim()
+          : null
+        : existingSample.locationId;
+
+    if (locationId) {
+      const location =
+        await db.orm.public.Location
+          .where({
+            id: locationId,
+          })
+          .first();
+
+      if (!location) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Selected location was not found.",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (
+        location.companyId !== companyId
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Selected location does not belong to the selected company.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    /* =====================================================
        SAMPLE NUMBER
     ===================================================== */
 
     const sampleNumber =
-      body.sampleNumber?.trim() ||
-      existingSample.sampleNumber;
+      typeof body.sampleNumber === "string" &&
+      body.sampleNumber.trim()
+        ? body.sampleNumber.trim()
+        : existingSample.sampleNumber;
 
     if (
       sampleNumber !==
@@ -614,8 +839,10 @@ export async function PUT(request: Request) {
     ===================================================== */
 
     const sampleType =
-      body.sampleType?.trim() ||
-      existingSample.sampleType;
+      typeof body.sampleType === "string" &&
+      body.sampleType.trim()
+        ? body.sampleType.trim()
+        : existingSample.sampleType;
 
     /* =====================================================
        SAMPLE COUNT
@@ -646,14 +873,68 @@ export async function PUT(request: Request) {
 
     const collectionDate =
       body.collectionDate !== undefined
-        ? body.collectionDate.trim() ||
-          null
+        ? typeof body.collectionDate ===
+              "string" &&
+          body.collectionDate.trim()
+          ? body.collectionDate.trim()
+          : null
         : existingSample.collectionDate;
+
+    /*
+     * If collectionMonth is explicitly supplied,
+     * validate and use it.
+     *
+     * If collectionDate was changed but month was
+     * not supplied, derive YYYY-MM from the date.
+     *
+     * If neither field changed, preserve the
+     * existing collectionMonth.
+     */
+    let collectionMonth: string | null;
+
+    if (
+      body.collectionMonth !== undefined
+    ) {
+      const normalized =
+        normalizeCollectionMonth(
+          body.collectionMonth,
+          collectionDate
+        );
+
+      if (!normalized.valid) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Collection month must use YYYY-MM format.",
+          },
+          { status: 400 }
+        );
+      }
+
+      collectionMonth = normalized.value;
+    } else if (
+      body.collectionDate !== undefined
+    ) {
+      const normalized =
+        normalizeCollectionMonth(
+          null,
+          collectionDate
+        );
+
+      collectionMonth = normalized.value;
+    } else {
+      collectionMonth =
+        existingSample.collectionMonth;
+    }
 
     const collectedBy =
       body.collectedBy !== undefined
-        ? body.collectedBy.trim() ||
-          null
+        ? typeof body.collectedBy ===
+              "string" &&
+          body.collectedBy.trim()
+          ? body.collectedBy.trim()
+          : null
         : existingSample.collectedBy;
 
     /* =====================================================
@@ -661,8 +942,10 @@ export async function PUT(request: Request) {
     ===================================================== */
 
     let status =
-      body.status?.trim() ||
-      existingSample.status;
+      typeof body.status === "string" &&
+      body.status.trim()
+        ? body.status.trim()
+        : existingSample.status;
 
     if (!isValidSampleStatus(status)) {
       return NextResponse.json(
@@ -681,15 +964,21 @@ export async function PUT(request: Request) {
 
     const testingLocation =
       body.testingLocation !== undefined
-        ? body.testingLocation.trim() ||
-          null
+        ? typeof body.testingLocation ===
+              "string" &&
+          body.testingLocation.trim()
+          ? body.testingLocation.trim()
+          : null
         : existingSample.testingLocation;
 
     const expectedCompletionDate =
       body.expectedCompletionDate !==
       undefined
-        ? body.expectedCompletionDate.trim() ||
-          null
+        ? typeof body.expectedCompletionDate ===
+              "string" &&
+          body.expectedCompletionDate.trim()
+          ? body.expectedCompletionDate.trim()
+          : null
         : existingSample
             .expectedCompletionDate;
 
@@ -698,8 +987,10 @@ export async function PUT(request: Request) {
     ===================================================== */
 
     const reportStatus =
-      body.reportStatus?.trim() ||
-      existingSample.reportStatus;
+      typeof body.reportStatus === "string" &&
+      body.reportStatus.trim()
+        ? body.reportStatus.trim()
+        : existingSample.reportStatus;
 
     if (
       !isValidReportStatus(reportStatus)
@@ -719,12 +1010,13 @@ export async function PUT(request: Request) {
     ===================================================== */
 
     let reportDeliveredDate =
-      body.reportDeliveredDate !==
-      undefined
-        ? body.reportDeliveredDate.trim() ||
-          null
-        : existingSample
-            .reportDeliveredDate;
+      body.reportDeliveredDate !== undefined
+        ? typeof body.reportDeliveredDate ===
+              "string" &&
+          body.reportDeliveredDate.trim()
+          ? body.reportDeliveredDate.trim()
+          : null
+        : existingSample.reportDeliveredDate;
 
     if (reportStatus !== "Delivered") {
       reportDeliveredDate = null;
@@ -740,7 +1032,10 @@ export async function PUT(request: Request) {
 
     const notes =
       body.notes !== undefined
-        ? body.notes.trim() || null
+        ? typeof body.notes === "string" &&
+          body.notes.trim()
+          ? body.notes.trim()
+          : null
         : existingSample.notes;
 
     /*
@@ -761,6 +1056,7 @@ export async function PUT(request: Request) {
         })
         .update({
           companyId,
+          locationId,
           quotationId,
 
           sampleNumber,
@@ -768,6 +1064,7 @@ export async function PUT(request: Request) {
           sampleCount,
 
           collectionDate,
+          collectionMonth,
           collectedBy,
 
           status,

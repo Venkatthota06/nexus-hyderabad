@@ -26,23 +26,9 @@ import {
   UserRound,
 } from "lucide-react";
 
-/* =========================================================
-   TYPES
-========================================================= */
-
 type Company = {
   id: string;
   name: string;
-  status: string;
-};
-
-type Location = {
-  id: string;
-  companyId: string;
-  name: string;
-  address: string | null;
-  city: string | null;
-  state: string | null;
   status: string;
 };
 
@@ -53,10 +39,6 @@ type Quotation = {
   service: string;
   status: string;
 };
-
-/* =========================================================
-   OPTIONS
-========================================================= */
 
 const sampleStatuses = [
   "Planned",
@@ -75,83 +57,37 @@ const reportStatuses = [
   "Delivered",
 ];
 
-/* =========================================================
-   PAGE
-========================================================= */
-
 export default function AddSamplePage() {
   const router = useRouter();
 
-  /* =======================================================
-     DATA
-  ======================================================= */
-
   const [companies, setCompanies] = useState<Company[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-
-  /* =======================================================
-     CLIENT
-  ======================================================= */
 
   const [companyId, setCompanyId] = useState("");
-  const [locationId, setLocationId] = useState("");
   const [quotationId, setQuotationId] = useState("");
-
-  /* =======================================================
-     SAMPLE
-  ======================================================= */
 
   const [sampleNumber, setSampleNumber] = useState("");
   const [sampleType, setSampleType] = useState("");
   const [sampleCount, setSampleCount] = useState("1");
 
-  /* =======================================================
-     COLLECTION
-  ======================================================= */
-
   const [collectionDate, setCollectionDate] = useState("");
   const [collectedBy, setCollectedBy] = useState("");
+
   const [status, setStatus] = useState("Planned");
 
-  /* =======================================================
-     TESTING
-  ======================================================= */
-
   const [testingLocation, setTestingLocation] = useState("");
+  const [expectedCompletionDate, setExpectedCompletionDate] =
+    useState("");
 
-  const [
-    expectedCompletionDate,
-    setExpectedCompletionDate,
-  ] = useState("");
-
-  /* =======================================================
-     REPORT
-  ======================================================= */
-
-  const [reportStatus, setReportStatus] =
-    useState("Pending");
-
-  const [
-    reportDeliveredDate,
-    setReportDeliveredDate,
-  ] = useState("");
-
-  /* =======================================================
-     NOTES
-  ======================================================= */
+  const [reportStatus, setReportStatus] = useState("Pending");
+  const [reportDeliveredDate, setReportDeliveredDate] =
+    useState("");
 
   const [notes, setNotes] = useState("");
 
-  /* =======================================================
-     UI
-  ======================================================= */
-
   const [loading, setLoading] = useState(true);
-  const [locationsLoading, setLocationsLoading] =
-    useState(false);
-
   const [saving, setSaving] = useState(false);
+
   const [error, setError] = useState("");
 
   /* =========================================================
@@ -175,16 +111,12 @@ export default function AddSamplePage() {
             }),
           ]);
 
-        const companyData =
-          await companyResponse.json();
-
-        const quotationData =
-          await quotationResponse.json();
+        const companyData = await companyResponse.json();
+        const quotationData = await quotationResponse.json();
 
         if (!companyResponse.ok) {
           throw new Error(
             companyData.message ||
-              companyData.error ||
               "Unable to load companies."
           );
         }
@@ -192,22 +124,12 @@ export default function AddSamplePage() {
         if (!quotationResponse.ok) {
           throw new Error(
             quotationData.message ||
-              quotationData.error ||
               "Unable to load quotations."
           );
         }
 
-        setCompanies(
-          Array.isArray(companyData)
-            ? companyData
-            : []
-        );
-
-        setQuotations(
-          Array.isArray(quotationData)
-            ? quotationData
-            : []
-        );
+        setCompanies(companyData);
+        setQuotations(quotationData);
       } catch (error) {
         setError(
           error instanceof Error
@@ -223,72 +145,6 @@ export default function AddSamplePage() {
   }, []);
 
   /* =========================================================
-     LOAD LOCATIONS WHEN COMPANY CHANGES
-  ========================================================= */
-
-  useEffect(() => {
-    if (!companyId) {
-      setLocations([]);
-      setLocationId("");
-      setLocationsLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadLocations() {
-      try {
-        setLocationsLoading(true);
-
-        const response = await fetch(
-          `/api/locations?companyId=${encodeURIComponent(
-            companyId
-          )}`,
-          {
-            cache: "no-store",
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message ||
-              data.error ||
-              "Unable to load company locations."
-          );
-        }
-
-        if (!cancelled) {
-          setLocations(
-            Array.isArray(data) ? data : []
-          );
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setLocations([]);
-
-          setError(
-            error instanceof Error
-              ? error.message
-              : "Unable to load company locations."
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setLocationsLoading(false);
-        }
-      }
-    }
-
-    loadLocations();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [companyId]);
-
-  /* =========================================================
      COMPANY QUOTATIONS
   ========================================================= */
 
@@ -298,24 +154,13 @@ export default function AddSamplePage() {
     }
 
     return quotations.filter(
-      (quotation) =>
-        quotation.companyId === companyId
+      (quotation) => quotation.companyId === companyId
     );
   }, [companyId, quotations]);
 
-  /* =========================================================
-     COMPANY CHANGE
-  ========================================================= */
-
   function handleCompanyChange(value: string) {
     setCompanyId(value);
-
-    // Clear references belonging to the old company.
     setQuotationId("");
-    setLocationId("");
-    setLocations([]);
-
-    setError("");
   }
 
   /* =========================================================
@@ -331,50 +176,40 @@ export default function AddSamplePage() {
     setError("");
 
     try {
-      const response = await fetch(
-        "/api/samples",
-        {
-          method: "POST",
+      const response = await fetch("/api/samples", {
+        method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-          body: JSON.stringify({
-            companyId,
+        body: JSON.stringify({
+          companyId,
+          quotationId,
+          sampleNumber,
+          sampleType,
+          sampleCount: Number(sampleCount),
 
-            // New location relationship
-            locationId,
+          collectionDate,
+          collectedBy,
 
-            quotationId,
+          status,
 
-            sampleNumber,
-            sampleType,
-            sampleCount: Number(sampleCount),
+          testingLocation,
+          expectedCompletionDate,
 
-            collectionDate,
-            collectedBy,
+          reportStatus,
+          reportDeliveredDate,
 
-            status,
-
-            testingLocation,
-            expectedCompletionDate,
-
-            reportStatus,
-            reportDeliveredDate,
-
-            notes,
-          }),
-        }
-      );
+          notes,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to create sample."
+          data.message || "Unable to create sample."
         );
       }
 
@@ -399,26 +234,16 @@ export default function AddSamplePage() {
     return (
       <div className="sample-form-loading">
         <div>
-          <Loader2
-            size={22}
-            className="animate-spin"
-          />
+          <Loader2 size={22} className="animate-spin" />
 
           <span>
-            <strong>
-              Preparing Sample Form
-            </strong>
-
+            <strong>Preparing Sample Form</strong>
             Loading companies and quotations...
           </span>
         </div>
       </div>
     );
   }
-
-  /* =========================================================
-     RENDER
-  ========================================================= */
 
   return (
     <div className="sample-form-page">
@@ -444,10 +269,9 @@ export default function AddSamplePage() {
           <h1>Add Sample</h1>
 
           <p>
-            Record sample collection,
-            transportation, laboratory testing and
-            report progress in one operational
-            record.
+            Record sample collection, transportation,
+            laboratory testing and report progress in one
+            operational record.
           </p>
         </div>
 
@@ -463,10 +287,7 @@ export default function AddSamplePage() {
           <FileText size={16} />
 
           <div>
-            <strong>
-              Sample could not be processed
-            </strong>
-
+            <strong>Sample could not be processed</strong>
             <span>{error}</span>
           </div>
         </div>
@@ -477,19 +298,17 @@ export default function AddSamplePage() {
         className="sample-form-main"
       >
         {/* ===================================================
-            CLIENT, LOCATION & QUOTATION
+            CLIENT & QUOTATION
         ==================================================== */}
 
         <SampleFormSection
           icon={<Building2 size={18} />}
           eyebrow="Client"
           title="Client & Reference"
-          description="Connect this sample with the correct company, collection location and quotation."
+          description="Connect this sample with the correct company and quotation."
           type="blue"
         >
-          <div className="sample-form-grid three">
-            {/* COMPANY */}
-
+          <div className="sample-form-grid two">
             <SampleField
               label="Company"
               required
@@ -498,108 +317,31 @@ export default function AddSamplePage() {
               <select
                 value={companyId}
                 onChange={(e) =>
-                  handleCompanyChange(
-                    e.target.value
-                  )
+                  handleCompanyChange(e.target.value)
                 }
                 required
               >
-                <option value="">
-                  Select company
-                </option>
+                <option value="">Select company</option>
 
                 {companies.map((company) => (
                   <option
                     key={company.id}
                     value={company.id}
                   >
-                    {company.name} —{" "}
-                    {company.status}
+                    {company.name} — {company.status}
                   </option>
                 ))}
               </select>
             </SampleField>
 
-            {/* LOCATION */}
-
-            <SampleField
-              label="Collection Location"
-              icon={<MapPin size={14} />}
-            >
-              <select
-                value={locationId}
-                onChange={(e) =>
-                  setLocationId(
-                    e.target.value
-                  )
-                }
-                disabled={
-                  !companyId ||
-                  locationsLoading
-                }
-              >
-                <option value="">
-                  {!companyId
-                    ? "Select company first"
-                    : locationsLoading
-                      ? "Loading locations..."
-                      : "No location linked"}
-                </option>
-
-                {locations.map(
-                  (location) => (
-                    <option
-                      key={location.id}
-                      value={location.id}
-                    >
-                      {location.name}
-                      {location.city
-                        ? ` — ${location.city}`
-                        : ""}
-                      {location.status
-                        ? ` — ${location.status}`
-                        : ""}
-                    </option>
-                  )
-                )}
-              </select>
-
-              {companyId &&
-                !locationsLoading &&
-                locations.length === 0 && (
-                  <small className="sample-form-help">
-                    No locations found for this
-                    company. The sample can still
-                    be registered without a
-                    location.
-                  </small>
-                )}
-
-              {companyId &&
-                !locationsLoading &&
-                locations.length > 0 && (
-                  <small className="sample-form-help">
-                    Select the actual collection
-                    location for location-wise
-                    tracking.
-                  </small>
-                )}
-            </SampleField>
-
-            {/* QUOTATION */}
-
             <SampleField
               label="Linked Quotation"
-              icon={
-                <ClipboardList size={14} />
-              }
+              icon={<ClipboardList size={14} />}
             >
               <select
                 value={quotationId}
                 onChange={(e) =>
-                  setQuotationId(
-                    e.target.value
-                  )
+                  setQuotationId(e.target.value)
                 }
                 disabled={!companyId}
               >
@@ -607,28 +349,22 @@ export default function AddSamplePage() {
                   No quotation linked
                 </option>
 
-                {companyQuotations.map(
-                  (quotation) => (
-                    <option
-                      key={quotation.id}
-                      value={quotation.id}
-                    >
-                      {
-                        quotation.quotationNumber
-                      }{" "}
-                      — {quotation.service} —{" "}
-                      {quotation.status}
-                    </option>
-                  )
-                )}
+                {companyQuotations.map((quotation) => (
+                  <option
+                    key={quotation.id}
+                    value={quotation.id}
+                  >
+                    {quotation.quotationNumber} —{" "}
+                    {quotation.service} —{" "}
+                    {quotation.status}
+                  </option>
+                ))}
               </select>
 
               {companyId &&
-                companyQuotations.length ===
-                  0 && (
+                companyQuotations.length === 0 && (
                   <small className="sample-form-help">
-                    No quotations found for this
-                    company.
+                    No quotations found for this company.
                   </small>
                 )}
             </SampleField>
@@ -656,9 +392,7 @@ export default function AddSamplePage() {
                 type="text"
                 value={sampleNumber}
                 onChange={(e) =>
-                  setSampleNumber(
-                    e.target.value
-                  )
+                  setSampleNumber(e.target.value)
                 }
                 placeholder="NTL-HYD-S-001"
                 required
@@ -668,17 +402,13 @@ export default function AddSamplePage() {
             <SampleField
               label="Sample Type"
               required
-              icon={
-                <FlaskConical size={14} />
-              }
+              icon={<FlaskConical size={14} />}
             >
               <input
                 type="text"
                 value={sampleType}
                 onChange={(e) =>
-                  setSampleType(
-                    e.target.value
-                  )
+                  setSampleType(e.target.value)
                 }
                 placeholder="Example: Drinking Water"
                 required
@@ -688,18 +418,14 @@ export default function AddSamplePage() {
             <SampleField
               label="Sample Count"
               required
-              icon={
-                <PackageCheck size={14} />
-              }
+              icon={<PackageCheck size={14} />}
             >
               <input
                 type="number"
                 min="1"
                 value={sampleCount}
                 onChange={(e) =>
-                  setSampleCount(
-                    e.target.value
-                  )
+                  setSampleCount(e.target.value)
                 }
                 required
               />
@@ -713,15 +439,13 @@ export default function AddSamplePage() {
 
             <div>
               <span>Physical Samples</span>
-
               <strong>
                 {Number(sampleCount || 0)}
               </strong>
             </div>
 
             <small>
-              Quantity registered under this
-              sample record
+              Quantity registered under this sample record
             </small>
           </div>
         </SampleFormSection>
@@ -740,17 +464,13 @@ export default function AddSamplePage() {
           <div className="sample-form-grid three">
             <SampleField
               label="Collection Date"
-              icon={
-                <CalendarDays size={14} />
-              }
+              icon={<CalendarDays size={14} />}
             >
               <input
                 type="date"
                 value={collectionDate}
                 onChange={(e) =>
-                  setCollectionDate(
-                    e.target.value
-                  )
+                  setCollectionDate(e.target.value)
                 }
               />
             </SampleField>
@@ -763,9 +483,7 @@ export default function AddSamplePage() {
                 type="text"
                 value={collectedBy}
                 onChange={(e) =>
-                  setCollectedBy(
-                    e.target.value
-                  )
+                  setCollectedBy(e.target.value)
                 }
                 placeholder="Example: Venkat"
               />
@@ -781,23 +499,16 @@ export default function AddSamplePage() {
                   setStatus(e.target.value)
                 }
               >
-                {sampleStatuses.map(
-                  (item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </option>
-                  )
-                )}
+                {sampleStatuses.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
               </select>
             </SampleField>
           </div>
 
-          <SampleLifecycle
-            currentStatus={status}
-          />
+          <SampleLifecycle currentStatus={status} />
         </SampleFormSection>
 
         {/* ===================================================
@@ -805,9 +516,7 @@ export default function AddSamplePage() {
         ==================================================== */}
 
         <SampleFormSection
-          icon={
-            <FlaskConical size={18} />
-          }
+          icon={<FlaskConical size={18} />}
           eyebrow="Laboratory"
           title="Testing Details"
           description="Record where testing will be performed and the expected completion date."
@@ -822,9 +531,7 @@ export default function AddSamplePage() {
                 type="text"
                 value={testingLocation}
                 onChange={(e) =>
-                  setTestingLocation(
-                    e.target.value
-                  )
+                  setTestingLocation(e.target.value)
                 }
                 placeholder="Example: Bangalore Laboratory"
               />
@@ -832,15 +539,11 @@ export default function AddSamplePage() {
 
             <SampleField
               label="Expected Completion Date"
-              icon={
-                <CalendarDays size={14} />
-              }
+              icon={<CalendarDays size={14} />}
             >
               <input
                 type="date"
-                value={
-                  expectedCompletionDate
-                }
+                value={expectedCompletionDate}
                 onChange={(e) =>
                   setExpectedCompletionDate(
                     e.target.value
@@ -865,70 +568,47 @@ export default function AddSamplePage() {
           <div className="sample-form-grid two">
             <SampleField
               label="Report Status"
-              icon={
-                <FileCheck2 size={14} />
-              }
+              icon={<FileCheck2 size={14} />}
             >
               <select
                 value={reportStatus}
                 onChange={(e) => {
-                  const nextStatus =
-                    e.target.value;
+                  const nextStatus = e.target.value;
 
-                  setReportStatus(
-                    nextStatus
-                  );
+                  setReportStatus(nextStatus);
 
-                  if (
-                    nextStatus !==
-                    "Delivered"
-                  ) {
-                    setReportDeliveredDate(
-                      ""
-                    );
+                  if (nextStatus !== "Delivered") {
+                    setReportDeliveredDate("");
                   }
                 }}
               >
-                {reportStatuses.map(
-                  (item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </option>
-                  )
-                )}
+                {reportStatuses.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
               </select>
             </SampleField>
 
             <SampleField
               label="Report Delivered Date"
-              icon={
-                <CalendarDays size={14} />
-              }
+              icon={<CalendarDays size={14} />}
             >
               <input
                 type="date"
-                value={
-                  reportDeliveredDate
-                }
+                value={reportDeliveredDate}
                 onChange={(e) =>
                   setReportDeliveredDate(
                     e.target.value
                   )
                 }
-                disabled={
-                  reportStatus !==
-                  "Delivered"
-                }
+                disabled={reportStatus !== "Delivered"}
               />
 
-              {reportStatus !==
-                "Delivered" && (
+              {reportStatus !== "Delivered" && (
                 <small className="sample-form-help">
-                  Select report status as
-                  Delivered to enable this date.
+                  Select report status as Delivered to
+                  enable this date.
                 </small>
               )}
             </SampleField>
@@ -942,8 +622,7 @@ export default function AddSamplePage() {
             }`}
           >
             <div>
-              {reportStatus ===
-              "Delivered" ? (
+              {reportStatus === "Delivered" ? (
                 <CheckCircle2 size={18} />
               ) : (
                 <FileText size={18} />
@@ -951,13 +630,8 @@ export default function AddSamplePage() {
             </div>
 
             <span>
-              <small>
-                Current Report Status
-              </small>
-
-              <strong>
-                {reportStatus}
-              </strong>
+              <small>Current Report Status</small>
+              <strong>{reportStatus}</strong>
             </span>
           </div>
         </SampleFormSection>
@@ -967,9 +641,7 @@ export default function AddSamplePage() {
         ==================================================== */}
 
         <SampleFormSection
-          icon={
-            <NotebookPen size={18} />
-          }
+          icon={<NotebookPen size={18} />}
           eyebrow="Internal"
           title="Sample Notes"
           description="Add sample condition, courier details, laboratory instructions or other operational notes."
@@ -977,9 +649,7 @@ export default function AddSamplePage() {
         >
           <SampleField
             label="Notes"
-            icon={
-              <NotebookPen size={14} />
-            }
+            icon={<NotebookPen size={14} />}
           >
             <textarea
               value={notes}
@@ -1003,14 +673,10 @@ export default function AddSamplePage() {
             </div>
 
             <span>
-              <strong>
-                Ready to register sample?
-              </strong>
-
+              <strong>Ready to register sample?</strong>
               <small>
-                Confirm the company, collection
-                location and sample details before
-                saving.
+                Confirm the sample and collection details
+                before saving.
               </small>
             </span>
           </div>
@@ -1035,9 +701,7 @@ export default function AddSamplePage() {
                 : "Register Sample"}
             </span>
 
-            {!saving && (
-              <ArrowRight size={15} />
-            )}
+            {!saving && <ArrowRight size={15} />}
           </button>
         </div>
       </form>
@@ -1061,7 +725,6 @@ function SampleFormSection({
   eyebrow: string;
   title: string;
   description: string;
-
   type:
     | "blue"
     | "cyan"
@@ -1069,13 +732,10 @@ function SampleFormSection({
     | "purple"
     | "green"
     | "navy";
-
   children: React.ReactNode;
 }) {
   return (
-    <section
-      className={`sample-form-section ${type}`}
-    >
+    <section className={`sample-form-section ${type}`}>
       <div className="sample-form-section-head">
         <div className="sample-form-section-icon">
           {icon}
@@ -1143,8 +803,7 @@ function SampleLifecycle({
     "Report Delivered",
   ];
 
-  const currentIndex =
-    stages.indexOf(currentStatus);
+  const currentIndex = stages.indexOf(currentStatus);
 
   return (
     <div className="sample-form-lifecycle">
@@ -1158,13 +817,9 @@ function SampleLifecycle({
           <div
             key={stage}
             className={`sample-form-lifecycle-stage ${
-              index <= currentIndex
-                ? "active"
-                : ""
+              index <= currentIndex ? "active" : ""
             } ${
-              index === currentIndex
-                ? "current"
-                : ""
+              index === currentIndex ? "current" : ""
             }`}
           >
             <div>

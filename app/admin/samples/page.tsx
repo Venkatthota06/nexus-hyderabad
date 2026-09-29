@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { db } from "@/src/prisma/db";
 
 import {
@@ -23,53 +24,81 @@ import {
 export const dynamic = "force-dynamic";
 
 /* =========================================================
+
    TYPES
-========================================================= */
+
+\========================================================= */
 
 type Sample = {
   id: string;
+
   companyId: string;
+
+  locationId: string | null;
+
   quotationId: string | null;
 
   sampleNumber: string;
+
   sampleType: string;
+
   sampleCount: number;
 
   collectionDate: string | null;
+
+  collectionMonth: string | null;
   collectedBy: string | null;
 
   status: string;
 
   testingLocation: string | null;
+
   expectedCompletionDate: string | null;
 
   reportStatus: string;
+
   reportDeliveredDate: string | null;
 
   notes: string | null;
 
   createdAt: string;
+
   updatedAt: string;
 };
 
 type Company = {
   id: string;
+
   name: string;
+
+  status: string;
+};
+
+type RecurringService = {
+  id: string;
+  locationId: string | null;
   status: string;
 };
 
 type Quotation = {
   id: string;
+
   companyId: string;
+
   quotationNumber: string;
+
   service: string;
+
   status: string;
+
   totalAmount: number;
 };
 
 /* =========================================================
+
    DATABASE
-========================================================= */
+
+\========================================================= */
 
 async function getSamples(): Promise<Sample[]> {
   try {
@@ -80,6 +109,7 @@ async function getSamples(): Promise<Sample[]> {
     return samples as Sample[];
   } catch (error) {
     console.error("Samples page getSamples error:", error);
+
     return [];
   }
 }
@@ -91,6 +121,17 @@ async function getCompanies(): Promise<Company[]> {
     return companies as Company[];
   } catch (error) {
     console.error("Samples page getCompanies error:", error);
+
+    return [];
+  }
+}
+
+async function getRecurringServices(): Promise<RecurringService[]> {
+  try {
+    const recurringServices = await db.orm.public.RecurringService.all();
+    return recurringServices as RecurringService[];
+  } catch (error) {
+    console.error("Samples page getRecurringServices error:", error);
     return [];
   }
 }
@@ -102,13 +143,16 @@ async function getQuotations(): Promise<Quotation[]> {
     return quotations as Quotation[];
   } catch (error) {
     console.error("Samples page getQuotations error:", error);
+
     return [];
   }
 }
 
 /* =========================================================
+
    HELPERS
-========================================================= */
+
+\========================================================= */
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -123,7 +167,9 @@ function formatDate(value: string | null) {
 
   return date.toLocaleDateString("en-IN", {
     day: "2-digit",
+
     month: "short",
+
     year: "numeric",
   });
 }
@@ -132,19 +178,165 @@ function statusSlug(status: string) {
   return status.toLowerCase().replaceAll(" ", "-").replaceAll("/", "-");
 }
 
-/* =========================================================
-   PAGE
-========================================================= */
+function normalizeSampleCategory(value: string) {
+  const type = value.toLowerCase().trim();
 
-export default async function SamplesPage() {
-  const [samples, companies, quotations] = await Promise.all([
-    getSamples(),
-    getCompanies(),
-    getQuotations(),
-  ]);
+  if (
+    type.includes("water") ||
+    type.includes("ro") ||
+    type.includes("domestic")
+  ) {
+    return "water";
+  }
+  if (type.includes("food") || type.includes("meal")) return "food";
+  if (type.includes("swab")) return "swab";
+  if (
+    type.includes("iaq") ||
+    type.includes("aaq") ||
+    type.includes("indoor air") ||
+    type.includes("ambient air") ||
+    type.includes("air quality")
+  )
+    return "air";
+
+  return "other";
+}
+
+function getSampleMonth(sample: Sample) {
+  if (
+    sample.collectionMonth &&
+    /^\d{4}-(0[1-9]|1[0-2])$/.test(sample.collectionMonth)
+  )
+    return sample.collectionMonth;
+
+  if (!sample.collectionDate) return null;
+
+  const date = new Date(sample.collectionDate);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function normalizeCategoryParam(value?: string) {
+  if (!value) return "";
+  return ["water", "food", "swab", "air", "other"].includes(value) ? value : "";
+}
+
+function normalizeScopeParam(value?: string) {
+  return value === "recurring" || value === "one-time" ? value : "";
+}
+
+function reportBucket(value: string | null | undefined) {
+  const status = String(value || "").toLowerCase();
+  if (status.includes("deliver")) return "delivered";
+  if (
+    status.includes("ready") ||
+    status.includes("complete") ||
+    status.includes("approved")
+  )
+    return "ready";
+  return "pending";
+}
+
+function normalizeReportParam(value?: string) {
+  return ["pending", "ready", "delivered"].includes(value || "")
+    ? value || ""
+    : "";
+}
+
+function categoryLabel(category: string) {
+  if (category === "water") return "Water / RO";
+  if (category === "food") return "Food";
+  if (category === "swab") return "Swab";
+  if (category === "air") return "IAQ / AAQ";
+  if (category === "other") return "Other";
+  return "All Sample Types";
+}
+
+/* =========================================================
+
+   PAGE
+
+\========================================================= */
+
+export default async function SamplesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    month?: string;
+    category?: string;
+
+    scope?: string;
+
+    report?: string;
+  }>;
+}) {
+  const params = await searchParams;
+
+  const selectedMonth =
+    params.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.month)
+      ? params.month
+      : "";
+
+  const selectedCategory = normalizeCategoryParam(params.category);
+  const selectedScope = normalizeScopeParam(params.scope);
+  const selectedReport = normalizeReportParam(params.report);
+
+  const [allSamples, companies, quotations, recurringServices] =
+    await Promise.all([
+      getSamples(),
+      getCompanies(),
+      getQuotations(),
+      getRecurringServices(),
+    ]);
+
+  const recurringLocationIds = new Set(
+    recurringServices
+      .filter(
+        (service) =>
+          service.locationId &&
+          String(service.status || "").toLowerCase() === "active",
+      )
+      .map((service) => service.locationId as string),
+  );
+
+  const samples = allSamples.filter((sample) => {
+    const monthMatches =
+      !selectedMonth || getSampleMonth(sample) === selectedMonth;
+
+    const categoryMatches =
+      !selectedCategory ||
+      normalizeSampleCategory(sample.sampleType) === selectedCategory;
+
+    const isRecurring =
+      Boolean(sample.locationId) &&
+      recurringLocationIds.has(sample.locationId as string);
+
+    const scopeMatches =
+      !selectedScope ||
+      (selectedScope === "recurring" ? isRecurring : !isRecurring);
+
+    const reportMatches =
+      !selectedReport || reportBucket(sample.reportStatus) === selectedReport;
+
+    return monthMatches && categoryMatches && scopeMatches && reportMatches;
+  });
+
+  const selectedMonthLabel = selectedMonth
+    ? new Intl.DateTimeFormat("en-IN", {
+        month: "long",
+        year: "numeric",
+      }).format(new Date(`${selectedMonth}-01T12:00:00`))
+    : "";
+
+  const hasDrilldownFilter = Boolean(
+    selectedMonth || selectedCategory || selectedScope || selectedReport,
+  );
 
   /* =======================================================
+
      MAPS
+
   ======================================================= */
 
   const companyMap = new Map(companies.map((company) => [company.id, company]));
@@ -154,13 +346,16 @@ export default async function SamplesPage() {
   );
 
   /* =======================================================
+
      METRICS
+
   ======================================================= */
 
   const totalSampleRecords = samples.length;
 
   const totalPhysicalSamples = samples.reduce(
     (total, sample) => total + Number(sample.sampleCount || 0),
+
     0,
   );
 
@@ -203,7 +398,9 @@ export default async function SamplesPage() {
   return (
     <div className="samples-premium-page">
       {/* =====================================================
+
           HEADER
+
       ====================================================== */}
 
       <header className="samples-premium-header">
@@ -225,67 +422,131 @@ export default async function SamplesPage() {
 
         <Link href="/admin/samples/new" className="samples-premium-add">
           <Plus size={17} />
+
           <span>Add Sample</span>
+
           <ArrowRight size={15} />
         </Link>
       </header>
 
       {/* =====================================================
+
           METRICS
+
       ====================================================== */}
+
+      {hasDrilldownFilter && (
+        <section className="samples-drilldown-banner">
+          <div>
+            <span>Dashboard Drill-Down</span>
+            <strong>
+              {selectedCategory
+                ? categoryLabel(selectedCategory)
+                : selectedScope === "recurring"
+                  ? "Recurring Samples"
+                  : selectedScope === "one-time"
+                    ? "One-Time Samples"
+                    : selectedReport
+                      ? `Report: ${selectedReport.charAt(0).toUpperCase()}${selectedReport.slice(1)}`
+                      : "All Sample Types"}
+              {selectedMonthLabel ? ` · ${selectedMonthLabel}` : ""}
+              {selectedCategory && selectedScope
+                ? ` · ${selectedScope === "recurring" ? "Recurring" : "One-Time"}`
+                : ""}
+              {selectedReport && (selectedCategory || selectedScope)
+                ? ` · Report ${selectedReport.charAt(0).toUpperCase()}${selectedReport.slice(1)}`
+                : ""}
+            </strong>
+            <small>
+              Showing {samples.length} matching sample record
+              {samples.length === 1 ? "" : "s"}.
+            </small>
+          </div>
+
+          <Link href="/admin/samples" className="samples-drilldown-clear">
+            Clear Filter
+          </Link>
+        </section>
+      )}
 
       <section className="samples-premium-metrics">
         <SampleMetric
           label="Sample Records"
+
           value={totalSampleRecords}
+
           helper={`${totalPhysicalSamples} physical samples`}
+
           icon={<ClipboardList size={20} />}
+
           type="navy"
         />
 
         <SampleMetric
           label="Collected"
+
           value={collectedSamples}
+
           helper="Ready for processing"
+
           icon={<TestTube2 size={20} />}
+
           type="cyan"
         />
 
         <SampleMetric
           label="In Transit / Lab"
+
           value={transitSamples}
+
           helper="Dispatched or received"
+
           icon={<Send size={20} />}
+
           type="blue"
         />
 
         <SampleMetric
           label="In Testing"
+
           value={testingSamples}
+
           helper="Laboratory processing"
+
           icon={<FlaskConical size={20} />}
+
           type="purple"
         />
 
         <SampleMetric
           label="Completed"
+
           value={completedSamples}
+
           helper="Testing completed"
+
           icon={<PackageCheck size={20} />}
+
           type="green"
         />
 
         <SampleMetric
           label="Reports Pending"
+
           value={pendingReports}
+
           helper={`${deliveredReports} delivered`}
+
           icon={<FileClock size={20} />}
+
           type="orange"
         />
       </section>
 
       {/* =====================================================
+
           OPERATIONS PANEL
+
       ====================================================== */}
 
       <section className="samples-premium-panel">
@@ -297,7 +558,9 @@ export default async function SamplesPage() {
 
             <div>
               <span>Sample Lifecycle</span>
+
               <h2>Laboratory Operations</h2>
+
               <p>Collection → Dispatch → Laboratory → Testing → Report</p>
             </div>
           </div>
@@ -340,6 +603,7 @@ export default async function SamplesPage() {
               return (
                 <article
                   key={sample.id}
+
                   className={`samples-premium-card sample-status-${statusSlug(
                     sample.status,
                   )}`}
@@ -379,6 +643,7 @@ export default async function SamplesPage() {
 
                         <Link
                           href={`/admin/companies/${sample.companyId}`}
+
                           className="samples-premium-company"
                         >
                           <Building2 size={14} />
@@ -406,29 +671,41 @@ export default async function SamplesPage() {
                   <div className="samples-premium-info-grid">
                     <SampleInfo
                       label="Collection Date"
+
                       value={formatDate(sample.collectionDate)}
+
                       icon={<CalendarDays size={15} />}
+
                       type="collection"
                     />
 
                     <SampleInfo
                       label="Expected Completion"
+
                       value={formatDate(sample.expectedCompletionDate)}
+
                       icon={<FileClock size={15} />}
+
                       type="expected"
                     />
 
                     <SampleInfo
                       label="Testing Location"
+
                       value={sample.testingLocation || "—"}
+
                       icon={<MapPin size={15} />}
+
                       type="location"
                     />
 
                     <SampleInfo
                       label="Report Delivered"
+
                       value={formatDate(sample.reportDeliveredDate)}
+
                       icon={<FileText size={15} />}
+
                       type="report"
                     />
                   </div>
@@ -479,6 +756,7 @@ export default async function SamplesPage() {
 
                           <div>
                             <span>Notes</span>
+
                             <p>{sample.notes}</p>
                           </div>
                         </div>
@@ -487,6 +765,7 @@ export default async function SamplesPage() {
 
                     <Link
                       href={`/admin/samples/${sample.id}`}
+
                       className="samples-premium-edit"
                     >
                       <FlaskConical size={16} />
@@ -507,20 +786,30 @@ export default async function SamplesPage() {
 }
 
 /* =========================================================
+
    METRIC COMPONENT
-========================================================= */
+
+\========================================================= */
 
 function SampleMetric({
   label,
+
   value,
+
   helper,
+
   icon,
+
   type,
 }: {
   label: string;
+
   value: number;
+
   helper: string;
+
   icon: React.ReactNode;
+
   type: "navy" | "cyan" | "blue" | "purple" | "green" | "orange";
 }) {
   return (
@@ -529,7 +818,9 @@ function SampleMetric({
 
       <div>
         <span>{label}</span>
+
         <strong>{value}</strong>
+
         <small>{helper}</small>
       </div>
     </div>
@@ -537,18 +828,26 @@ function SampleMetric({
 }
 
 /* =========================================================
+
    INFORMATION COMPONENT
-========================================================= */
+
+\========================================================= */
 
 function SampleInfo({
   label,
+
   value,
+
   icon,
+
   type,
 }: {
   label: string;
+
   value: string;
+
   icon: React.ReactNode;
+
   type: "collection" | "expected" | "location" | "report";
 }) {
   return (
@@ -557,6 +856,7 @@ function SampleInfo({
 
       <div>
         <span>{label}</span>
+
         <strong>{value}</strong>
       </div>
     </div>

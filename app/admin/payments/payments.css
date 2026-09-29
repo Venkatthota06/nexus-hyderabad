@@ -459,3 +459,61 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   PAYMENT VIEW TABS
+   ========================================================= */
+
+.payments-view-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+  padding: 8px 14px;
+
+  border: 1px solid #d8e5ef;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #52687d;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.payments-view-tab:hover {
+  transform: translateY(-1px);
+
+  border-color: #a9d3ef;
+
+  color: #0875d1;
+
+  box-shadow: 0 5px 14px
+    rgba(6, 62, 126, 0.08);
+}
+
+.payments-view-tab.active {
+  border-color: #168ee1;
+
+  background: linear-gradient(
+    135deg,
+    #0875d1,
+    #11a6d5
+  );
+
+  color: #ffffff;
+
+  box-shadow: 0 6px 16px
+    rgba(8, 117, 209, 0.2);
+}

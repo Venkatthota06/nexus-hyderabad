@@ -1,0 +1,125 @@
+[
+  {
+    "id": "column.public.sample.locationId",
+    "label": "Add column \"locationId\" to \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "locationId",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"locationId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "sample",
+          "locationId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"locationId\"",
+        "sql": "ALTER TABLE \"public\".\"sample\" ADD COLUMN \"locationId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"locationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "sample",
+          "locationId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.sample.sample_locationId_idx_7aae3038",
+    "label": "Create index \"sample_locationId_idx_7aae3038\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "sample_locationId_idx_7aae3038",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"sample_locationId_idx_7aae3038\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_locationId_idx_7aae3038\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"sample_locationId_idx_7aae3038\"",
+        "sql": "CREATE INDEX \"sample_locationId_idx_7aae3038\" ON \"public\".\"sample\" (\"locationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"sample_locationId_idx_7aae3038\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"sample_locationId_idx_7aae3038\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.sample.sample_locationId_fkey",
+    "label": "Add foreign key \"sample_locationId_fkey\" on \"sample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "sample_locationId_fkey",
+        "table": "sample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"sample_locationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_locationId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"sample_locationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"sample\"\nADD CONSTRAINT \"sample_locationId_fkey\"\nFOREIGN KEY (\"locationId\")\nREFERENCES \"public\".\"location\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"sample_locationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "sample_locationId_fkey",
+          "public",
+          "\"public\".\"sample\""
+        ]
+      }
+    ]
+  }
+]

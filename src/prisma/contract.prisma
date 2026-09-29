@@ -132,6 +132,9 @@ model Sample {
   companyId              String
   company                Company             @relation(fields: [companyId], references: [id])
 
+  locationId             String?
+  location               Location?            @relation(fields: [locationId], references: [id])
+
   quotationId            String?
   quotation              Quotation?          @relation(fields: [quotationId], references: [id])
 
@@ -143,7 +146,8 @@ model Sample {
   sampleCount            Int                 @default(1)
 
   collectionDate         TimestamptzString?
-  collectedBy            String?
+collectionMonth        String?
+collectedBy            String?
 
   status                 String              @default("Planned")
 
@@ -210,6 +214,7 @@ model Location {
   notes       String?
 
   recurringServices RecurringService[]
+samples           Sample[]
 
   createdAt   TimestamptzString   @default(now())
   updatedAt   temporal.updatedAtString()

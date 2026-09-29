@@ -1312,6 +1312,21 @@
                   "model": "RecurringService",
                   "namespace": "public"
                 }
+              },
+              "samples": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "locationId"
+                  ]
+                },
+                "to": {
+                  "model": "Sample",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -2816,6 +2831,13 @@
                   "kind": "scalar"
                 }
               },
+              "collectionMonth": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "companyId": {
                 "nullable": false,
                 "type": {
@@ -2839,6 +2861,13 @@
               },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "locationId": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -2953,6 +2982,21 @@
                   "namespace": "public"
                 }
               },
+              "location": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "locationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Location",
+                  "namespace": "public"
+                }
+              },
               "quotation": {
                 "cardinality": "N:1",
                 "on": {
@@ -3007,6 +3051,9 @@
                 "collectionDate": {
                   "column": "collectionDate"
                 },
+                "collectionMonth": {
+                  "column": "collectionMonth"
+                },
                 "companyId": {
                   "column": "companyId"
                 },
@@ -3018,6 +3065,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "locationId": {
+                  "column": "locationId"
                 },
                 "notes": {
                   "column": "notes"
@@ -5163,6 +5213,11 @@
                   "nativeType": "timestamptz",
                   "nullable": true
                 },
+                "collectionMonth": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "companyId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5186,6 +5241,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "locationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "notes": {
                   "codecId": "pg/text@1",
@@ -5275,6 +5335,22 @@
                 {
                   "source": {
                     "columns": [
+                      "locationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sample"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "location"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
                       "quotationId"
                     ],
                     "namespaceId": "public",
@@ -5312,6 +5388,14 @@
                   ],
                   "name": "sample_companyId_idx_33acc5ed",
                   "prefix": "sample_companyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "locationId"
+                  ],
+                  "name": "sample_locationId_idx_7aae3038",
+                  "prefix": "sample_locationId_idx",
                   "unique": false
                 },
                 {
@@ -5503,7 +5587,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e31a6f470cd292c272a5b4b49bcaca910c37b1e3e21c12f62fb0010eba76977b"
+    "storageHash": "12a1bdc287a89946c09de3ca3812905c8b8a221756e0b31fae50c9325aad6112"
   },
   "execution": {
     "executionHash": "f1db00ca401f283f23ede1919a179bc11bead2fb97364ffab657c36fb7028d9b",

@@ -13,6 +13,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Building2,
+  UploadCloud,
   CalendarDays,
   CircleDollarSign,
   FileText,
@@ -83,16 +84,22 @@ const navigation = [
   },
 
   {
-    label: "Sample Collection",
-    href: "/admin/samples",
-    icon: FlaskConical,
-  },
+  label: "Sample Collection",
+  href: "/admin/samples",
+  icon: FlaskConical,
+},
 
-  {
-    label: "Reports",
-    href: "/admin/reports",
-    icon: FileText,
-  },
+{
+  label: "Identification Import",
+  href: "/admin/identification-import",
+  icon: UploadCloud,
+},
+
+{
+  label: "Reports",
+  href: "/admin/reports",
+  icon: FileText,
+},
 
   {
     label: "Payments",

@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'12a1bdc287a89946c09de3ca3812905c8b8a221756e0b31fae50c9325aad6112'>;
+  StorageHashBase<'cf6347132aa83925220d647deaa29a7506fdaf158925e57b47b4ce3d138bcb53'>;
 export type ExecutionHash =
   ExecutionHashBase<'f1db00ca401f283f23ede1919a179bc11bead2fb97364ffab657c36fb7028d9b'>;
 export type ProfileHash =
@@ -469,7 +469,6 @@ export type FieldOutputTypes = {
       readonly sampleType: CodecTypes['pg/text@1']['output'];
       readonly sampleCount: CodecTypes['pg/int4@1']['output'];
       readonly collectionDate: CodecTypes['pg/timestamptz-string@1']['output'] | null;
-      readonly collectionMonth: CodecTypes['pg/text@1']['output'] | null;
       readonly collectedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly testingLocation: CodecTypes['pg/text@1']['output'] | null;
@@ -731,7 +730,6 @@ export type FieldInputTypes = {
       readonly sampleType: CodecTypes['pg/text@1']['input'];
       readonly sampleCount: CodecTypes['pg/int4@1']['input'];
       readonly collectionDate: CodecTypes['pg/timestamptz-string@1']['input'] | null;
-      readonly collectionMonth: CodecTypes['pg/text@1']['input'] | null;
       readonly collectedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly testingLocation: CodecTypes['pg/text@1']['input'] | null;
@@ -986,7 +984,6 @@ export type StorageColumnTypes = {
     readonly sample: {
       readonly collectedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly collectionDate: CodecTypes['pg/timestamptz-string@1']['output'] | null;
-      readonly collectionMonth: CodecTypes['pg/text@1']['output'] | null;
       readonly companyId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly expectedCompletionDate: CodecTypes['pg/timestamptz-string@1']['output'] | null;
@@ -1248,7 +1245,6 @@ export type StorageColumnInputTypes = {
     readonly sample: {
       readonly collectedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly collectionDate: CodecTypes['pg/timestamptz-string@1']['input'] | null;
-      readonly collectionMonth: CodecTypes['pg/text@1']['input'] | null;
       readonly companyId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly expectedCompletionDate: CodecTypes['pg/timestamptz-string@1']['input'] | null;
@@ -2948,11 +2944,6 @@ type ContractBase = Omit<
                 readonly collectionDate: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
-                  readonly nullable: true;
-                };
-                readonly collectionMonth: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
                 readonly collectedBy: {
@@ -5058,10 +5049,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                 };
               };
-              readonly collectionMonth: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly collectedBy: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -5192,7 +5179,6 @@ type ContractBase = Omit<
                 readonly sampleType: { readonly column: 'sampleType' };
                 readonly sampleCount: { readonly column: 'sampleCount' };
                 readonly collectionDate: { readonly column: 'collectionDate' };
-                readonly collectionMonth: { readonly column: 'collectionMonth' };
                 readonly collectedBy: { readonly column: 'collectedBy' };
                 readonly status: { readonly column: 'status' };
                 readonly testingLocation: { readonly column: 'testingLocation' };

@@ -32,6 +32,8 @@ type Sample = {
 
   companyId: string;
 
+  locationId: string | null;
+
   quotationId: string | null;
 
   sampleNumber: string;
@@ -66,6 +68,16 @@ type Company = {
 
   name: string;
 
+  status: string;
+};
+
+type Location = {
+  id: string;
+  companyId: string;
+  name: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
   status: string;
 };
 
@@ -132,9 +144,13 @@ export default function SampleDetailPage() {
 
   const [companies, setCompanies] = useState<Company[]>([]);
 
+  const [locations, setLocations] = useState<Location[]>([]);
+
   const [quotations, setQuotations] = useState<Quotation[]>([]);
 
   const [companyId, setCompanyId] = useState("");
+
+  const [locationId, setLocationId] = useState("");
 
   const [quotationId, setQuotationId] = useState("");
 
@@ -181,36 +197,43 @@ export default function SampleDetailPage() {
 
         setError("");
 
-        const [samplesResponse, companiesResponse, quotationsResponse] =
-          await Promise.all([
-            fetch(
-              "/api/samples",
+        const [
+          samplesResponse,
+          companiesResponse,
+          locationsResponse,
+          quotationsResponse,
+        ] = await Promise.all([
+          fetch(
+            "/api/samples",
 
-              {
-                cache: "no-store",
-              },
-            ),
+            {
+              cache: "no-store",
+            },
+          ),
 
-            fetch(
-              "/api/companies",
+          fetch(
+            "/api/companies",
 
-              {
-                cache: "no-store",
-              },
-            ),
+            {
+              cache: "no-store",
+            },
+          ),
+          fetch("/api/locations", { cache: "no-store" }),
 
-            fetch(
-              "/api/quotations",
+          fetch(
+            "/api/quotations",
 
-              {
-                cache: "no-store",
-              },
-            ),
-          ]);
+            {
+              cache: "no-store",
+            },
+          ),
+        ]);
 
         const samplesData = await samplesResponse.json();
 
         const companiesData = await companiesResponse.json();
+
+        const locationsData = await locationsResponse.json();
 
         const quotationsData = await quotationsResponse.json();
 
@@ -220,6 +243,13 @@ export default function SampleDetailPage() {
 
         if (!companiesResponse.ok) {
           throw new Error(companiesData.message || "Unable to load companies.");
+        }
+        if (!locationsResponse.ok) {
+          throw new Error(
+            locationsData.error ||
+              locationsData.message ||
+              "Unable to load locations.",
+          );
         }
 
         if (!quotationsResponse.ok) {
@@ -231,6 +261,7 @@ export default function SampleDetailPage() {
         if (
           !Array.isArray(samplesData) ||
           !Array.isArray(companiesData) ||
+          !Array.isArray(locationsData) ||
           !Array.isArray(quotationsData)
         ) {
           throw new Error("Invalid CRM data received.");
@@ -248,9 +279,13 @@ export default function SampleDetailPage() {
 
         setCompanies(companiesData);
 
+        setLocations(locationsData);
+
         setQuotations(quotationsData);
 
         setCompanyId(selectedSample.companyId);
+
+        setLocationId(selectedSample.locationId || "");
 
         setQuotationId(selectedSample.quotationId || "");
 
@@ -307,6 +342,16 @@ export default function SampleDetailPage() {
     return companies.find((company) => company.id === companyId);
   }, [companies, companyId]);
 
+  const companyLocations = useMemo(() => {
+    if (!companyId) return [];
+    return locations.filter((location) => location.companyId === companyId);
+  }, [companyId, locations]);
+
+  const selectedLocation = useMemo(() => {
+    if (!locationId) return undefined;
+    return locations.find((location) => location.id === locationId);
+  }, [locationId, locations]);
+
   const companyQuotations = useMemo(() => {
     if (!companyId) {
       return [];
@@ -331,6 +376,8 @@ export default function SampleDetailPage() {
 
   function handleCompanyChange(value: string) {
     setCompanyId(value);
+
+    setLocationId("");
 
     setQuotationId("");
   }
@@ -382,7 +429,9 @@ export default function SampleDetailPage() {
 
             companyId,
 
-            quotationId,
+            locationId: locationId || null,
+
+            quotationId: quotationId || null,
 
             sampleNumber,
 
@@ -427,6 +476,8 @@ export default function SampleDetailPage() {
         );
 
         setCompanyId(updatedSample.companyId || "");
+
+        setLocationId(updatedSample.locationId || "");
 
         setQuotationId(updatedSample.quotationId || "");
 
@@ -485,7 +536,7 @@ export default function SampleDetailPage() {
 
           <span>
             <strong>Loading Sample</strong>
-            Preparing laboratory workflow...
+            Preparing laboratory workflow\...
           </span>
         </div>
       </div>
@@ -674,11 +725,11 @@ export default function SampleDetailPage() {
 
           title="Company & Reference"
 
-          description="Manage the company relationship and linked quotation."
+          description="Manage the company, collection location and linked quotation."
 
           type="blue"
         >
-          <div className="sample-edit-grid two">
+          <div className="sample-edit-grid three">
             <SampleEditField
               label="Company"
 
@@ -702,6 +753,33 @@ export default function SampleDetailPage() {
                     value={company.id}
                   >
                     {company.name} — {company.status}
+                  </option>
+                ))}
+              </select>
+            </SampleEditField>
+
+            <SampleEditField
+              label="Collection Location"
+              icon={<MapPin size={14} />}
+            >
+              <select
+                value={locationId}
+                onChange={(e) => setLocationId(e.target.value)}
+                disabled={!companyId}
+              >
+                <option value="">
+                  {companyId
+                    ? companyLocations.length > 0
+                      ? "Select collection location"
+                      : "No locations available"
+                    : "Select company first"}
+                </option>
+
+                {companyLocations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.name}
+                    {location.city ? ` — ${location.city}` : ""}
+                    {location.status ? ` — ${location.status}` : ""}
                   </option>
                 ))}
               </select>
@@ -1113,7 +1191,7 @@ export default function SampleDetailPage() {
 
    SECTION
 
-========================================================= */
+\========================================================= */
 
 function SampleEditSection({
   icon,
@@ -1163,7 +1241,7 @@ function SampleEditSection({
 
    FIELD
 
-========================================================= */
+\========================================================= */
 
 function SampleEditField({
   label,
@@ -1201,7 +1279,7 @@ function SampleEditField({
 
    METRIC
 
-========================================================= */
+\========================================================= */
 
 function SampleMetric({
   label,
@@ -1237,7 +1315,7 @@ function SampleMetric({
 
    SAMPLE LIFECYCLE
 
-========================================================= */
+\========================================================= */
 
 function SampleLifecycle({ currentStatus }: { currentStatus: string }) {
   const activeIndex = sampleStatuses.indexOf(currentStatus);
