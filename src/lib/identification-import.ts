@@ -42,6 +42,22 @@ export type ImportLocationOption = {
   address: string | null;
 };
 
+export type ExtractedIdentificationData = {
+  customerName: string;
+  locationName: string;
+  address: string;
+  collectionDate: string;
+  collectedBy: string;
+  sampleReceivedOn: string;
+  samples: Array<{
+    sampleType: string;
+    source: string;
+    quantity: number;
+    labCode: string;
+  }>;
+  warnings: string[];
+};
+
 export function normaliseText(value: string | null | undefined) {
   return (value || "")
     .toLowerCase()
@@ -69,6 +85,82 @@ export function getCollectionMonth(dateValue: string) {
   return `${parsed.getFullYear()}-${String(
     parsed.getMonth() + 1,
   ).padStart(2, "0")}`;
+}
+
+export function findBestCompanyMatch(
+  extractedName: string,
+  companies: ImportCompanyOption[],
+) {
+  const target = normaliseText(extractedName);
+  if (!target) return null;
+
+  const exact = companies.find(
+    (company) => normaliseText(company.name) === target,
+  );
+  if (exact) return exact;
+
+  const containmentMatches = companies.filter((company) => {
+    const candidate = normaliseText(company.name);
+    if (!candidate) return false;
+    return target.includes(candidate) || candidate.includes(target);
+  });
+
+  return containmentMatches.length === 1 ? containmentMatches[0] : null;
+}
+
+export function findBestLocationMatch({
+  companyId,
+  locationName,
+  address,
+  locations,
+}: {
+  companyId: string;
+  locationName: string;
+  address: string;
+  locations: ImportLocationOption[];
+}) {
+  const companyLocations = locations.filter(
+    (location) => location.companyId === companyId,
+  );
+
+  if (!companyLocations.length) return null;
+
+  const targetName = normaliseText(locationName);
+  if (targetName) {
+    const exact = companyLocations.find(
+      (location) => normaliseText(location.name) === targetName,
+    );
+    if (exact) return exact;
+
+    const containmentMatches = companyLocations.filter((location) => {
+      const candidate = normaliseText(location.name);
+      return (
+        candidate &&
+        (targetName.includes(candidate) || candidate.includes(targetName))
+      );
+    });
+
+    if (containmentMatches.length === 1) {
+      return containmentMatches[0];
+    }
+  }
+
+  const targetAddress = normaliseText(address);
+  if (targetAddress) {
+    const addressMatches = companyLocations.filter((location) => {
+      const candidate = normaliseText(location.address);
+      return (
+        candidate &&
+        (targetAddress.includes(candidate) || candidate.includes(targetAddress))
+      );
+    });
+
+    if (addressMatches.length === 1) {
+      return addressMatches[0];
+    }
+  }
+
+  return companyLocations.length === 1 ? companyLocations[0] : null;
 }
 
 export function buildImportedSampleNumber({
