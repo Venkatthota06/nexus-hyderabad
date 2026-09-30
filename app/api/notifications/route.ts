@@ -32,81 +32,186 @@ type OperationalSample = {
   reportStatus: string;
 };
 
+type OperationalAlert = {
+  type: "SAMPLE_DUE_SOON" | "SAMPLE_OVERDUE";
+  title: string;
+  daysUntilDue: number;
+};
+
+const OPERATIONAL_ALERT_TYPES = new Set([
+  "SAMPLE_DUE_SOON",
+  "SAMPLE_OVERDUE",
+]);
+
 function startOfLocalDay(value: Date) {
   const date = new Date(value);
   date.setHours(0, 0, 0, 0);
   return date;
 }
 
-function operationalAlertType(sample: OperationalSample, now: Date) {
+function currentOperationalAlert(
+  sample: OperationalSample,
+  now: Date,
+): OperationalAlert | null {
   if (!sample.expectedCompletionDate) return null;
-  if (String(sample.reportStatus || "").toLowerCase().includes("deliver")) return null;
 
-  const due = startOfLocalDay(new Date(sample.expectedCompletionDate));
+  if (
+    String(sample.reportStatus || "")
+      .toLowerCase()
+      .includes("deliver")
+  ) {
+    return null;
+  }
+
+  const due = startOfLocalDay(
+    new Date(sample.expectedCompletionDate),
+  );
+
   if (Number.isNaN(due.getTime())) return null;
 
   const today = startOfLocalDay(now);
-  const daysUntilDue = Math.round((due.getTime() - today.getTime()) / 86_400_000);
+  const daysUntilDue = Math.round(
+    (due.getTime() - today.getTime()) / 86_400_000,
+  );
 
   if (daysUntilDue < 0) {
-    return { type: "SAMPLE_OVERDUE", title: "Sample report overdue", daysUntilDue };
+    return {
+      type: "SAMPLE_OVERDUE",
+      title: "Sample report overdue",
+      daysUntilDue,
+    };
   }
 
   if (daysUntilDue <= 2) {
-    return { type: "SAMPLE_DUE_SOON", title: "Sample report due soon", daysUntilDue };
+    return {
+      type: "SAMPLE_DUE_SOON",
+      title: "Sample report due soon",
+      daysUntilDue,
+    };
   }
 
   return null;
 }
 
+function alertTiming(daysUntilDue: number) {
+  if (daysUntilDue < 0) {
+    const days = Math.abs(daysUntilDue);
+    return `${days} day${days === 1 ? "" : "s"} overdue`;
+  }
+
+  if (daysUntilDue === 0) {
+    return "due today";
+  }
+
+  return `due in ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"}`;
+}
+
 async function syncSampleOperationalAlerts() {
   try {
-    const [samples, companies, notifications] = await Promise.all([
+    const [samplesRaw, companies, notifications] = await Promise.all([
       db.orm.public.Sample.all(),
       db.orm.public.Company.all(),
       db.orm.public.Notification.all(),
     ]);
 
-    const companyMap = new Map(companies.map((company) => [company.id, company.name]));
-    const existingKeys = new Set(
-      notifications
-        .filter((notification) => notification.entityType === "Sample" && notification.entityId)
-        .map((notification) => `${notification.type}:${notification.entityId}`),
+    const samples = samplesRaw as OperationalSample[];
+    const now = new Date();
+    const companyMap = new Map(
+      companies.map((company) => [company.id, company.name]),
     );
 
-    const now = new Date();
+    const operationalNotifications = notifications.filter(
+      (notification) =>
+        notification.entityType === "Sample" &&
+        notification.entityId &&
+        OPERATIONAL_ALERT_TYPES.has(notification.type),
+    );
 
-    for (const sample of samples as OperationalSample[]) {
-      const alert = operationalAlertType(sample, now);
-      if (!alert) continue;
+    const notificationsBySample = new Map<
+      string,
+      typeof operationalNotifications
+    >();
 
-      const key = `${alert.type}:${sample.id}`;
-      if (existingKeys.has(key)) continue;
+    for (const notification of operationalNotifications) {
+      const sampleId = notification.entityId as string;
+      const existing = notificationsBySample.get(sampleId) || [];
+      existing.push(notification);
+      notificationsBySample.set(sampleId, existing);
+    }
 
-      const companyName = companyMap.get(sample.companyId) || "Unknown company";
-      const timing =
-        alert.daysUntilDue < 0
-          ? `${Math.abs(alert.daysUntilDue)} day${Math.abs(alert.daysUntilDue) === 1 ? "" : "s"} overdue`
-          : alert.daysUntilDue === 0
-            ? "due today"
-            : `due in ${alert.daysUntilDue} day${alert.daysUntilDue === 1 ? "" : "s"}`;
+    for (const sample of samples) {
+      const desiredAlert = currentOperationalAlert(sample, now);
+      const existingAlerts = notificationsBySample.get(sample.id) || [];
+
+      /*
+       * Automatically close stale operational alerts.
+       * Examples:
+       * - Due Soon becomes Overdue
+       * - Report becomes Delivered
+       * - Due date is changed into the future
+       */
+      for (const notification of existingAlerts) {
+        const stillCurrent =
+          desiredAlert &&
+          notification.type === desiredAlert.type;
+
+        if (!stillCurrent && notification.isRead === false) {
+          await db.orm.public.Notification
+            .where({ id: notification.id })
+            .update({ isRead: true });
+        }
+      }
+
+      if (!desiredAlert) continue;
+
+      const currentAlert = existingAlerts.find(
+        (notification) =>
+          notification.type === desiredAlert.type &&
+          notification.isRead === false,
+      );
+
+      if (currentAlert) continue;
+
+      const companyName =
+        companyMap.get(sample.companyId) || "Unknown company";
 
       await db.orm.public.Notification.create({
-        type: alert.type,
-        title: alert.title,
-        message: `${companyName} - ${sample.sampleNumber} - ${sample.sampleType} - ${timing}`,
+        type: desiredAlert.type,
+        title: desiredAlert.title,
+        message:
+          `${companyName} - ${sample.sampleNumber} - ` +
+          `${sample.sampleType} - ${alertTiming(desiredAlert.daysUntilDue)}`,
         entityType: "Sample",
         entityId: sample.id,
         actionUrl: `/admin/samples/${sample.id}`,
         isRead: false,
       });
-
-      existingKeys.add(key);
     }
   } catch (error) {
-    // Operational alerts are helpful, but must never break the notification bell.
+    /* Operational automation must never break the notification bell. */
     console.error("Sample operational alert sync error:", error);
   }
+}
+
+async function getUnreadCounts() {
+  const [leads, crmNotifications] = await Promise.all([
+    db.orm.public.Lead.all(),
+    db.orm.public.Notification.all(),
+  ]);
+
+  const unreadLeadCount = leads.filter(
+    (lead) => lead.isRead === false,
+  ).length;
+
+  const unreadGeneralCount = crmNotifications.filter(
+    (notification) => notification.isRead === false,
+  ).length;
+
+  return {
+    unreadLeadCount,
+    unreadGeneralCount,
+    unreadCount: unreadLeadCount + unreadGeneralCount,
+  };
 }
 
 export async function GET() {
@@ -123,40 +228,54 @@ export async function GET() {
     await syncSampleOperationalAlerts();
 
     const [leads, crmNotifications] = await Promise.all([
-      db.orm.public.Lead.orderBy((lead) => lead.createdAt.desc()).all(),
-      db.orm.public.Notification.orderBy((notification) => notification.createdAt.desc()).all(),
+      db.orm.public.Lead
+        .orderBy((lead) => lead.createdAt.desc())
+        .all(),
+      db.orm.public.Notification
+        .orderBy((notification) => notification.createdAt.desc())
+        .all(),
     ]);
 
-    const leadNotifications: BellNotification[] = leads.map((lead) => ({
-      id: lead.id,
-      source: "lead",
-      type: "NEW_LEAD",
-      title: "New website lead",
-      message: `${lead.name} - ${lead.company} - ${lead.service}`,
-      createdAt: lead.createdAt,
-      href: `/admin/leads/${lead.id}`,
-      isRead: lead.isRead !== false,
-    }));
+    const leadNotifications: BellNotification[] = leads.map(
+      (lead) => ({
+        id: lead.id,
+        source: "lead",
+        type: "NEW_LEAD",
+        title: "New website lead",
+        message: `${lead.name} - ${lead.company} - ${lead.service}`,
+        createdAt: lead.createdAt,
+        href: `/admin/leads/${lead.id}`,
+        isRead: lead.isRead === true,
+      }),
+    );
 
-    const generalNotifications: BellNotification[] = crmNotifications.map((notification) => ({
-      id: notification.id,
-      source: "notification",
-      type: notification.type,
-      title: notification.title,
-      message: notification.message ?? "",
-      createdAt: notification.createdAt,
-      href: notification.actionUrl ?? "/admin",
-      isRead: notification.isRead === true,
-    }));
+    const generalNotifications: BellNotification[] =
+      crmNotifications.map((notification) => ({
+        id: notification.id,
+        source: "notification",
+        type: notification.type,
+        title: notification.title,
+        message: notification.message ?? "",
+        createdAt: notification.createdAt,
+        href: notification.actionUrl ?? "/admin",
+        isRead: notification.isRead === true,
+      }));
 
-    const notifications = [...leadNotifications, ...generalNotifications]
+    const notifications = [
+      ...leadNotifications,
+      ...generalNotifications,
+    ]
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime(),
       )
       .slice(0, 20);
 
-    const unreadLeadCount = leads.filter((lead) => lead.isRead === false).length;
+    const unreadLeadCount = leads.filter(
+      (lead) => lead.isRead === false,
+    ).length;
+
     const unreadGeneralCount = crmNotifications.filter(
       (notification) => notification.isRead === false,
     ).length;
@@ -202,21 +321,28 @@ export async function PATCH(request: Request) {
         db.orm.public.Notification.all(),
       ]);
 
-      const unreadLeads = leads.filter((lead) => lead.isRead === false);
-      const unreadNotifications = crmNotifications.filter(
-        (notification) => notification.isRead === false,
-      );
-
       await Promise.all([
-        ...unreadLeads.map((lead) =>
-          db.orm.public.Lead.where({ id: lead.id }).update({ isRead: true }),
-        ),
-        ...unreadNotifications.map((notification) =>
-          db.orm.public.Notification.where({ id: notification.id }).update({ isRead: true }),
-        ),
+        ...leads
+          .filter((lead) => lead.isRead === false)
+          .map((lead) =>
+            db.orm.public.Lead
+              .where({ id: lead.id })
+              .update({ isRead: true }),
+          ),
+        ...crmNotifications
+          .filter((notification) => notification.isRead === false)
+          .map((notification) =>
+            db.orm.public.Notification
+              .where({ id: notification.id })
+              .update({ isRead: true }),
+          ),
       ]);
 
-      return NextResponse.json({ success: true, unreadCount: 0 });
+      return NextResponse.json({
+        success: true,
+        unreadCount: 0,
+        newLeads: 0,
+      });
     }
 
     const id = body.id?.trim();
@@ -229,7 +355,9 @@ export async function PATCH(request: Request) {
     }
 
     if (body.source === "notification") {
-      const notification = await db.orm.public.Notification.where({ id }).first();
+      const notification = await db.orm.public.Notification
+        .where({ id })
+        .first();
 
       if (!notification) {
         return NextResponse.json(
@@ -239,10 +367,14 @@ export async function PATCH(request: Request) {
       }
 
       if (notification.isRead === false) {
-        await db.orm.public.Notification.where({ id }).update({ isRead: true });
+        await db.orm.public.Notification
+          .where({ id })
+          .update({ isRead: true });
       }
     } else {
-      const lead = await db.orm.public.Lead.where({ id }).first();
+      const lead = await db.orm.public.Lead
+        .where({ id })
+        .first();
 
       if (!lead) {
         return NextResponse.json(
@@ -252,24 +384,18 @@ export async function PATCH(request: Request) {
       }
 
       if (lead.isRead === false) {
-        await db.orm.public.Lead.where({ id }).update({ isRead: true });
+        await db.orm.public.Lead
+          .where({ id })
+          .update({ isRead: true });
       }
     }
 
-    const [leads, crmNotifications] = await Promise.all([
-      db.orm.public.Lead.all(),
-      db.orm.public.Notification.all(),
-    ]);
-
-    const unreadLeadCount = leads.filter((lead) => lead.isRead === false).length;
-    const unreadGeneralCount = crmNotifications.filter(
-      (notification) => notification.isRead === false,
-    ).length;
+    const counts = await getUnreadCounts();
 
     return NextResponse.json({
       success: true,
-      unreadCount: unreadLeadCount + unreadGeneralCount,
-      newLeads: unreadLeadCount,
+      unreadCount: counts.unreadCount,
+      newLeads: counts.unreadLeadCount,
     });
   } catch (error) {
     console.error("PATCH /api/notifications error:", error);
