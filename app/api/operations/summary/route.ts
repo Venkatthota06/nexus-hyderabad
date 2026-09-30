@@ -56,7 +56,9 @@ function dayStart(value: Date) {
 function daysFromToday(value: string, now: Date) {
   const target = dayStart(new Date(value));
   if (Number.isNaN(target.getTime())) return null;
-  return Math.round((target.getTime() - dayStart(now).getTime()) / 86_400_000);
+  return Math.round(
+    (target.getTime() - dayStart(now).getTime()) / 86_400_000,
+  );
 }
 
 function normalized(value: string | null | undefined) {
@@ -70,10 +72,6 @@ function isDelivered(sample: Sample) {
 function isReady(sample: Sample) {
   const value = normalized(sample.reportStatus);
   return value.includes("ready") || value.includes("approved");
-}
-
-function isPendingReport(sample: Sample) {
-  return !isDelivered(sample);
 }
 
 function statusBucket(status: string) {
@@ -109,8 +107,12 @@ export async function GET() {
     const companies = companiesRaw as Company[];
     const locations = locationsRaw as Location[];
 
-    const companyMap = new Map(companies.map((company) => [company.id, company.name]));
-    const locationMap = new Map(locations.map((location) => [location.id, location.name]));
+    const companyMap = new Map(
+      companies.map((company) => [company.id, company.name]),
+    );
+    const locationMap = new Map(
+      locations.map((location) => [location.id, location.name]),
+    );
     const now = new Date();
 
     const workflow = {
@@ -125,6 +127,8 @@ export async function GET() {
     };
 
     let physicalSamples = 0;
+    let activeRecords = 0;
+    let activePhysicalSamples = 0;
     let pendingReportRecords = 0;
     let pendingReportQuantity = 0;
     let deliveredRecords = 0;
@@ -149,11 +153,21 @@ export async function GET() {
 
     for (const sample of samples) {
       const quantity = Math.max(0, Number(sample.sampleCount || 0));
+      const status = normalized(sample.status);
+      const planned = status === "planned";
+      const delivered = isDelivered(sample);
+      const ready = isReady(sample);
+
       physicalSamples += quantity;
 
       const bucket = statusBucket(sample.status) as keyof typeof workflow;
       workflow[bucket].records += 1;
       workflow[bucket].quantity += quantity;
+
+      if (!planned && !delivered) {
+        activeRecords += 1;
+        activePhysicalSamples += quantity;
+      }
 
       const days = sample.expectedCompletionDate
         ? daysFromToday(sample.expectedCompletionDate, now)
@@ -164,7 +178,8 @@ export async function GET() {
         sampleNumber: sample.sampleNumber,
         sampleType: sample.sampleType,
         sampleCount: quantity,
-        companyName: companyMap.get(sample.companyId) || "Unknown Company",
+        companyName:
+          companyMap.get(sample.companyId) || "Unknown Company",
         locationName: sample.locationId
           ? locationMap.get(sample.locationId) || "Unknown Location"
           : "No Location",
@@ -177,25 +192,22 @@ export async function GET() {
         daysOverdue: days !== null && days < 0 ? Math.abs(days) : null,
       };
 
-      const delivered = isDelivered(sample);
-      const ready = isReady(sample);
-      const status = normalized(sample.status);
-
       if (delivered) {
         deliveredRecords += 1;
         deliveredQuantity += quantity;
-      } else {
+      } else if (!planned) {
+        /* Planned future work is not yet a pending laboratory report. */
         pendingReportRecords += 1;
         pendingReportQuantity += quantity;
       }
 
-      if (!delivered && ready) {
+      if (!planned && !delivered && ready) {
         readyToDeliverRecords += 1;
         readyToDeliverQuantity += quantity;
         readyToDeliver.push(item);
       }
 
-      if (!delivered && status !== "planned") {
+      if (!planned && !delivered) {
         if (!sample.expectedCompletionDate) {
           missingExpectedDateRecords += 1;
           missingExpectedDateQuantity += quantity;
@@ -220,6 +232,7 @@ export async function GET() {
       }
 
       if (
+        !planned &&
         !delivered &&
         ["received at lab", "testing", "completed"].includes(status) &&
         !sample.testingLocation?.trim()
@@ -229,12 +242,27 @@ export async function GET() {
       }
     }
 
-    overdue.sort((a, b) => (b.daysOverdue || 0) - (a.daysOverdue || 0));
-    dueSoon.sort((a, b) => (a.daysUntilDue ?? 9999) - (b.daysUntilDue ?? 9999));
-    missingDueDate.sort((a, b) => a.companyName.localeCompare(b.companyName));
-    readyToDeliver.sort((a, b) => a.companyName.localeCompare(b.companyName));
-    awaitingLab.sort((a, b) => a.companyName.localeCompare(b.companyName));
-    inTesting.sort((a, b) => (a.daysUntilDue ?? 9999) - (b.daysUntilDue ?? 9999));
+    overdue.sort(
+      (a, b) => (b.daysOverdue || 0) - (a.daysOverdue || 0),
+    );
+    dueSoon.sort(
+      (a, b) => (a.daysUntilDue ?? 9999) - (b.daysUntilDue ?? 9999),
+    );
+    missingDueDate.sort((a, b) =>
+      a.companyName.localeCompare(b.companyName),
+    );
+    readyToDeliver.sort((a, b) =>
+      a.companyName.localeCompare(b.companyName),
+    );
+    awaitingLab.sort((a, b) =>
+      a.companyName.localeCompare(b.companyName),
+    );
+    inTesting.sort(
+      (a, b) => (a.daysUntilDue ?? 9999) - (b.daysUntilDue ?? 9999),
+    );
+    missingTestingLocation.sort((a, b) =>
+      a.companyName.localeCompare(b.companyName),
+    );
 
     return NextResponse.json({
       success: true,
@@ -242,6 +270,8 @@ export async function GET() {
       totals: {
         records: samples.length,
         physicalSamples,
+        activeRecords,
+        activePhysicalSamples,
         pendingReports: pendingReportQuantity,
         pendingReportRecords,
         deliveredReports: deliveredQuantity,
@@ -266,7 +296,6 @@ export async function GET() {
         readyToDeliver: readyToDeliver.slice(0, 50),
         missingTestingLocation: missingTestingLocation.slice(0, 50),
       },
-      // Keep these top-level queues for backwards compatibility with the first V3 UI.
       overdue: overdue.slice(0, 25),
       dueSoon: dueSoon.slice(0, 25),
     });
