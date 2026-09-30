@@ -1,3 +1,8 @@
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { randomUUID } from "node:crypto";
+
 import type { ExtractedIdentificationData } from "@/src/lib/identification-import";
 
 type ResponsesApiOutput = {
@@ -15,15 +20,8 @@ function cleanQuantity(value: unknown) {
 }
 
 function extractResponseText(payload: ResponsesApiOutput) {
-  if (typeof payload.output_text === "string" && payload.output_text.trim()) {
-    return payload.output_text.trim();
-  }
-  return (payload.output || [])
-    .flatMap((item) => item.content || [])
-    .map((content) => content.text || "")
-    .filter(Boolean)
-    .join("\n")
-    .trim();
+  if (typeof payload.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
+  return (payload.output || []).flatMap((item) => item.content || []).map((content) => content.text || "").filter(Boolean).join("\n").trim();
 }
 
 function stripCodeFence(value: string) {
@@ -80,64 +78,31 @@ function inferSource(line: string, sampleType: string) {
   return source;
 }
 
-function parseFreeOcrText(text: string): ExtractedIdentificationData {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.replace(/\s+/g, " ").trim())
-    .filter(Boolean);
-
-  const customerName = valueAfterLabel(lines, [
-    /(?:customer|client|company|customer name|name of customer)\s*[:\-]\s*(.+)$/i,
-  ]);
-  const locationName = valueAfterLabel(lines, [
-    /(?:location|site|sampling location)\s*[:\-]\s*(.+)$/i,
-  ]);
+function parseFreeOcrText(text: string, sourceLabel = "image"): ExtractedIdentificationData {
+  const lines = text.split(/\r?\n/).map((line) => line.replace(/\s+/g, " ").trim()).filter(Boolean);
+  const customerName = valueAfterLabel(lines, [/(?:customer|client|company|customer name|name of customer)\s*[:\-]\s*(.+)$/i]);
+  const locationName = valueAfterLabel(lines, [/(?:location|site|sampling location)\s*[:\-]\s*(.+)$/i]);
   const address = valueAfterLabel(lines, [/(?:address)\s*[:\-]\s*(.+)$/i]);
-  const collectedBy = valueAfterLabel(lines, [
-    /(?:collected by|sample collected by|collector)\s*[:\-]\s*(.+)$/i,
-  ]);
-  const dateText = valueAfterLabel(lines, [
-    /(?:collection date|date of collection|sample collection date|date)\s*[:\-]\s*(.+)$/i,
-  ]);
-  const receivedText = valueAfterLabel(lines, [
-    /(?:sample received on|received on|received date)\s*[:\-]\s*(.+)$/i,
-  ]);
+  const collectedBy = valueAfterLabel(lines, [/(?:collected by|sample collected by|collector)\s*[:\-]\s*(.+)$/i]);
+  const dateText = valueAfterLabel(lines, [/(?:collection date|date of collection|sample collection date|date)\s*[:\-]\s*(.+)$/i]);
+  const receivedText = valueAfterLabel(lines, [/(?:sample received on|received on|received date)\s*[:\-]\s*(.+)$/i]);
 
-  const samples = lines
-    .map((line) => {
-      const sampleType = inferSampleType(line);
-      if (!sampleType) return null;
-      const quantityMatch = line.match(/(?:qty|quantity)\s*[:x-]?\s*(\d+)/i);
-      return {
-        sampleType,
-        source: inferSource(line, sampleType),
-        quantity: quantityMatch ? cleanQuantity(quantityMatch[1]) : 1,
-        labCode: "",
-      };
-    })
-    .filter((sample): sample is NonNullable<typeof sample> => Boolean(sample));
+  const samples = lines.map((line) => {
+    const sampleType = inferSampleType(line);
+    if (!sampleType) return null;
+    const quantityMatch = line.match(/(?:qty|quantity)\s*[:x-]?\s*(\d+)/i);
+    return { sampleType, source: inferSource(line, sampleType), quantity: quantityMatch ? cleanQuantity(quantityMatch[1]) : 1, labCode: "" };
+  }).filter((sample): sample is NonNullable<typeof sample> => Boolean(sample));
 
-  const warnings: string[] = [
-    "Free OCR was used. Verify all detected values against the original sheet before importing.",
-  ];
+  const warnings: string[] = [`Free OCR was used on the ${sourceLabel}. Verify every detected value against the original sheet before importing.`];
   if (!customerName) warnings.push("Customer name was not read confidently; select the company manually.");
   if (!normalizeDate(dateText)) warnings.push("Collection date was not read confidently; enter it manually.");
   if (samples.length === 0) warnings.push("No sample rows were read confidently; add the sample rows manually.");
 
-  return {
-    customerName,
-    locationName,
-    address,
-    collectionDate: normalizeDate(dateText),
-    collectedBy,
-    sampleReceivedOn: normalizeDate(receivedText),
-    samples,
-    warnings,
-  };
+  return { customerName, locationName, address, collectionDate: normalizeDate(dateText), collectedBy, sampleReceivedOn: normalizeDate(receivedText), samples, warnings };
 }
 
-async function extractWithFreeOcr(bytes: Buffer, mimeType: string) {
-  if (!/^image\/(?:jpeg|jpg|png)$/i.test(mimeType)) return null;
+async function recognizeImage(bytes: Buffer) {
   const { recognize } = await import("tesseract.js");
   const result = await recognize(bytes, "eng", {
     logger: (message) => {
@@ -146,29 +111,50 @@ async function extractWithFreeOcr(bytes: Buffer, mimeType: string) {
       }
     },
   });
-  const text = result.data.text?.trim() || "";
-  return text ? parseFreeOcrText(text) : null;
+  return result.data.text?.trim() || "";
 }
 
-async function extractWithOpenAI({
-  bytes,
-  mimeType,
-  fileName,
-  apiKey,
-}: {
-  bytes: Buffer;
-  mimeType: string;
-  fileName: string;
-  apiKey: string;
-}): Promise<ExtractedIdentificationData> {
+async function extractPdfWithFreeOcr(bytes: Buffer) {
+  const tempPath = path.join(os.tmpdir(), `nexus-identification-${randomUUID()}.pdf`);
+  try {
+    await fs.writeFile(tempPath, bytes);
+    const { pdf } = await import("pdf-to-img");
+    const document = await pdf(tempPath, { scale: 2.5 });
+    const pageTexts: string[] = [];
+    let pageNumber = 0;
+
+    try {
+      for await (const image of document) {
+        pageNumber += 1;
+        if (pageNumber > 5) break;
+        const text = await recognizeImage(Buffer.from(image));
+        if (text) pageTexts.push(text);
+      }
+    } finally {
+      await document.destroy();
+    }
+
+    const combinedText = pageTexts.join("\n").trim();
+    return combinedText ? parseFreeOcrText(combinedText, "scanned PDF") : null;
+  } finally {
+    await fs.rm(tempPath, { force: true }).catch(() => undefined);
+  }
+}
+
+async function extractWithFreeOcr(bytes: Buffer, mimeType: string) {
+  if (mimeType === "application/pdf") return extractPdfWithFreeOcr(bytes);
+  if (!/^image\/(?:jpeg|jpg|png)$/i.test(mimeType)) return null;
+  const text = await recognizeImage(bytes);
+  return text ? parseFreeOcrText(text, "image") : null;
+}
+
+async function extractWithOpenAI({ bytes, mimeType, fileName, apiKey }: { bytes: Buffer; mimeType: string; fileName: string; apiKey: string }): Promise<ExtractedIdentificationData> {
   const model = process.env.IDENTIFICATION_EXTRACTION_MODEL?.trim() || "gpt-5.6-luna";
   const dataUrl = `data:${mimeType};base64,${bytes.toString("base64")}`;
   const fileContent = mimeType === "application/pdf"
     ? { type: "input_file", filename: fileName, file_data: dataUrl }
     : { type: "input_image", image_url: dataUrl, detail: "high" };
-
   const instructions = `Read this Nexus Test Labs Sample Identity Sheet. Return ONLY JSON with: {"customerName":"","locationName":"","address":"","collectionDate":"","collectedBy":"","sampleReceivedOn":"","samples":[{"sampleType":"","source":"","quantity":1,"labCode":""}],"warnings":[]}. Use only visible information. Never guess. Dates must be YYYY-MM-DD when clear. Include every visible filled sample row. Keep sample type and source close to the document. Leave uncertain fields blank and add a warning.`;
-
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
