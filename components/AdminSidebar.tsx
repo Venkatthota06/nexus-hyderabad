@@ -28,6 +28,7 @@ import {
   Users,
   WalletCards,
   X,
+  Activity,
 } from "lucide-react";
 
 import AdminLogoutButton from "@/components/AdminLogoutButton";
@@ -63,6 +64,12 @@ const navigation = [
     label: "Dashboard",
     href: "/admin",
     icon: LayoutDashboard,
+  },
+
+  {
+    label: "Operations",
+    href: "/admin/operations",
+    icon: Activity,
   },
 
   {
@@ -220,664 +227,150 @@ function resultTypeLabel(
   }
 }
 
-/* =========================================================
-   ADMIN SIDEBAR
-========================================================= */
-
 export default function AdminSidebar() {
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
 
-  /* =======================================================
-     UNREAD LEAD NOTIFICATION COUNT
-  ======================================================= */
-
-  const [
-    newLeadCount,
-    setNewLeadCount,
-  ] = useState(0);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    async function loadNotifications() {
-      try {
-        const response =
-          await fetch(
-            "/api/notifications",
-            {
-              cache: "no-store",
-            }
-          );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data =
-          await response.json();
-
-        setNewLeadCount(
-          data.newLeads ?? 0
-        );
-      } catch (error) {
-        console.error(
-          "Sidebar notification error:",
-          error
-        );
-      }
-    }
-
-    loadNotifications();
-
-    const interval =
-      setInterval(
-        loadNotifications,
-        30000
-      );
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [pathname]);
-
-  /* =======================================================
-     GLOBAL CRM SEARCH
-  ======================================================= */
-
-  const [
-    searchQuery,
-    setSearchQuery,
-  ] = useState("");
-
-  const [
-    searchResults,
-    setSearchResults,
-  ] = useState<
-    SearchResult[]
-  >([]);
-
-  const [
-    searchLoading,
-    setSearchLoading,
-  ] = useState(false);
-
-  const [
-    searchOpen,
-    setSearchOpen,
-  ] = useState(false);
-
-  const [
-    searchError,
-    setSearchError,
-  ] = useState("");
-
-  const searchRequestRef =
-    useRef<
-      AbortController | null
-    >(null);
-
-  useEffect(() => {
-    const query =
-      searchQuery.trim();
-
-    if (
-      query.length < 2
-    ) {
-      searchRequestRef.current?.abort();
-
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchError("");
-
+    if (!query.trim()) {
+      setResults([]);
+      setSearching(false);
       return;
     }
 
-    const timer =
-      setTimeout(
-        async () => {
-          searchRequestRef.current?.abort();
-
-          const controller =
-            new AbortController();
-
-          searchRequestRef.current =
-            controller;
-
-          setSearchLoading(
-            true
-          );
-
-          setSearchError("");
-
-          try {
-            const response =
-              await fetch(
-                `/api/search?q=${encodeURIComponent(
-                  query
-                )}`,
-                {
-                  cache:
-                    "no-store",
-
-                  signal:
-                    controller.signal,
-                }
-              );
-
-            if (
-              !response.ok
-            ) {
-              throw new Error(
-                "Search request failed"
-              );
-            }
-
-            const data =
-              await response.json();
-
-            setSearchResults(
-              data.results ??
-                []
-            );
-
-            setSearchOpen(
-              true
-            );
-          } catch (error) {
-            if (
-              error instanceof
-                DOMException &&
-              error.name ===
-                "AbortError"
-            ) {
-              return;
-            }
-
-            console.error(
-              "CRM search error:",
-              error
-            );
-
-            setSearchResults(
-              []
-            );
-
-            setSearchError(
-              "Unable to search CRM."
-            );
-
-            setSearchOpen(
-              true
-            );
-          } finally {
-            if (
-              searchRequestRef.current ===
-              controller
-            ) {
-              setSearchLoading(
-                false
-              );
-            }
-          }
-        },
-        300
-      );
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSearching(true);
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        const data = await response.json();
+        setResults(Array.isArray(data?.results) ? data.results : []);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error("Sidebar search error:", error);
+          setResults([]);
+        }
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
 
     return () => {
-      clearTimeout(timer);
+      window.clearTimeout(timer);
+      controller.abort();
     };
-  }, [searchQuery]);
-
-  /* =======================================================
-     RESET SEARCH WHEN ROUTE CHANGES
-  ======================================================= */
+  }, [query]);
 
   useEffect(() => {
-    setSearchOpen(false);
-    setSearchQuery("");
-    setSearchResults([]);
-    setSearchError("");
-  }, [pathname]);
-
-  function clearSearch() {
-    searchRequestRef.current?.abort();
-
-    setSearchQuery("");
-    setSearchResults([]);
-    setSearchError("");
-    setSearchOpen(false);
-    setSearchLoading(false);
-  }
-
-  /* =======================================================
-     ACTIVE NAVIGATION
-  ======================================================= */
-
-  function isActive(
-    href: string
-  ) {
-    if (
-      href === "/admin"
-    ) {
-      return (
-        pathname ===
-        "/admin"
-      );
-    }
-
-    return pathname.startsWith(
-      href
-    );
-  }
-
-  /* =======================================================
-     UI
-  ======================================================= */
+    const close = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
 
   return (
-    <aside className="admin-shell-sidebar nexus-dashboard-sidebar">
-
-      {/* ===================================================
-          BRAND
-      =================================================== */}
-
-      <Link
-        href="/admin"
-        className="admin-shell-brand"
-      >
-        <div className="admin-shell-logo">
-          <img
-            src="/nexus-logo.png"
-            alt="Nexus Test Labs"
-          />
+    <aside className="admin-sidebar">
+      <div className="admin-sidebar-brand">
+        <div className="admin-sidebar-brand-mark">N</div>
+        <div>
+          <strong>Nexus Test Labs</strong>
+          <span>Hyderabad Operations</span>
         </div>
+      </div>
 
-        <div className="admin-shell-brand-text">
-          <strong>
-            Nexus Test Labs
-          </strong>
-
-          <span>
-            Hyderabad Operations
-          </span>
-        </div>
-      </Link>
-
-      {/* ===================================================
-          CRM SEARCH
-      =================================================== */}
-
-      <div className="admin-crm-search">
-
-        <div className="admin-crm-search-box">
-
-          <Search
-            size={16}
-            className="admin-crm-search-icon"
-          />
-
+      <div className="admin-sidebar-search" ref={searchRef}>
+        <div className="admin-sidebar-search-input">
+          <Search size={16} />
           <input
-            type="text"
-            value={
-              searchQuery
-            }
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => setSearchOpen(true)}
             placeholder="Search CRM..."
-            autoComplete="off"
             aria-label="Search CRM"
-            onFocus={() => {
-              if (
-                searchQuery
-                  .trim()
-                  .length >= 2
-              ) {
-                setSearchOpen(
-                  true
-                );
-              }
-            }}
-            onChange={(
-              event
-            ) => {
-              setSearchQuery(
-                event.target
-                  .value
-              );
-            }}
           />
-
-          {searchLoading && (
-            <Loader2
-              size={15}
-              className="admin-crm-search-loader"
-            />
+          {query && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setResults([]);
+              }}
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
           )}
-
-          {!searchLoading &&
-            searchQuery && (
-              <button
-                type="button"
-                className="admin-crm-search-clear"
-                onClick={
-                  clearSearch
-                }
-                aria-label="Clear search"
-              >
-                <X size={14} />
-              </button>
-            )}
-
         </div>
 
-        {searchOpen &&
-          searchQuery
-            .trim()
-            .length >=
-            2 && (
-            <div className="admin-crm-search-results">
-
-              <div className="admin-crm-search-results-header">
-
-                <span>
-                  Search Results
-                </span>
-
-                {!searchLoading && (
-                  <strong>
-                    {
-                      searchResults.length
-                    }
-                  </strong>
-                )}
-
+        {searchOpen && query.trim() && (
+          <div className="admin-sidebar-search-results">
+            {searching ? (
+              <div className="admin-sidebar-search-state">
+                <Loader2 size={16} className="spin" /> Searching...
               </div>
-
-              {searchLoading &&
-                searchResults.length ===
-                  0 && (
-                  <div className="admin-crm-search-state">
-
-                    <Loader2
-                      size={18}
-                      className="admin-crm-search-state-loader"
-                    />
-
-                    <span>
-                      Searching
-                      CRM...
-                    </span>
-
+            ) : results.length ? (
+              results.map((result) => (
+                <Link
+                  key={`${result.type}-${result.id}`}
+                  href={result.href}
+                  className="admin-sidebar-search-result"
+                  onClick={() => setSearchOpen(false)}
+                >
+                  <SearchResultIcon type={result.type} />
+                  <div>
+                    <strong>{result.title}</strong>
+                    <span>{resultTypeLabel(result.type)} · {result.subtitle}</span>
+                    {result.detail && <small>{result.detail}</small>}
                   </div>
-                )}
-
-              {!searchLoading &&
-                searchError && (
-                  <div className="admin-crm-search-state error">
-
-                    <span>
-                      {
-                        searchError
-                      }
-                    </span>
-
-                  </div>
-                )}
-
-              {!searchLoading &&
-                !searchError &&
-                searchResults.length ===
-                  0 && (
-                  <div className="admin-crm-search-state">
-
-                    <Search
-                      size={18}
-                    />
-
-                    <span>
-                      No matching
-                      records
-                    </span>
-
-                    <small>
-                      Try company,
-                      contact,
-                      phone,
-                      email,
-                      quotation,
-                      sample or
-                      report number.
-                    </small>
-
-                  </div>
-                )}
-
-              {!searchError &&
-                searchResults.length >
-                  0 && (
-                  <div className="admin-crm-search-result-list">
-
-                    {searchResults.map(
-                      (
-                        result
-                      ) => (
-                        <Link
-                          key={`${result.type}-${result.id}`}
-                          href={
-                            result.href
-                          }
-                          className="admin-crm-search-result"
-                          onClick={() => {
-                            setSearchOpen(
-                              false
-                            );
-                          }}
-                        >
-
-                          <div
-                            className={`admin-crm-search-result-icon ${result.type}`}
-                          >
-                            <SearchResultIcon
-                              type={
-                                result.type
-                              }
-                            />
-                          </div>
-
-                          <div className="admin-crm-search-result-content">
-
-                            <div className="admin-crm-search-result-top">
-
-                              <strong>
-                                {
-                                  result.title
-                                }
-                              </strong>
-
-                              <span>
-                                {resultTypeLabel(
-                                  result.type
-                                )}
-                              </span>
-
-                            </div>
-
-                            <p>
-                              {
-                                result.subtitle
-                              }
-                            </p>
-
-                            {result.detail && (
-                              <small>
-                                {
-                                  result.detail
-                                }
-                              </small>
-                            )}
-
-                          </div>
-
-                          <ArrowRight
-                            size={
-                              14
-                            }
-                            className="admin-crm-search-result-arrow"
-                          />
-
-                        </Link>
-                      )
-                    )}
-
-                  </div>
-                )}
-
-            </div>
-          )}
-
-      </div>
-
-      {/* ===================================================
-          OPERATIONS
-      =================================================== */}
-
-      <div className="admin-shell-section-label">
-        Operations
-      </div>
-
-      {/* ===================================================
-          NAVIGATION
-      =================================================== */}
-
-      <nav className="admin-shell-nav">
-
-        {navigation.map(
-          (item) => {
-            const Icon =
-              item.icon;
-
-            const active =
-              isActive(
-                item.href
-              );
-
-            const hasLeadNotification =
-              item.href ===
-                "/admin/leads" &&
-              newLeadCount >
-                0;
-
-            return (
-              <Link
-                key={
-                  item.href
-                }
-                href={
-                  item.href
-                }
-                className={
-                  active
-                    ? "admin-shell-nav-link active"
-                    : "admin-shell-nav-link"
-                }
-              >
-
-                <span className="admin-shell-nav-icon">
-
-                  <Icon
-                    size={18}
-                    strokeWidth={
-                      1.9
-                    }
-                  />
-
-                </span>
-
-                <span className="admin-shell-nav-label">
-                  {
-                    item.label
-                  }
-                </span>
-
-                {hasLeadNotification && (
-                  <span
-                    className="admin-shell-notification-badge"
-                    title={`${newLeadCount} unread ${
-                      newLeadCount ===
-                      1
-                        ? "lead"
-                        : "leads"
-                    }`}
-                  >
-                    {newLeadCount >
-                    99
-                      ? "99+"
-                      : newLeadCount}
-                  </span>
-                )}
-
-                {active &&
-                  !hasLeadNotification && (
-                    <span className="admin-shell-active-dot" />
-                  )}
-
-              </Link>
-            );
-          }
+                  <ArrowUpRight size={14} />
+                </Link>
+              ))
+            ) : (
+              <div className="admin-sidebar-search-state">No matching CRM records.</div>
+            )}
+          </div>
         )}
+      </div>
 
+      <nav className="admin-sidebar-nav">
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const active =
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`admin-sidebar-link ${active ? "active" : ""}`}
+            >
+              <Icon size={18} />
+              <span>{item.label}</span>
+              {active && <ArrowRight size={14} className="admin-sidebar-active-arrow" />}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* ===================================================
-          SIDEBAR FOOTER
-      =================================================== */}
-
-      <div className="admin-shell-sidebar-footer">
-
-        <div className="admin-shell-system-status">
-
-          <span className="admin-shell-status-dot" />
-
-          <div>
-            <strong>
-              CRM Online
-            </strong>
-
-            <span>
-              Neon database
-              connected
-            </span>
-          </div>
-
-        </div>
-
-        <Link
-          href="/"
-          className="admin-shell-website-link"
-        >
-          <span>
-            Open Website
-          </span>
-
-          <ArrowUpRight
-            size={15}
-          />
-        </Link>
-
-        <div className="admin-shell-logout">
-          <AdminLogoutButton />
-        </div>
-
-        <div className="admin-shell-version">
-
-          Nexus Business CRM
-
-          <span>
-            Hyderabad
-            Operations
-          </span>
-
-        </div>
-
+      <div className="admin-sidebar-footer">
+        <AdminLogoutButton />
       </div>
-
     </aside>
   );
 }
