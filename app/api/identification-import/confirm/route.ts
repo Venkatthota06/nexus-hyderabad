@@ -13,6 +13,35 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function createImportNotification({
+  sampleId,
+  companyName,
+  sampleNumber,
+  sampleType,
+  quantity,
+}: {
+  sampleId: string;
+  companyName: string;
+  sampleNumber: string;
+  sampleType: string;
+  quantity: number;
+}) {
+  try {
+    await db.orm.public.Notification.create({
+      type: "SAMPLE_CREATED",
+      title: "Sample imported",
+      message: `${companyName} - ${sampleNumber} - ${sampleType} - ${quantity} sample${quantity === 1 ? "" : "s"} - Collected`,
+      entityType: "Sample",
+      entityId: sampleId,
+      actionUrl: `/admin/samples/${sampleId}`,
+      isRead: false,
+    });
+  } catch (error) {
+    // A notification must never make a successful sample import fail.
+    console.error("Identification import notification error:", error);
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ImportPreview;
@@ -69,9 +98,7 @@ export async function POST(request: Request) {
     }
 
     const existingSamples = await db.orm.public.Sample.all();
-    const existingSampleNumbers = new Set(
-      existingSamples.map((sample) => sample.sampleNumber),
-    );
+    const existingSampleNumbers = new Set(existingSamples.map((sample) => sample.sampleNumber));
 
     const created: Array<{
       id: string;
@@ -116,6 +143,14 @@ export async function POST(request: Request) {
       existingSampleNumbers.add(sampleNumber);
       created.push({
         id: createdSample.id,
+        sampleNumber,
+        sampleType: createdSample.sampleType,
+        quantity: createdSample.sampleCount,
+      });
+
+      await createImportNotification({
+        sampleId: createdSample.id,
+        companyName: company.name,
         sampleNumber,
         sampleType: createdSample.sampleType,
         quantity: createdSample.sampleCount,
