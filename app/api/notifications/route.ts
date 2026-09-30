@@ -144,33 +144,36 @@ async function syncSampleOperationalAlerts() {
       const existingAlerts = notificationsBySample.get(sample.id) || [];
 
       /*
-       * Automatically close stale operational alerts.
-       * Examples:
-       * - Due Soon becomes Overdue
-       * - Report becomes Delivered
-       * - Due date is changed into the future
+       * Operational due alerts represent the current state only.
+       * Remove obsolete alerts when the due state changes, the due date
+       * is moved out, or the report is delivered. This also allows a
+       * future due-soon alert to be created again after a reschedule.
        */
       for (const notification of existingAlerts) {
         const stillCurrent =
           desiredAlert &&
           notification.type === desiredAlert.type;
 
-        if (!stillCurrent && notification.isRead === false) {
+        if (!stillCurrent) {
           await db.orm.public.Notification
             .where({ id: notification.id })
-            .update({ isRead: true });
+            .deleteAndCount();
         }
       }
 
       if (!desiredAlert) continue;
 
-      const currentAlert = existingAlerts.find(
+      /*
+       * A read current alert stays acknowledged. Do not recreate it on
+       * every 30-second notification refresh while the same condition
+       * remains true.
+       */
+      const currentAlertExists = existingAlerts.some(
         (notification) =>
-          notification.type === desiredAlert.type &&
-          notification.isRead === false,
+          notification.type === desiredAlert.type,
       );
 
-      if (currentAlert) continue;
+      if (currentAlertExists) continue;
 
       const companyName =
         companyMap.get(sample.companyId) || "Unknown company";
