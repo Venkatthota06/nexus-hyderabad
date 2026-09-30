@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 
 import { db } from "@/src/prisma/db";
+import {
+  findBestCompanyMatch,
+  findBestLocationMatch,
+  getCollectionMonth,
+} from "@/src/lib/identification-import";
+import { extractIdentificationSheet } from "@/src/lib/identification-extraction";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,15 +24,11 @@ const MAX_FILE_SIZE = 15 * 1024 * 1024;
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-
     const uploadedFile = formData.get("file");
 
     if (!(uploadedFile instanceof File)) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Please select an identification sheet.",
-        },
+        { success: false, message: "Please select an identification sheet." },
         { status: 400 },
       );
     }
@@ -52,10 +54,7 @@ export async function POST(request: Request) {
     }
 
     const bytes = Buffer.from(await uploadedFile.arrayBuffer());
-
-    const fileFingerprint = createHash("sha256")
-      .update(bytes)
-      .digest("hex");
+    const fileFingerprint = createHash("sha256").update(bytes).digest("hex");
 
     const companies = await db.orm.public.Company.orderBy((company) =>
       company.name.asc(),
@@ -65,61 +64,94 @@ export async function POST(request: Request) {
       location.name.asc(),
     ).all();
 
-    /*
-      IMPORTANT
+    let extracted = null;
+    const fallbackWarnings: string[] = [];
 
-      This endpoint already performs:
-      - file validation
-      - SHA-256 duplicate fingerprint generation
-      - CRM company lookup
-      - CRM location lookup
-      - preview preparation
+    try {
+     extracted = await extractIdentificationSheet({
+  bytes,
+  mimeType: uploadedFile.type,
+  fileName: uploadedFile.name,
+});
+    } catch (error) {
+      console.error("Free identification OCR error:", error);
+      fallbackWarnings.push(
+        "Free OCR could not process this file. Manual review is available and no data was saved.",
+      );
+    }
 
-      Automatic scanned-document extraction will be connected here.
+    const customerName = extracted?.customerName || "";
+    const address = extracted?.address || "";
 
-      Until that extraction provider is connected, we deliberately return
-      blank editable fields instead of guessing information from the file.
-    */
+    const matchedCompany = customerName
+      ? findBestCompanyMatch(customerName, companies)
+      : null;
+
+    const matchedLocation = matchedCompany
+      ? findBestLocationMatch({
+          companyId: matchedCompany.id,
+          locationName: extracted?.locationName || "",
+          address,
+          locations,
+        })
+      : null;
+
+    const collectionDate = extracted?.collectionDate || "";
+    const extractedSamples = extracted?.samples || [];
 
     return NextResponse.json({
       success: true,
-
-      extractionStatus: "manual-review",
-
+      extractionStatus: extracted ? "extracted" : "manual-review",
       message:
-        "File received successfully. Review the detected information before importing.",
-
+        "File processed. Review every detected value before importing.",
       preview: {
         fileName: uploadedFile.name,
         fileFingerprint,
 
-        customerName: "",
-        address: "",
+        customerName,
+        address,
 
-        companyId: "",
-        companyName: "",
+        companyId: matchedCompany?.id || "",
+        companyName: matchedCompany?.name || "",
 
-        locationId: "",
-        locationName: "",
+        locationId: matchedLocation?.id || "",
+        locationName:
+          matchedLocation?.name || extracted?.locationName || "",
 
-        collectionDate: "",
-        collectionMonth: "",
-        collectedBy: "",
+        collectionDate,
+        collectionMonth: getCollectionMonth(collectionDate),
+        collectedBy: extracted?.collectedBy || "",
 
-        sampleReceivedOn: "",
+        sampleReceivedOn: extracted?.sampleReceivedOn || "",
 
-        samples: [
-          {
-            rowId: crypto.randomUUID(),
-            sampleType: "",
-            source: "",
-            quantity: 1,
-            labCode: "",
-          },
-        ],
+        samples:
+          extractedSamples.length > 0
+            ? extractedSamples.map((sample) => ({
+                rowId: crypto.randomUUID(),
+                sampleType: sample.sampleType,
+                source: sample.source,
+                quantity: sample.quantity,
+                labCode: sample.labCode,
+              }))
+            : [
+                {
+                  rowId: crypto.randomUUID(),
+                  sampleType: "",
+                  source: "",
+                  quantity: 1,
+                  labCode: "",
+                },
+              ],
 
         warnings: [
-          "Automatic scanned-sheet extraction is not connected yet. Verify the information before import.",
+          ...(extracted?.warnings || []),
+          ...fallbackWarnings,
+          ...(!matchedCompany && customerName
+            ? ["Customer name was read but not safely matched to a CRM company. Select the company manually."]
+            : []),
+          ...(matchedCompany && !matchedLocation
+            ? ["Location was not safely matched. Select the correct location before import."]
+            : []),
         ],
       },
 
