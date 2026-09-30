@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import AdminLogoutButton from "@/components/AdminLogoutButton";
+import "./AdminSidebar.css";
 
 type SearchResult = {
   id: string;
@@ -60,39 +61,25 @@ const navigation = [
 
 function SearchResultIcon({ type }: { type: SearchResult["type"] }) {
   switch (type) {
-    case "company":
-      return <Building2 size={16} />;
-    case "contact":
-      return <UserRound size={16} />;
-    case "lead":
-      return <Users size={16} />;
-    case "quotation":
-      return <CircleDollarSign size={16} />;
-    case "sample":
-      return <FlaskConical size={16} />;
-    case "report":
-      return <FileText size={16} />;
-    default:
-      return <Search size={16} />;
+    case "company": return <Building2 size={16} />;
+    case "contact": return <UserRound size={16} />;
+    case "lead": return <Users size={16} />;
+    case "quotation": return <CircleDollarSign size={16} />;
+    case "sample": return <FlaskConical size={16} />;
+    case "report": return <FileText size={16} />;
+    default: return <Search size={16} />;
   }
 }
 
 function resultTypeLabel(type: SearchResult["type"]) {
   switch (type) {
-    case "company":
-      return "Company";
-    case "contact":
-      return "Contact";
-    case "lead":
-      return "Lead";
-    case "quotation":
-      return "Quotation";
-    case "sample":
-      return "Sample";
-    case "report":
-      return "Report";
-    default:
-      return "Result";
+    case "company": return "Company";
+    case "contact": return "Contact";
+    case "lead": return "Lead";
+    case "quotation": return "Quotation";
+    case "sample": return "Sample";
+    case "report": return "Report";
+    default: return "Result";
   }
 }
 
@@ -110,7 +97,6 @@ export default function AdminSidebar() {
       setSearching(false);
       return;
     }
-
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setSearching(true);
@@ -130,7 +116,6 @@ export default function AdminSidebar() {
         setSearching(false);
       }
     }, 250);
-
     return () => {
       window.clearTimeout(timer);
       controller.abort();
@@ -139,9 +124,7 @@ export default function AdminSidebar() {
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setSearchOpen(false);
-      }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) setSearchOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -162,23 +145,13 @@ export default function AdminSidebar() {
           <Search size={16} />
           <input
             value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setSearchOpen(true);
-            }}
+            onChange={(event) => { setQuery(event.target.value); setSearchOpen(true); }}
             onFocus={() => setSearchOpen(true)}
             placeholder="Search CRM..."
             aria-label="Search CRM"
           />
           {query && (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setResults([]);
-              }}
-              aria-label="Clear search"
-            >
+            <button type="button" onClick={() => { setQuery(""); setResults([]); }} aria-label="Clear search">
               <X size={14} />
             </button>
           )}
@@ -187,17 +160,10 @@ export default function AdminSidebar() {
         {searchOpen && query.trim() && (
           <div className="admin-sidebar-search-results">
             {searching ? (
-              <div className="admin-sidebar-search-state">
-                <Loader2 size={16} className="spin" /> Searching...
-              </div>
+              <div className="admin-sidebar-search-state"><Loader2 size={16} className="spin" /> Searching...</div>
             ) : results.length ? (
               results.map((result) => (
-                <Link
-                  key={`${result.type}-${result.id}`}
-                  href={result.href}
-                  className="admin-sidebar-search-result"
-                  onClick={() => setSearchOpen(false)}
-                >
+                <Link key={`${result.type}-${result.id}`} href={result.href} className="admin-sidebar-search-result" onClick={() => setSearchOpen(false)}>
                   <SearchResultIcon type={result.type} />
                   <div>
                     <strong>{result.title}</strong>
@@ -217,17 +183,9 @@ export default function AdminSidebar() {
       <nav className="admin-sidebar-nav">
         {navigation.map((item) => {
           const Icon = item.icon;
-          const active =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
-
+          const active = item.href === "/admin" ? pathname === "/admin" : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`admin-sidebar-link ${active ? "active" : ""}`}
-            >
+            <Link key={item.href} href={item.href} className={`admin-sidebar-link ${active ? "active" : ""}`}>
               <Icon size={18} />
               <span>{item.label}</span>
               {active && <ArrowRight size={14} className="admin-sidebar-active-arrow" />}
@@ -236,9 +194,7 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      <div className="admin-sidebar-footer">
-        <AdminLogoutButton />
-      </div>
+      <div className="admin-sidebar-footer"><AdminLogoutButton /></div>
     </aside>
   );
 }
