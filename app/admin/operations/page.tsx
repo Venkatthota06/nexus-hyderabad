@@ -1,55 +1,207 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, CalendarClock, CheckCircle2, ClipboardList, FileWarning, FlaskConical, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardList,
+  FileClock,
+  FlaskConical,
+  MapPin,
+  PackageCheck,
+  RefreshCw,
+  Send,
+  TestTube2,
+} from "lucide-react";
+
+import "./operations.css";
+
+type QueueItem = {
+  id: string;
+  sampleNumber: string;
+  sampleType: string;
+  sampleCount: number;
+  companyName: string;
+  locationName: string;
+  status: string;
+  reportStatus: string;
+  testingLocation: string;
+  collectionDate: string | null;
+  expectedCompletionDate: string | null;
+  daysUntilDue: number | null;
+  daysOverdue: number | null;
+};
+
+type WorkflowBucket = {
+  records: number;
+  quantity: number;
+};
 
 type Summary = {
+  success: boolean;
   generatedAt?: string;
+  message?: string;
   totals?: {
     records?: number;
     physicalSamples?: number;
     pendingReports?: number;
+    pendingReportRecords?: number;
     deliveredReports?: number;
+    deliveredReportRecords?: number;
     missingExpectedCompletionDate?: number;
+    missingExpectedCompletionQuantity?: number;
+    missingTestingLocation?: number;
     dueSoon?: number;
+    dueSoonRecords?: number;
     overdue?: number;
+    overdueRecords?: number;
+    readyToDeliver?: number;
+    readyToDeliverRecords?: number;
   };
-  dueSoon?: Array<{ id: string; sampleNumber: string; sampleType: string; sampleCount: number; companyName?: string; expectedCompletionDate?: string }>;
-  overdue?: Array<{ id: string; sampleNumber: string; sampleType: string; sampleCount: number; companyName?: string; expectedCompletionDate?: string }>;
+  workflow?: {
+    planned?: WorkflowBucket;
+    collected?: WorkflowBucket;
+    dispatched?: WorkflowBucket;
+    receivedAtLab?: WorkflowBucket;
+    testing?: WorkflowBucket;
+    completed?: WorkflowBucket;
+    reportDelivered?: WorkflowBucket;
+    other?: WorkflowBucket;
+  };
+  queues?: {
+    overdue?: QueueItem[];
+    dueSoon?: QueueItem[];
+    missingDueDate?: QueueItem[];
+    awaitingLab?: QueueItem[];
+    inTesting?: QueueItem[];
+    readyToDeliver?: QueueItem[];
+    missingTestingLocation?: QueueItem[];
+  };
 };
 
-function Metric({ label, value, note, href, icon }: { label: string; value: number; note: string; href: string; icon: React.ReactNode }) {
+function formatDate(value: string | null | undefined) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function Metric({
+  label,
+  value,
+  helper,
+  tone,
+  icon,
+  href,
+}: {
+  label: string;
+  value: number;
+  helper: string;
+  tone: "red" | "orange" | "blue" | "purple" | "green" | "cyan" | "navy";
+  icon: React.ReactNode;
+  href: string;
+}) {
   return (
-    <Link href={href} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="mb-4 flex items-start justify-between">
-        <span className="rounded-xl bg-slate-100 p-2.5 text-blue-700">{icon}</span>
-        <ArrowRight size={17} className="text-slate-400" />
+    <Link href={href} className={`ops-metric ${tone}`}>
+      <span className="ops-metric-icon">{icon}</span>
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small>{helper}</small>
       </div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-      <strong className="mt-1 block text-3xl text-slate-900">{value}</strong>
-      <span className="mt-1 block text-xs text-slate-500">{note}</span>
+      <ArrowRight size={15} className="ops-metric-arrow" />
     </Link>
   );
 }
 
-function Queue({ title, items, empty }: { title: string; items: Summary["overdue"]; empty: string }) {
+function WorkflowStep({
+  label,
+  bucket,
+  tone,
+}: {
+  label: string;
+  bucket?: WorkflowBucket;
+  tone: string;
+}) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-        <div><h2 className="font-bold text-slate-900">{title}</h2><p className="text-xs text-slate-500">Open a sample to update its workflow.</p></div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{items?.length || 0}</span>
+    <div className={`ops-flow-step ${tone}`}>
+      <span>{label}</span>
+      <strong>{bucket?.quantity || 0}</strong>
+      <small>{bucket?.records || 0} record{bucket?.records === 1 ? "" : "s"}</small>
+    </div>
+  );
+}
+
+function Queue({
+  title,
+  subtitle,
+  items,
+  empty,
+  tone,
+}: {
+  title: string;
+  subtitle: string;
+  items?: QueueItem[];
+  empty: string;
+  tone: "red" | "orange" | "blue" | "green" | "purple";
+}) {
+  const visible = items?.slice(0, 8) || [];
+
+  return (
+    <section className="ops-panel">
+      <div className="ops-panel-head">
+        <div>
+          <span className={`ops-panel-dot ${tone}`} />
+          <div>
+            <h2>{title}</h2>
+            <p>{subtitle}</p>
+          </div>
+        </div>
+        <strong>{items?.length || 0}</strong>
       </div>
-      <div className="divide-y divide-slate-100">
-        {items?.length ? items.slice(0, 8).map((item) => (
-          <Link key={item.id} href={`/admin/samples/${item.id}`} className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-slate-50">
-            <div className="min-w-0">
-              <strong className="block truncate text-sm text-slate-900">{item.sampleNumber} · {item.sampleType}</strong>
-              <span className="block truncate text-xs text-slate-500">{item.companyName || "Client"} · Qty {item.sampleCount}</span>
-            </div>
-            <div className="shrink-0 text-right"><span className="block text-xs font-semibold text-slate-700">{item.expectedCompletionDate || "No date"}</span><ArrowRight size={15} className="ml-auto mt-1 text-slate-400" /></div>
-          </Link>
-        )) : <p className="px-5 py-10 text-center text-sm text-slate-500">{empty}</p>}
+
+      <div className="ops-queue">
+        {visible.length ? (
+          visible.map((item) => (
+            <Link
+              key={item.id}
+              href={`/admin/samples/${item.id}`}
+              className="ops-queue-row"
+            >
+              <div className="ops-queue-main">
+                <strong>{item.sampleNumber}</strong>
+                <span>{item.sampleType} · Qty {item.sampleCount}</span>
+                <small>{item.companyName} · {item.locationName}</small>
+              </div>
+
+              <div className="ops-queue-meta">
+                <span>{item.status}</span>
+                <small>
+                  {item.daysOverdue !== null
+                    ? `${item.daysOverdue} day${item.daysOverdue === 1 ? "" : "s"} overdue`
+                    : item.daysUntilDue !== null
+                      ? item.daysUntilDue === 0
+                        ? "Due today"
+                        : `Due in ${item.daysUntilDue} day${item.daysUntilDue === 1 ? "" : "s"}`
+                      : item.expectedCompletionDate
+                        ? formatDate(item.expectedCompletionDate)
+                        : "Due date missing"}
+                </small>
+              </div>
+
+              <ArrowRight size={15} />
+            </Link>
+          ))
+        ) : (
+          <div className="ops-empty">{empty}</div>
+        )}
       </div>
     </section>
   );
@@ -61,43 +213,247 @@ export default function OperationsPage() {
   const [loading, setLoading] = useState(true);
 
   async function load() {
-    setLoading(true); setError("");
+    setLoading(true);
+    setError("");
+
     try {
-      const response = await fetch("/api/operations/summary", { cache: "no-store" });
-      const json = await response.json();
-      if (!response.ok || json.success === false) throw new Error(json.message || "Unable to load operations summary.");
+      const response = await fetch("/api/operations/summary", {
+        cache: "no-store",
+      });
+      const json = (await response.json()) as Summary;
+
+      if (!response.ok || json.success === false) {
+        throw new Error(json.message || "Unable to load operations summary.");
+      }
+
       setData(json);
-    } catch (e) { setError(e instanceof Error ? e.message : "Unable to load operations summary."); }
-    finally { setLoading(false); }
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load operations summary.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(() => { void load(); }, []);
-  const t = data?.totals || {};
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const totals = data?.totals || {};
+  const queues = data?.queues || {};
+  const workflow = data?.workflow || {};
+
+  const generatedLabel = useMemo(() => {
+    if (!data?.generatedAt) return "Live CRM data";
+    const date = new Date(data.generatedAt);
+    if (Number.isNaN(date.getTime())) return "Live CRM data";
+    return `Updated ${date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  }, [data?.generatedAt]);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-7">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Laboratory Operations</p><h1 className="mt-1 text-2xl font-bold text-slate-950 md:text-3xl">Operations Control Center</h1><p className="mt-1 text-sm text-slate-500">Due dates, report delivery and samples needing action in one place.</p></div>
-          <div className="flex gap-2"><button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"><RefreshCw size={16} /> Refresh</button><Link href="/admin/samples" className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white">All Samples <ArrowRight size={16} /></Link></div>
-        </header>
+    <main className="ops-page">
+      <div className="ops-topbar">
+        <div>
+          <span>Hyderabad Operations</span>
+          <strong>{generatedLabel}</strong>
+        </div>
 
-        {error && <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-        {loading && !data ? <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500">Loading live operations…</div> : <>
-          <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric label="Overdue" value={t.overdue || 0} note="Expected date has passed" href="/admin/samples?report=pending" icon={<AlertTriangle size={21} />} />
-            <Metric label="Due Soon" value={t.dueSoon || 0} note="Due within the next 2 days" href="/admin/samples?report=pending" icon={<CalendarClock size={21} />} />
-            <Metric label="Pending Reports" value={t.pendingReports || 0} note="Physical samples awaiting delivery" href="/admin/samples?report=pending" icon={<FileWarning size={21} />} />
-            <Metric label="Missing Due Date" value={t.missingExpectedCompletionDate || 0} note="Open samples without expected date" href="/admin/samples?report=pending" icon={<ClipboardList size={21} />} />
-            <Metric label="Sample Records" value={t.records || 0} note={`${t.physicalSamples || 0} physical samples`} href="/admin/samples" icon={<FlaskConical size={21} />} />
-            <Metric label="Delivered Reports" value={t.deliveredReports || 0} note="Physical samples completed" href="/admin/samples?report=delivered" icon={<CheckCircle2 size={21} />} />
+        <div className="ops-top-actions">
+          <button type="button" onClick={() => void load()} disabled={loading}>
+            <RefreshCw size={15} className={loading ? "ops-spin" : ""} />
+            Refresh
+          </button>
+
+          <Link href="/admin/samples">
+            All Samples
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+
+      <section className="ops-hero">
+        <div>
+          <span>Operations Control Center</span>
+          <h1>Laboratory Workflow & Report Control</h1>
+          <p>
+            Track collected samples, laboratory movement, testing, expected
+            completion and report delivery using the same live CRM data.
+          </p>
+        </div>
+
+        <div className="ops-hero-summary">
+          <small>Physical Samples</small>
+          <strong>{totals.physicalSamples || 0}</strong>
+          <span>{totals.records || 0} CRM records</span>
+        </div>
+      </section>
+
+      {error && <div className="ops-alert error">{error}</div>}
+
+      {loading && !data ? (
+        <div className="ops-loading">Loading live Hyderabad operations…</div>
+      ) : (
+        <>
+          <section className="ops-metrics">
+            <Metric
+              label="Overdue"
+              value={totals.overdue || 0}
+              helper={`${totals.overdueRecords || 0} records past expected date`}
+              tone="red"
+              icon={<AlertTriangle size={19} />}
+              href="/admin/samples?report=pending"
+            />
+            <Metric
+              label="Due Soon"
+              value={totals.dueSoon || 0}
+              helper={`${totals.dueSoonRecords || 0} records due within 2 days`}
+              tone="orange"
+              icon={<CalendarClock size={19} />}
+              href="/admin/samples?report=pending"
+            />
+            <Metric
+              label="Pending Reports"
+              value={totals.pendingReports || 0}
+              helper={`${totals.pendingReportRecords || 0} open report records`}
+              tone="blue"
+              icon={<FileClock size={19} />}
+              href="/admin/samples?report=pending"
+            />
+            <Metric
+              label="Ready to Deliver"
+              value={totals.readyToDeliver || 0}
+              helper={`${totals.readyToDeliverRecords || 0} reports ready`}
+              tone="purple"
+              icon={<PackageCheck size={19} />}
+              href="/admin/samples?report=ready"
+            />
+            <Metric
+              label="Missing Due Date"
+              value={totals.missingExpectedCompletionDate || 0}
+              helper={`${totals.missingExpectedCompletionQuantity || 0} physical samples`}
+              tone="cyan"
+              icon={<ClipboardList size={19} />}
+              href="/admin/samples?report=pending"
+            />
+            <Metric
+              label="Delivered Reports"
+              value={totals.deliveredReports || 0}
+              helper={`${totals.deliveredReportRecords || 0} completed records`}
+              tone="green"
+              icon={<CheckCircle2 size={19} />}
+              href="/admin/samples?report=delivered"
+            />
           </section>
 
-          <section className="grid gap-5 lg:grid-cols-2"><Queue title="Overdue Reports" items={data?.overdue} empty="No overdue reports. Good." /><Queue title="Due Soon" items={data?.dueSoon} empty="Nothing is due in the next two days." /></section>
+          <section className="ops-flow-panel">
+            <div className="ops-section-heading">
+              <div>
+                <span>Live Workflow</span>
+                <h2>Sample Movement</h2>
+                <p>Quantity currently sitting at each operational stage.</p>
+              </div>
+              <FlaskConical size={22} />
+            </div>
 
-          <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5"><strong className="text-sm text-blue-950">Workflow rule</strong><p className="mt-1 text-sm text-blue-800">Keep Expected Completion Date updated on each sample. The system will surface due-soon and overdue work automatically and the notification bell will avoid duplicate alerts.</p></div>
-        </>}
-      </div>
+            <div className="ops-flow">
+              <WorkflowStep label="Planned" bucket={workflow.planned} tone="slate" />
+              <WorkflowStep label="Collected" bucket={workflow.collected} tone="cyan" />
+              <WorkflowStep label="Dispatched" bucket={workflow.dispatched} tone="blue" />
+              <WorkflowStep label="Received at Lab" bucket={workflow.receivedAtLab} tone="indigo" />
+              <WorkflowStep label="Testing" bucket={workflow.testing} tone="purple" />
+              <WorkflowStep label="Completed" bucket={workflow.completed} tone="green" />
+              <WorkflowStep label="Report Delivered" bucket={workflow.reportDelivered} tone="navy" />
+            </div>
+          </section>
+
+          <section className="ops-grid two">
+            <Queue
+              title="Overdue Reports"
+              subtitle="Expected completion date has already passed."
+              items={queues.overdue}
+              empty="No overdue reports."
+              tone="red"
+            />
+            <Queue
+              title="Due Soon"
+              subtitle="Expected within the next two days."
+              items={queues.dueSoon}
+              empty="Nothing is due within the next two days."
+              tone="orange"
+            />
+          </section>
+
+          <section className="ops-grid two">
+            <Queue
+              title="Missing Expected Date"
+              subtitle="Collected/open samples that need an expected completion date."
+              items={queues.missingDueDate}
+              empty="All active samples have expected completion dates."
+              tone="blue"
+            />
+            <Queue
+              title="Ready to Deliver"
+              subtitle="Reports marked ready but not yet delivered."
+              items={queues.readyToDeliver}
+              empty="No reports are waiting for delivery."
+              tone="green"
+            />
+          </section>
+
+          <section className="ops-grid two">
+            <Queue
+              title="Awaiting Laboratory"
+              subtitle="Collected or dispatched samples that have not reached testing."
+              items={queues.awaitingLab}
+              empty="No samples are waiting for laboratory movement."
+              tone="blue"
+            />
+            <Queue
+              title="Currently Testing"
+              subtitle="Active samples presently in laboratory testing."
+              items={queues.inTesting}
+              empty="No samples are currently marked as Testing."
+              tone="purple"
+            />
+          </section>
+
+          <section className="ops-quality-panel">
+            <div>
+              <MapPin size={18} />
+              <span>
+                <strong>Workflow Data Quality</strong>
+                <small>
+                  {totals.missingTestingLocation || 0} active sample record
+                  {(totals.missingTestingLocation || 0) === 1 ? "" : "s"} missing a testing location.
+                </small>
+              </span>
+            </div>
+            <Link href="/admin/samples">
+              Review Samples
+              <ArrowRight size={14} />
+            </Link>
+          </section>
+
+          <section className="ops-automation-note">
+            <TestTube2 size={19} />
+            <div>
+              <strong>Automatic control is active</strong>
+              <p>
+                Identification imports create Collected samples, report records
+                synchronize back to the sample, and the notification system
+                automatically raises Due Soon and Overdue alerts from the
+                Expected Completion Date without creating duplicate alerts.
+              </p>
+            </div>
+          </section>
+        </>
+      )}
     </main>
   );
 }
