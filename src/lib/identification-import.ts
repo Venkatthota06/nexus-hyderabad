@@ -1,3 +1,8 @@
+import {
+  cleanSampleSource,
+  standardizeSampleType,
+} from "@/src/lib/sample-standardization";
+
 export type ImportSampleRow = {
   rowId: string;
   sampleType: string;
@@ -9,24 +14,17 @@ export type ImportSampleRow = {
 export type ImportPreview = {
   fileName: string;
   fileFingerprint: string;
-
   customerName: string;
   address: string;
-
   companyId: string;
   companyName: string;
-
   locationId: string;
   locationName: string;
-
   collectionDate: string;
   collectionMonth: string;
   collectedBy: string;
-
   sampleReceivedOn: string;
-
   samples: ImportSampleRow[];
-
   warnings: string[];
 };
 
@@ -69,22 +67,23 @@ export function normaliseText(value: string | null | undefined) {
 
 export function getCollectionMonth(dateValue: string) {
   if (!dateValue) return "";
-
   const match = dateValue.match(/^(\d{4})-(\d{2})-\d{2}$/);
-
-  if (match) {
-    return `${match[1]}-${match[2]}`;
-  }
+  if (match) return `${match[1]}-${match[2]}`;
 
   const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
 
-  if (Number.isNaN(parsed.getTime())) {
-    return "";
-  }
+  return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}`;
+}
 
-  return `${parsed.getFullYear()}-${String(
-    parsed.getMonth() + 1,
-  ).padStart(2, "0")}`;
+export function standardizeImportSampleRow(row: ImportSampleRow): ImportSampleRow {
+  return {
+    ...row,
+    sampleType: standardizeSampleType(row.sampleType),
+    source: cleanSampleSource(row.source),
+    quantity: Math.max(1, Math.floor(Number(row.quantity) || 1)),
+    labCode: (row.labCode || "").trim(),
+  };
 }
 
 export function findBestCompanyMatch(
@@ -134,30 +133,20 @@ export function findBestLocationMatch({
 
     const containmentMatches = companyLocations.filter((location) => {
       const candidate = normaliseText(location.name);
-      return (
-        candidate &&
-        (targetName.includes(candidate) || candidate.includes(targetName))
-      );
+      return candidate && (targetName.includes(candidate) || candidate.includes(targetName));
     });
 
-    if (containmentMatches.length === 1) {
-      return containmentMatches[0];
-    }
+    if (containmentMatches.length === 1) return containmentMatches[0];
   }
 
   const targetAddress = normaliseText(address);
   if (targetAddress) {
     const addressMatches = companyLocations.filter((location) => {
       const candidate = normaliseText(location.address);
-      return (
-        candidate &&
-        (targetAddress.includes(candidate) || candidate.includes(targetAddress))
-      );
+      return candidate && (targetAddress.includes(candidate) || candidate.includes(targetAddress));
     });
 
-    if (addressMatches.length === 1) {
-      return addressMatches[0];
-    }
+    if (addressMatches.length === 1) return addressMatches[0];
   }
 
   return companyLocations.length === 1 ? companyLocations[0] : null;
@@ -176,13 +165,9 @@ export function buildImportedSampleNumber({
     .trim()
     .replace(/[^a-zA-Z0-9/_-]/g, "-");
 
-  if (cleanedLabCode) {
-    return `SIS-${cleanedLabCode}`;
-  }
+  if (cleanedLabCode) return `SIS-${cleanedLabCode}`;
 
-  return `SIS-${fileFingerprint.slice(0, 12)}-${String(
-    rowIndex + 1,
-  ).padStart(2, "0")}`;
+  return `SIS-${fileFingerprint.slice(0, 12)}-${String(rowIndex + 1).padStart(2, "0")}`;
 }
 
 export function createImportNotes({
@@ -199,9 +184,8 @@ export function createImportNotes({
     `Import fingerprint: ${fileFingerprint}`,
   ];
 
-  if (source?.trim()) {
-    parts.push(`Sample source: ${source.trim()}`);
-  }
+  const cleanedSource = cleanSampleSource(source);
+  if (cleanedSource) parts.push(`Sample source: ${cleanedSource}`);
 
   return parts.join(" | ");
 }
