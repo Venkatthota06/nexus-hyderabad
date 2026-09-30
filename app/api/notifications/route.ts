@@ -23,37 +23,110 @@ type BellNotification = {
   isRead: boolean;
 };
 
+type OperationalSample = {
+  id: string;
+  companyId: string;
+  sampleNumber: string;
+  sampleType: string;
+  expectedCompletionDate: string | null;
+  reportStatus: string;
+};
+
+function startOfLocalDay(value: Date) {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function operationalAlertType(sample: OperationalSample, now: Date) {
+  if (!sample.expectedCompletionDate) return null;
+  if (String(sample.reportStatus || "").toLowerCase().includes("deliver")) return null;
+
+  const due = startOfLocalDay(new Date(sample.expectedCompletionDate));
+  if (Number.isNaN(due.getTime())) return null;
+
+  const today = startOfLocalDay(now);
+  const daysUntilDue = Math.round((due.getTime() - today.getTime()) / 86_400_000);
+
+  if (daysUntilDue < 0) {
+    return { type: "SAMPLE_OVERDUE", title: "Sample report overdue", daysUntilDue };
+  }
+
+  if (daysUntilDue <= 2) {
+    return { type: "SAMPLE_DUE_SOON", title: "Sample report due soon", daysUntilDue };
+  }
+
+  return null;
+}
+
+async function syncSampleOperationalAlerts() {
+  try {
+    const [samples, companies, notifications] = await Promise.all([
+      db.orm.public.Sample.all(),
+      db.orm.public.Company.all(),
+      db.orm.public.Notification.all(),
+    ]);
+
+    const companyMap = new Map(companies.map((company) => [company.id, company.name]));
+    const existingKeys = new Set(
+      notifications
+        .filter((notification) => notification.entityType === "Sample" && notification.entityId)
+        .map((notification) => `${notification.type}:${notification.entityId}`),
+    );
+
+    const now = new Date();
+
+    for (const sample of samples as OperationalSample[]) {
+      const alert = operationalAlertType(sample, now);
+      if (!alert) continue;
+
+      const key = `${alert.type}:${sample.id}`;
+      if (existingKeys.has(key)) continue;
+
+      const companyName = companyMap.get(sample.companyId) || "Unknown company";
+      const timing =
+        alert.daysUntilDue < 0
+          ? `${Math.abs(alert.daysUntilDue)} day${Math.abs(alert.daysUntilDue) === 1 ? "" : "s"} overdue`
+          : alert.daysUntilDue === 0
+            ? "due today"
+            : `due in ${alert.daysUntilDue} day${alert.daysUntilDue === 1 ? "" : "s"}`;
+
+      await db.orm.public.Notification.create({
+        type: alert.type,
+        title: alert.title,
+        message: `${companyName} - ${sample.sampleNumber} - ${sample.sampleType} - ${timing}`,
+        entityType: "Sample",
+        entityId: sample.id,
+        actionUrl: `/admin/samples/${sample.id}`,
+        isRead: false,
+      });
+
+      existingKeys.add(key);
+    }
+  } catch (error) {
+    // Operational alerts are helpful, but must never break the notification bell.
+    console.error("Sample operational alert sync error:", error);
+  }
+}
+
 export async function GET() {
   const session = await auth();
 
   if (!session?.user) {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Unauthorized",
-      },
-      { status: 401 }
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
     );
   }
 
   try {
-    const [leads, crmNotifications] = await Promise.all([
-      db.orm.public.Lead
-        .orderBy((lead) => lead.createdAt.desc())
-        .all(),
+    await syncSampleOperationalAlerts();
 
-      db.orm.public.Notification
-        .orderBy((notification) => notification.createdAt.desc())
-        .all(),
+    const [leads, crmNotifications] = await Promise.all([
+      db.orm.public.Lead.orderBy((lead) => lead.createdAt.desc()).all(),
+      db.orm.public.Notification.orderBy((notification) => notification.createdAt.desc()).all(),
     ]);
 
-    /*
-     * Phase 1:
-     * Existing website-lead notifications.
-     *
-     * We keep Lead.isRead so existing website leads continue
-     * working exactly as before.
-     */
     const leadNotifications: BellNotification[] = leads.map((lead) => ({
       id: lead.id,
       source: "lead",
@@ -65,59 +138,33 @@ export async function GET() {
       isRead: lead.isRead !== false,
     }));
 
-    /*
-     * Phase 2:
-     * General CRM notifications stored in the Notification table.
-     */
-    const generalNotifications: BellNotification[] =
-      crmNotifications.map((notification) => ({
-        id: notification.id,
-        source: "notification",
-        type: notification.type,
-        title: notification.title,
-        message: notification.message ?? "",
-        createdAt: notification.createdAt,
-        href: notification.actionUrl ?? "/admin",
-        isRead: notification.isRead === true,
-      }));
+    const generalNotifications: BellNotification[] = crmNotifications.map((notification) => ({
+      id: notification.id,
+      source: "notification",
+      type: notification.type,
+      title: notification.title,
+      message: notification.message ?? "",
+      createdAt: notification.createdAt,
+      href: notification.actionUrl ?? "/admin",
+      isRead: notification.isRead === true,
+    }));
 
-    /*
-     * Combine both notification sources and show newest first.
-     */
-    const notifications = [
-      ...leadNotifications,
-      ...generalNotifications,
-    ]
+    const notifications = [...leadNotifications, ...generalNotifications]
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() -
-          new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 20);
 
-    const unreadLeadCount = leads.filter(
-      (lead) => lead.isRead === false
-    ).length;
-
+    const unreadLeadCount = leads.filter((lead) => lead.isRead === false).length;
     const unreadGeneralCount = crmNotifications.filter(
-      (notification) => notification.isRead === false
+      (notification) => notification.isRead === false,
     ).length;
-
-    const unreadCount =
-      unreadLeadCount + unreadGeneralCount;
 
     return NextResponse.json({
       success: true,
-
-      // Total unread notifications for the top bell.
-      unreadCount,
-
-      /*
-       * Keep this for AdminSidebar compatibility.
-       * Sidebar currently expects newLeads.
-       */
+      unreadCount: unreadLeadCount + unreadGeneralCount,
       newLeads: unreadLeadCount,
-
       notifications,
     });
   } catch (error) {
@@ -131,7 +178,7 @@ export async function GET() {
         notifications: [],
         message: "Failed to load notifications.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -141,160 +188,95 @@ export async function PATCH(request: Request) {
 
   if (!session?.user) {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Unauthorized",
-      },
-      { status: 401 }
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
     );
   }
 
   try {
-    const body =
-      (await request.json()) as NotificationPatchBody;
+    const body = (await request.json()) as NotificationPatchBody;
 
-    /*
-     * MARK ALL AS READ
-     *
-     * This updates:
-     * 1. Existing Phase-1 Lead.isRead records
-     * 2. New Phase-2 Notification.isRead records
-     */
     if (body.markAll === true) {
-      const [leads, crmNotifications] =
-        await Promise.all([
-          db.orm.public.Lead.all(),
-          db.orm.public.Notification.all(),
-        ]);
+      const [leads, crmNotifications] = await Promise.all([
+        db.orm.public.Lead.all(),
+        db.orm.public.Notification.all(),
+      ]);
 
-      const unreadLeads = leads.filter(
-        (lead) => lead.isRead === false
+      const unreadLeads = leads.filter((lead) => lead.isRead === false);
+      const unreadNotifications = crmNotifications.filter(
+        (notification) => notification.isRead === false,
       );
-
-      const unreadNotifications =
-        crmNotifications.filter(
-          (notification) =>
-            notification.isRead === false
-        );
 
       await Promise.all([
         ...unreadLeads.map((lead) =>
-          db.orm.public.Lead
-            .where({ id: lead.id })
-            .update({ isRead: true })
+          db.orm.public.Lead.where({ id: lead.id }).update({ isRead: true }),
         ),
-
         ...unreadNotifications.map((notification) =>
-          db.orm.public.Notification
-            .where({ id: notification.id })
-            .update({ isRead: true })
+          db.orm.public.Notification.where({ id: notification.id }).update({ isRead: true }),
         ),
       ]);
 
-      return NextResponse.json({
-        success: true,
-        unreadCount: 0,
-      });
+      return NextResponse.json({ success: true, unreadCount: 0 });
     }
 
     const id = body.id?.trim();
 
     if (!id) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Notification ID is required.",
-        },
-        { status: 400 }
+        { success: false, message: "Notification ID is required." },
+        { status: 400 },
       );
     }
 
-    /*
-     * New Phase-2 notification.
-     */
     if (body.source === "notification") {
-      const notification =
-        await db.orm.public.Notification
-          .where({ id })
-          .first();
+      const notification = await db.orm.public.Notification.where({ id }).first();
 
       if (!notification) {
         return NextResponse.json(
-          {
-            success: false,
-            message: "Notification not found.",
-          },
-          { status: 404 }
+          { success: false, message: "Notification not found." },
+          { status: 404 },
         );
       }
 
       if (notification.isRead === false) {
-        await db.orm.public.Notification
-          .where({ id })
-          .update({ isRead: true });
+        await db.orm.public.Notification.where({ id }).update({ isRead: true });
       }
     } else {
-      /*
-       * Existing Phase-1 website lead.
-       *
-       * Defaulting to lead keeps compatibility with the
-       * current NotificationBell component.
-       */
-      const lead = await db.orm.public.Lead
-        .where({ id })
-        .first();
+      const lead = await db.orm.public.Lead.where({ id }).first();
 
       if (!lead) {
         return NextResponse.json(
-          {
-            success: false,
-            message: "Lead notification not found.",
-          },
-          { status: 404 }
+          { success: false, message: "Lead notification not found." },
+          { status: 404 },
         );
       }
 
       if (lead.isRead === false) {
-        await db.orm.public.Lead
-          .where({ id })
-          .update({ isRead: true });
+        await db.orm.public.Lead.where({ id }).update({ isRead: true });
       }
     }
 
-    /*
-     * Recalculate the combined unread count.
-     */
-    const [leads, crmNotifications] =
-      await Promise.all([
-        db.orm.public.Lead.all(),
-        db.orm.public.Notification.all(),
-      ]);
+    const [leads, crmNotifications] = await Promise.all([
+      db.orm.public.Lead.all(),
+      db.orm.public.Notification.all(),
+    ]);
 
-    const unreadLeadCount = leads.filter(
-      (lead) => lead.isRead === false
+    const unreadLeadCount = leads.filter((lead) => lead.isRead === false).length;
+    const unreadGeneralCount = crmNotifications.filter(
+      (notification) => notification.isRead === false,
     ).length;
-
-    const unreadGeneralCount =
-      crmNotifications.filter(
-        (notification) =>
-          notification.isRead === false
-      ).length;
 
     return NextResponse.json({
       success: true,
-      unreadCount:
-        unreadLeadCount + unreadGeneralCount,
+      unreadCount: unreadLeadCount + unreadGeneralCount,
       newLeads: unreadLeadCount,
     });
   } catch (error) {
     console.error("PATCH /api/notifications error:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        message: "Unable to update notification.",
-      },
-      { status: 500 }
+      { success: false, message: "Unable to update notification." },
+      { status: 500 },
     );
   }
 }
