@@ -3,193 +3,131 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-
 import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  Eye,
+  EyeOff,
+  FlaskConical,
   LockKeyhole,
   Loader2,
-  LogIn,
   Mail,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setLoading(true);
     setError("");
 
     try {
-      const result = await signIn(
-        "credentials",
-        {
-          email,
-          password,
-          redirect: false,
-        }
-      );
-
+      const result = await signIn("credentials", { email, password, redirect: false });
       if (!result || result.error) {
-        setError(
-          "Invalid email or password."
-        );
-
+        setError("Invalid email or password.");
         return;
       }
-
       router.push("/admin");
       router.refresh();
     } catch {
-      setError(
-        "Unable to sign in. Please try again."
-      );
+      setError("Unable to sign in. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-5">
+    <main className="nexus-login-page">
+      <div className="nexus-login-grid" />
+      <div className="nexus-login-orb nexus-login-orb-one" />
+      <div className="nexus-login-orb nexus-login-orb-two" />
+      <div className="nexus-login-orb nexus-login-orb-three" />
 
-      <div className="w-full max-w-md">
+      <section className="nexus-login-shell">
+        <div className="nexus-login-story">
+          <div className="nexus-login-brand nexus-login-reveal">
+            <div className="nexus-login-logo-wrap">
+              <img src="/nexus-logo.png" alt="Nexus Test Labs" />
+            </div>
+            <div>
+              <span className="nexus-login-eyebrow">NEXUS TEST LABS</span>
+              <p>Hyderabad Operations</p>
+            </div>
+          </div>
 
-        <div className="mb-8 text-center">
+          <div className="nexus-login-hero nexus-login-reveal nexus-login-delay-1">
+            <div className="nexus-login-chip"><Sparkles size={14} /> Business Intelligence Workspace</div>
+            <h1>One command center.<br /><span>Every operation in focus.</span></h1>
+            <p>From client opportunities to samples, reports and collections — manage Hyderabad operations through one secure workspace.</p>
+          </div>
 
-          <img
-            src="/nexus-logo.png"
-            alt="Nexus Test Labs"
-            className="mx-auto mb-5 h-16 w-auto"
-          />
+          <div className="nexus-login-flow nexus-login-reveal nexus-login-delay-2" aria-label="Nexus workflow">
+            <div className="nexus-login-flow-card"><BarChart3 size={20} /><span>Business</span></div>
+            <div className="nexus-login-flow-line"><i /></div>
+            <div className="nexus-login-flow-card"><FlaskConical size={20} /><span>Testing</span></div>
+            <div className="nexus-login-flow-line"><i /></div>
+            <div className="nexus-login-flow-card"><Activity size={20} /><span>Operations</span></div>
+          </div>
 
-          <h1 className="text-3xl font-bold text-white">
-            Nexus Hyderabad CRM
-          </h1>
-
-          <p className="mt-2 text-sm text-slate-400">
-            Secure administrator login
-          </p>
-
+          <div className="nexus-login-status nexus-login-reveal nexus-login-delay-3">
+            <span className="nexus-login-live-dot" />
+            <div><strong>Operations workspace online</strong><small>Secure access • Hyderabad CRM</small></div>
+          </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-3xl border border-slate-800 bg-slate-900 p-7 shadow-2xl"
-        >
-
-          <div className="mb-6">
-
-            <label className="mb-2 block text-sm font-semibold text-slate-200">
-              Admin Email
-            </label>
-
-            <div className="relative">
-
-              <Mail
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-              />
-
-              <input
-                type="email"
-                value={email}
-                onChange={(event) =>
-                  setEmail(
-                    event.target.value
-                  )
-                }
-                required
-                autoComplete="email"
-                placeholder="Enter admin email"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-slate-600 focus:border-slate-500"
-              />
-
+        <div className="nexus-login-panel-wrap nexus-login-reveal nexus-login-delay-1">
+          <div className="nexus-login-panel-glow" />
+          <form onSubmit={handleSubmit} className="nexus-login-panel">
+            <div className="nexus-login-panel-top">
+              <div className="nexus-login-security"><ShieldCheck size={18} /></div>
+              <div><span>SECURE ACCESS</span><small>Authorized team members only</small></div>
             </div>
 
-          </div>
-
-          <div className="mb-6">
-
-            <label className="mb-2 block text-sm font-semibold text-slate-200">
-              Password
-            </label>
-
-            <div className="relative">
-
-              <LockKeyhole
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-              />
-
-              <input
-                type="password"
-                value={password}
-                onChange={(event) =>
-                  setPassword(
-                    event.target.value
-                  )
-                }
-                required
-                autoComplete="current-password"
-                placeholder="Enter password"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-slate-600 focus:border-slate-500"
-              />
-
+            <div className="nexus-login-heading">
+              <p>Welcome back</p>
+              <h2>Enter the Nexus Command Center</h2>
+              <span>Sign in to continue to your operations dashboard.</span>
             </div>
 
-          </div>
-
-          {error && (
-            <div className="mb-5 rounded-xl border border-red-900 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-              {error}
+            <div className="nexus-login-field">
+              <label htmlFor="admin-email">Admin Email</label>
+              <div className="nexus-login-input-wrap">
+                <Mail size={18} />
+                <input id="admin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="name@nexustestlabs.com" />
+              </div>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+            <div className="nexus-login-field">
+              <label htmlFor="admin-password">Password</label>
+              <div className="nexus-login-input-wrap">
+                <LockKeyhole size={18} />
+                <input id="admin-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" placeholder="Enter your password" />
+                <button type="button" className="nexus-login-eye" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button>
+              </div>
+            </div>
 
-            {loading ? (
-              <>
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
-                Signing in...
-              </>
-            ) : (
-              <>
-                <LogIn size={18} />
-                Sign In
-              </>
-            )}
+            {error && <div className="nexus-login-error">{error}</div>}
 
-          </button>
+            <button type="submit" disabled={loading} className="nexus-login-submit">
+              <span>{loading ? "Authenticating..." : "Enter Command Center"}</span>
+              {loading ? <Loader2 size={19} className="nexus-login-spinner" /> : <ArrowRight size={19} />}
+            </button>
 
-        </form>
+            <div className="nexus-login-trust"><ShieldCheck size={14} /><span>Protected administrator session</span></div>
+          </form>
+        </div>
+      </section>
 
-        <p className="mt-5 text-center text-xs text-slate-500">
-          Authorized Nexus Test Labs users only.
-        </p>
-
-      </div>
-
+      <div className="nexus-login-footer">Nexus Test Labs Pvt. Ltd. <span>•</span> Hyderabad Operations</div>
     </main>
   );
 }
