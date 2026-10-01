@@ -8,6 +8,7 @@ import {
   Activity,
   ArrowRight,
   ArrowUpRight,
+  BarChart3,
   Building2,
   CalendarDays,
   CircleDollarSign,
@@ -43,6 +44,7 @@ type SearchResult = {
 const navigation = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Operations", href: "/admin/operations", icon: Activity },
+  { label: "Business MIS", href: "/admin/business", icon: BarChart3 },
   { label: "Clients", href: "/admin/companies", icon: Building2 },
   { label: "Lead Management", href: "/admin/leads", icon: Users },
   { label: "Quotations", href: "/admin/quotations", icon: CircleDollarSign },
@@ -185,134 +187,37 @@ export default function AdminSidebar() {
       <div className="admin-crm-search">
         <div className="admin-crm-search-box">
           <Search size={16} className="admin-crm-search-icon" />
-          <input
-            type="text"
-            value={searchQuery}
-            placeholder="Search CRM..."
-            autoComplete="off"
-            aria-label="Search CRM"
-            onFocus={() => {
-              if (searchQuery.trim().length >= 2) setSearchOpen(true);
-            }}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
+          <input type="text" value={searchQuery} placeholder="Search CRM..." autoComplete="off" aria-label="Search CRM" onFocus={() => { if (searchQuery.trim().length >= 2) setSearchOpen(true); }} onChange={(event) => setSearchQuery(event.target.value)} />
           {searchLoading && <Loader2 size={15} className="admin-crm-search-loader" />}
-          {!searchLoading && searchQuery && (
-            <button type="button" className="admin-crm-search-clear" onClick={clearSearch} aria-label="Clear search">
-              <X size={14} />
-            </button>
-          )}
+          {!searchLoading && searchQuery && <button type="button" className="admin-crm-search-clear" onClick={clearSearch} aria-label="Clear search"><X size={14} /></button>}
         </div>
 
         {searchOpen && searchQuery.trim().length >= 2 && (
           <div className="admin-crm-search-results">
-            <div className="admin-crm-search-results-header">
-              <span>Search Results</span>
-              {!searchLoading && <strong>{searchResults.length}</strong>}
-            </div>
-
-            {searchLoading && searchResults.length === 0 && (
-              <div className="admin-crm-search-state">
-                <Loader2 size={18} className="admin-crm-search-state-loader" />
-                <span>Searching CRM...</span>
-              </div>
-            )}
-
-            {!searchLoading && searchError && (
-              <div className="admin-crm-search-state error"><span>{searchError}</span></div>
-            )}
-
-            {!searchLoading && !searchError && searchResults.length === 0 && (
-              <div className="admin-crm-search-state">
-                <Search size={18} />
-                <span>No matching records</span>
-                <small>Try company, contact, phone, email, quotation, sample or report number.</small>
-              </div>
-            )}
-
-            {!searchError && searchResults.length > 0 && (
-              <div className="admin-crm-search-result-list">
-                {searchResults.map((result) => (
-                  <Link
-                    key={`${result.type}-${result.id}`}
-                    href={result.href}
-                    className="admin-crm-search-result"
-                    onClick={() => setSearchOpen(false)}
-                  >
-                    <div className={`admin-crm-search-result-icon ${result.type}`}>
-                      <SearchResultIcon type={result.type} />
-                    </div>
-                    <div className="admin-crm-search-result-content">
-                      <div className="admin-crm-search-result-top">
-                        <strong>{result.title}</strong>
-                        <span>{resultTypeLabel(result.type)}</span>
-                      </div>
-                      <p>{result.subtitle}</p>
-                      {result.detail && <small>{result.detail}</small>}
-                    </div>
-                    <ArrowRight size={14} className="admin-crm-search-result-arrow" />
-                  </Link>
-                ))}
-              </div>
-            )}
+            <div className="admin-crm-search-results-header"><span>Search Results</span>{!searchLoading && <strong>{searchResults.length}</strong>}</div>
+            {searchLoading && searchResults.length === 0 && <div className="admin-crm-search-state"><Loader2 size={18} className="admin-crm-search-state-loader" /><span>Searching CRM...</span></div>}
+            {!searchLoading && searchError && <div className="admin-crm-search-state error"><span>{searchError}</span></div>}
+            {!searchLoading && !searchError && searchResults.length === 0 && <div className="admin-crm-search-state"><Search size={18} /><span>No matching records</span><small>Try company, contact, phone, email, quotation, sample or report number.</small></div>}
+            {!searchError && searchResults.length > 0 && <div className="admin-crm-search-result-list">{searchResults.map((result) => <Link key={`${result.type}-${result.id}`} href={result.href} className="admin-crm-search-result" onClick={() => setSearchOpen(false)}><div className={`admin-crm-search-result-icon ${result.type}`}><SearchResultIcon type={result.type} /></div><div className="admin-crm-search-result-content"><div className="admin-crm-search-result-top"><strong>{result.title}</strong><span>{resultTypeLabel(result.type)}</span></div><p>{result.subtitle}</p>{result.detail && <small>{result.detail}</small>}</div><ArrowRight size={14} className="admin-crm-search-result-arrow" /></Link>)}</div>}
           </div>
         )}
       </div>
 
       <div className="admin-shell-section-label">Operations</div>
-
       <nav className="admin-shell-nav">
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
           const hasLeadNotification = item.href === "/admin/leads" && newLeadCount > 0;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={active ? "admin-shell-nav-link active" : "admin-shell-nav-link"}
-            >
-              <span className="admin-shell-nav-icon">
-                <Icon size={18} strokeWidth={1.9} />
-              </span>
-              <span className="admin-shell-nav-label">{item.label}</span>
-              {hasLeadNotification && (
-                <span
-                  className="admin-shell-notification-badge"
-                  title={`${newLeadCount} unread ${newLeadCount === 1 ? "lead" : "leads"}`}
-                >
-                  {newLeadCount > 99 ? "99+" : newLeadCount}
-                </span>
-              )}
-              {active && !hasLeadNotification && <span className="admin-shell-active-dot" />}
-            </Link>
-          );
+          return <Link key={item.href} href={item.href} className={active ? "admin-shell-nav-link active" : "admin-shell-nav-link"}><span className="admin-shell-nav-icon"><Icon size={18} strokeWidth={1.9} /></span><span className="admin-shell-nav-label">{item.label}</span>{hasLeadNotification && <span className="admin-shell-notification-badge" title={`${newLeadCount} unread ${newLeadCount === 1 ? "lead" : "leads"}`}>{newLeadCount > 99 ? "99+" : newLeadCount}</span>}{active && !hasLeadNotification && <span className="admin-shell-active-dot" />}</Link>;
         })}
       </nav>
 
       <div className="admin-shell-sidebar-footer">
-        <div className="admin-shell-system-status">
-          <span className="admin-shell-status-dot" />
-          <div>
-            <strong>CRM Online</strong>
-            <span>Neon database connected</span>
-          </div>
-        </div>
-
-        <Link href="/" className="admin-shell-website-link">
-          <span>Open Website</span>
-          <ArrowUpRight size={15} />
-        </Link>
-
-        <div className="admin-shell-logout">
-          <AdminLogoutButton />
-        </div>
-
-        <div className="admin-shell-version">
-          Nexus Business CRM
-          <span>Hyderabad Operations</span>
-        </div>
+        <div className="admin-shell-system-status"><span className="admin-shell-status-dot" /><div><strong>CRM Online</strong><span>Neon database connected</span></div></div>
+        <Link href="/" className="admin-shell-website-link"><span>Open Website</span><ArrowUpRight size={15} /></Link>
+        <div className="admin-shell-logout"><AdminLogoutButton /></div>
+        <div className="admin-shell-version">Nexus Business CRM<span>Hyderabad Operations</span></div>
       </div>
     </aside>
   );
