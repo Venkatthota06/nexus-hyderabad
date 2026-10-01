@@ -1,0 +1,128 @@
+[
+  {
+    "id": "column.public.lead.salesOwner",
+    "label": "Add column \"salesOwner\" to \"lead\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "salesOwner",
+        "table": "lead"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"salesOwner\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "lead",
+          "salesOwner"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"salesOwner\"",
+        "sql": "ALTER TABLE \"public\".\"lead\" ADD COLUMN \"salesOwner\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"salesOwner\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "lead",
+          "salesOwner"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.quotation.salesOwner",
+    "label": "Add column \"salesOwner\" to \"quotation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "salesOwner",
+        "table": "quotation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"salesOwner\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "quotation",
+          "salesOwner"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"salesOwner\"",
+        "sql": "ALTER TABLE \"public\".\"quotation\" ADD COLUMN \"salesOwner\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"salesOwner\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "quotation",
+          "salesOwner"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.workOrder.salesOwner",
+    "label": "Add column \"salesOwner\" to \"workOrder\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "salesOwner",
+        "table": "workOrder"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"salesOwner\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workOrder",
+          "salesOwner"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"salesOwner\"",
+        "sql": "ALTER TABLE \"public\".\"workOrder\" ADD COLUMN \"salesOwner\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"salesOwner\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "workOrder",
+          "salesOwner"
+        ]
+      }
+    ]
+  }
+]

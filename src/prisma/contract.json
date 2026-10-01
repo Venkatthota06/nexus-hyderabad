@@ -1075,6 +1075,13 @@
                   "kind": "scalar"
                 }
               },
+              "salesOwner": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "service": {
                 "nullable": false,
                 "type": {
@@ -1170,6 +1177,9 @@
                 },
                 "requirement": {
                   "column": "requirement"
+                },
+                "salesOwner": {
+                  "column": "salesOwner"
                 },
                 "service": {
                   "column": "service"
@@ -2156,6 +2166,13 @@
                   "kind": "scalar"
                 }
               },
+              "salesOwner": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "sentDate": {
                 "nullable": true,
                 "type": {
@@ -2318,6 +2335,9 @@
                 },
                 "quotationNumber": {
                   "column": "quotationNumber"
+                },
+                "salesOwner": {
+                  "column": "salesOwner"
                 },
                 "sentDate": {
                   "column": "sentDate"
@@ -3193,6 +3213,13 @@
                   "kind": "scalar"
                 }
               },
+              "salesOwner": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "service": {
                 "nullable": false,
                 "type": {
@@ -3343,6 +3370,9 @@
                 },
                 "quotationId": {
                   "column": "quotationId"
+                },
+                "salesOwner": {
+                  "column": "salesOwner"
                 },
                 "service": {
                   "column": "service"
@@ -3991,6 +4021,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "salesOwner": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "service": {
                   "codecId": "pg/text@1",
@@ -4755,6 +4790,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "salesOwner": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "sentDate": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -5492,6 +5532,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "salesOwner": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "service": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5587,7 +5632,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "12a1bdc287a89946c09de3ca3812905c8b8a221756e0b31fae50c9325aad6112"
+    "storageHash": "090b637b4ae1f49e954ce27d00ef7e0544a1f901111b151190ea083947c63c97"
   },
   "execution": {
     "executionHash": "f1db00ca401f283f23ede1919a179bc11bead2fb97364ffab657c36fb7028d9b",
