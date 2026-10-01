@@ -8,7 +8,7 @@ import {
   Activity, AlertTriangle, ArrowRight, ArrowUpRight, BarChart3, Building2,
   CalendarDays, CircleDollarSign, ClipboardList, FileText, FlaskConical,
   FolderOpen, LayoutDashboard, Loader2, Megaphone, RefreshCw, Search,
-  Settings2, UploadCloud, UserRound, Users, WalletCards, X,
+  Settings2, ShieldAlert, UploadCloud, UserRound, Users, WalletCards, X,
 } from "lucide-react";
 
 import AdminLogoutButton from "@/components/AdminLogoutButton";
@@ -17,6 +17,7 @@ const navigation=[
  {label:"Dashboard",href:"/admin",icon:LayoutDashboard},
  {label:"Management",href:"/admin/management",icon:BarChart3},
  {label:"Action Center",href:"/admin/management/attention",icon:AlertTriangle},
+ {label:"Risk Intelligence",href:"/admin/management/risk",icon:ShieldAlert},
  {label:"Operations",href:"/admin/operations",icon:Activity},{label:"Business MIS",href:"/admin/business",icon:BarChart3},{label:"Clients",href:"/admin/companies",icon:Building2},{label:"Lead Management",href:"/admin/leads",icon:Users},{label:"Quotations",href:"/admin/quotations",icon:CircleDollarSign},{label:"Orders",href:"/admin/orders",icon:ClipboardList},{label:"Recurring Services",href:"/admin/recurring-services",icon:RefreshCw},{label:"Sample Collection",href:"/admin/samples",icon:FlaskConical},{label:"Identification Import",href:"/admin/identification-import",icon:UploadCloud},{label:"Reports",href:"/admin/reports",icon:FileText},{label:"Payments",href:"/admin/payments",icon:WalletCards},{label:"Follow-ups",href:"/admin/follow-ups",icon:CalendarDays},{label:"Monthly Plan",href:"/admin/monthly-plan",icon:CalendarDays},{label:"Digital Marketing",href:"/admin/digital-marketing",icon:Megaphone},{label:"Documents",href:"/admin/documents",icon:FolderOpen},{label:"Settings",href:"/admin/settings",icon:Settings2},
 ];
 function SearchResultIcon({type}:{type:SearchResult["type"]}){switch(type){case"company":return <Building2 size={16}/>;case"contact":return <UserRound size={16}/>;case"lead":return <Users size={16}/>;case"quotation":return <CircleDollarSign size={16}/>;case"sample":return <FlaskConical size={16}/>;case"report":return <FileText size={16}/>;default:return <Search size={16}/>}}
