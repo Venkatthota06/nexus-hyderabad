@@ -1,4 +1,333 @@
-import Link from"next/link";import{AlertTriangle,ArrowRight,BarChart3,CalendarClock,CircleDollarSign,ClipboardCheck,FileText,FlaskConical,Target,UsersRound}from"lucide-react";import{db}from"@/src/prisma/db";import"./management.css";export const dynamic="force-dynamic";type Row=Record<string,unknown>;async function rows(t:"Company"|"Lead"|"Quotation"|"WorkOrder"|"Payment"|"Sample"){try{return await(db.orm.public[t] as unknown as{all:()=>Promise<Row[]>}).all()}catch{return[]}}const n=(v:unknown)=>Number(v||0),txt=(v:unknown)=>String(v||"").trim(),low=(v:unknown)=>txt(v).toLowerCase(),money=(v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(v);const active=(s:unknown)=>!["inactive","cancelled","canceled","closed","rejected","void","won","lost"].includes(low(s)),openQ=(s:unknown)=>!["accepted","approved","won","closed","rejected","cancelled","canceled","expired"].includes(low(s)),valid=(s:unknown)=>!["cancelled","canceled","rejected","void"].includes(low(s)),paid=(s:unknown)=>["received","paid","collected","completed"].includes(low(s));
-function follow(x:Row){if(!x.nextFollowUp)return"none";const d=new Date(String(x.nextFollowUp)),z=new Date(),a=new Date(z.getFullYear(),z.getMonth(),z.getDate()).getTime(),b=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();return b<a?"overdue":b===a?"today":"upcoming"}function sg(v:unknown){const s=low(v);if(!s)return"Unspecified";if(s.includes("web"))return"Website";if(s.includes("linkedin")||s.includes("digital")||s.includes("social"))return"Digital / LinkedIn";if(s.includes("ref"))return"Reference";if(s.includes("field")||s.includes("visit")||s.includes("walk"))return"Field Marketing";return txt(v)}
-export default async function Page(){const[c,l,q,o,p,s]=await Promise.all([rows("Company"),rows("Lead"),rows("Quotation"),rows("WorkOrder"),rows("Payment"),rows("Sample")]),ll=l.filter(x=>active(x.status)),qq=q.filter(x=>openQ(x.status)),oo=o.filter(x=>valid(x.status)),business=oo.reduce((a,x)=>a+n(x.totalAmount),0),col=p.filter(x=>paid(x.status)).reduce((a,x)=>a+n(x.amount),0),pending=Math.max(business-col,0),sample=s.reduce((a,x)=>a+n(x.sampleCount||1),0),overdue=ll.filter(x=>follow(x)==="overdue").length,today=ll.filter(x=>follow(x)==="today").length,unread=l.filter(x=>x.isRead===false).length;const src=new Map<string,number>();l.forEach(x=>src.set(sg(x.source),(src.get(sg(x.source))||0)+1));const sources=[...src].sort((a,b)=>b[1]-a[1]).slice(0,6),mx=Math.max(1,...sources.map(x=>x[1]));const owners=new Map<string,{leads:number;quotes:number;orders:number;business:number;collections:number}>();const get=(name:string)=>{const k=name||"Unassigned";if(!owners.has(k))owners.set(k,{leads:0,quotes:0,orders:0,business:0,collections:0});return owners.get(k)!};l.forEach(x=>get(txt(x.salesOwner)||"Unassigned").leads++);q.forEach(x=>get(txt(x.salesOwner)||"Unassigned").quotes++);o.filter(x=>valid(x.status)).forEach(x=>{const a=get(txt(x.salesOwner)||"Unassigned");a.orders++;a.business+=n(x.totalAmount)});p.filter(x=>paid(x.status)).forEach(x=>{const wo=o.find(w=>String(w.id)===String(x.workOrderId)),qt=q.find(z=>String(z.id)===String(x.quotationId));get(txt(wo?.salesOwner)||txt(qt?.salesOwner)||"Unassigned").collections+=n(x.amount)});const ownerRows=[...owners.entries()].sort((a,b)=>b[1].business-a[1].business);
-return <main className="mi-page"><header className="mi-hero"><div><span>MANAGEMENT INTELLIGENCE • V5</span><h1>Hyderabad Business Command Center</h1><p>Sales ownership, pipeline, business, collections and operations in one management view.</p></div><Link href="/admin/monthly-report">Monthly Report <ArrowRight size={17}/></Link></header><section className="mi-kpis">{[["Clients",c.length,"/admin/companies",<UsersRound key="1"/>],["Active Leads",ll.length,"/admin/leads",<Target key="2"/>],["Open Quotations",qq.length,"/admin/quotations",<FileText key="3"/>],["Business Value",money(business),"/admin/orders",<BarChart3 key="4"/>],["Collected",money(col),"/admin/payments",<CircleDollarSign key="5"/>],["Pending",money(pending),"/admin/payments",<ClipboardCheck key="6"/>],["Samples",sample,"/admin/samples",<FlaskConical key="7"/>]].map(([a,b,h,i])=><Link href={String(h)} className="mi-card" key={String(a)}><div className="mi-icon">{i}</div><div><span>{a}</span><strong>{b}</strong></div><ArrowRight className="mi-arrow" size={16}/></Link>)}</section><section className="mi-panel" style={{marginTop:16}}><div className="mi-panel-head"><div><span>INDIVIDUAL SALES CONTRIBUTION</span><h2>Ownership from lead to collection</h2></div><UsersRound/></div><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr>{["Owner","Leads","Quotes","Orders","Business","Collections"].map(x=><th key={x} style={{textAlign:"left",padding:"10px 8px",borderBottom:"1px solid #e5edf2"}}>{x}</th>)}</tr></thead><tbody>{ownerRows.map(([name,a])=><tr key={name}><td style={{padding:"11px 8px"}}><strong>{name}</strong></td><td>{a.leads}</td><td>{a.quotes}</td><td>{a.orders}</td><td>{money(a.business)}</td><td>{money(a.collections)}</td></tr>)}</tbody></table></div></section><section className="mi-grid"><article className="mi-panel"><div className="mi-panel-head"><div><span>LEAD SOURCE INTELLIGENCE</span><h2>Where opportunities originate</h2></div><BarChart3/></div><div className="mi-sources">{sources.map(([name,count])=><div className="mi-source" key={name}><div><span>{name}</span><strong>{count}</strong></div><div className="mi-source-bar"><i style={{width:`${count/mx*100}%`}}/></div></div>)}</div></article><article className="mi-panel"><div className="mi-panel-head"><div><span>MANAGEMENT ATTENTION</span><h2>Items needing action</h2></div><AlertTriangle/></div><div className="mi-alerts"><Link href="/admin/follow-ups"><CalendarClock/><div><strong>{overdue}</strong><span>Overdue follow-ups</span></div><ArrowRight/></Link><Link href="/admin/follow-ups"><CalendarClock/><div><strong>{today}</strong><span>Due today</span></div><ArrowRight/></Link><Link href="/admin/leads"><Target/><div><strong>{unread}</strong><span>Unread / new leads</span></div><ArrowRight/></Link><Link href="/admin/quotations"><FileText/><div><strong>{qq.length}</strong><span>Open quotations</span></div><ArrowRight/></Link></div></article></section><section className="mi-next"><div><span>V5 MANAGEMENT LAYER</span><h2>Management automation foundation</h2></div><div className="mi-next-items"><span>Lead source intelligence ✓</span><span>Management alerts ✓</span><span>Individual sales contribution ✓</span><span>Monthly report automation ✓</span></div></section></main>}
+import Link from "next/link";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  CalendarClock,
+  CircleDollarSign,
+  ClipboardCheck,
+  FileText,
+  FlaskConical,
+  Target,
+  UsersRound,
+} from "lucide-react";
+import { db } from "@/src/prisma/db";
+import "./management.css";
+export const dynamic = "force-dynamic";
+type Row = Record<string, unknown>;
+async function rows(
+  t: "Company" | "Lead" | "Quotation" | "WorkOrder" | "Payment" | "Sample",
+) {
+  try {
+    return await (
+      db.orm.public[t] as unknown as { all: () => Promise<Row[]> }
+    ).all();
+  } catch {
+    return [];
+  }
+}
+const n = (v: unknown) => Number(v || 0),
+  txt = (v: unknown) => String(v || "").trim(),
+  low = (v: unknown) => txt(v).toLowerCase(),
+  money = (v: number) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(v);
+const active = (s: unknown) =>
+    ![
+      "inactive",
+      "cancelled",
+      "canceled",
+      "closed",
+      "rejected",
+      "void",
+      "won",
+      "lost",
+    ].includes(low(s)),
+  openQ = (s: unknown) =>
+    ![
+      "accepted",
+      "approved",
+      "won",
+      "closed",
+      "rejected",
+      "cancelled",
+      "canceled",
+      "expired",
+    ].includes(low(s)),
+  valid = (s: unknown) =>
+    !["cancelled", "canceled", "rejected", "void"].includes(low(s)),
+  paid = (s: unknown) =>
+    ["received", "paid", "collected", "completed"].includes(low(s));
+function follow(x: Row) {
+  if (!x.nextFollowUp) return "none";
+  const d = new Date(String(x.nextFollowUp)),
+    z = new Date(),
+    a = new Date(z.getFullYear(), z.getMonth(), z.getDate()).getTime(),
+    b = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return b < a ? "overdue" : b === a ? "today" : "upcoming";
+}
+function sg(v: unknown) {
+  const s = low(v);
+  if (!s) return "Unspecified";
+  if (s.includes("web")) return "Website";
+  if (s.includes("linkedin") || s.includes("digital") || s.includes("social"))
+    return "Digital / LinkedIn";
+  if (s.includes("ref")) return "Reference";
+  if (s.includes("field") || s.includes("visit") || s.includes("walk"))
+    return "Field Marketing";
+  return txt(v);
+}
+export default async function Page() {
+  const [c, l, q, o, p, s] = await Promise.all([
+      rows("Company"),
+      rows("Lead"),
+      rows("Quotation"),
+      rows("WorkOrder"),
+      rows("Payment"),
+      rows("Sample"),
+    ]),
+    ll = l.filter((x) => active(x.status)),
+    qq = q.filter((x) => openQ(x.status)),
+    oo = o.filter((x) => valid(x.status)),
+    business = oo.reduce((a, x) => a + n(x.totalAmount), 0),
+    col = p.filter((x) => paid(x.status)).reduce((a, x) => a + n(x.amount), 0),
+    pending = Math.max(business - col, 0),
+    sample = s.reduce((a, x) => a + n(x.sampleCount || 1), 0),
+    overdue = ll.filter((x) => follow(x) === "overdue").length,
+    today = ll.filter((x) => follow(x) === "today").length,
+    unread = l.filter((x) => x.isRead === false).length;
+  const src = new Map<string, number>();
+  l.forEach((x) => src.set(sg(x.source), (src.get(sg(x.source)) || 0) + 1));
+  const sources = [...src].sort((a, b) => b[1] - a[1]).slice(0, 6),
+    mx = Math.max(1, ...sources.map((x) => x[1]));
+  const owners = new Map<
+    string,
+    {
+      leads: number;
+      quotes: number;
+      orders: number;
+      business: number;
+      collections: number;
+    }
+  >();
+  const get = (name: string) => {
+    const k = name || "Unassigned";
+    if (!owners.has(k))
+      owners.set(k, {
+        leads: 0,
+        quotes: 0,
+        orders: 0,
+        business: 0,
+        collections: 0,
+      });
+    return owners.get(k)!;
+  };
+  l.forEach((x) => get(txt(x.salesOwner) || "Unassigned").leads++);
+  q.forEach((x) => get(txt(x.salesOwner) || "Unassigned").quotes++);
+  o.filter((x) => valid(x.status)).forEach((x) => {
+    const a = get(txt(x.salesOwner) || "Unassigned");
+    a.orders++;
+    a.business += n(x.totalAmount);
+  });
+  p.filter((x) => paid(x.status)).forEach((x) => {
+    const wo = o.find((w) => String(w.id) === String(x.workOrderId)),
+      qt = q.find((z) => String(z.id) === String(x.quotationId));
+    get(
+      txt(wo?.salesOwner) || txt(qt?.salesOwner) || "Unassigned",
+    ).collections += n(x.amount);
+  });
+  const ownerRows = [...owners.entries()].sort(
+    (a, b) => b[1].business - a[1].business,
+  );
+  return (
+    <main className="mi-page">
+      <header className="mi-hero">
+        <div>
+          <span>MANAGEMENT INTELLIGENCE • V5</span>
+          <h1>Hyderabad Business Command Center</h1>
+          <p>
+            Sales ownership, pipeline, business, collections and operations in
+            one management view.
+          </p>
+        </div>
+        <Link href="/admin/monthly-report">
+          Monthly Report <ArrowRight size={17} />
+        </Link>
+      </header>
+      <section className="mi-kpis">
+        {[
+          ["Clients", c.length, "/admin/companies", <UsersRound key="1" />],
+          ["Active Leads", ll.length, "/admin/leads", <Target key="2" />],
+          [
+            "Open Quotations",
+            qq.length,
+            "/admin/quotations",
+            <FileText key="3" />,
+          ],
+          [
+            "Business Value",
+            money(business),
+            "/admin/orders",
+            <BarChart3 key="4" />,
+          ],
+          [
+            "Collected",
+            money(col),
+            "/admin/payments",
+            <CircleDollarSign key="5" />,
+          ],
+          [
+            "Pending",
+            money(pending),
+            "/admin/payments",
+            <ClipboardCheck key="6" />,
+          ],
+          ["Samples", sample, "/admin/samples", <FlaskConical key="7" />],
+        ].map(([a, b, h, i]) => (
+          <Link href={String(h)} className="mi-card" key={String(a)}>
+            <div className="mi-icon">{i}</div>
+            <div>
+              <span>{a}</span>
+              <strong>{b}</strong>
+            </div>
+            <ArrowRight className="mi-arrow" size={16} />
+          </Link>
+        ))}
+      </section>
+      <section className="mi-panel" style={{ marginTop: 16 }}>
+        <div className="mi-panel-head">
+          <div>
+            <span>INDIVIDUAL SALES CONTRIBUTION</span>
+            <h2>Ownership from lead to collection</h2>
+          </div>
+          <UsersRound />
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}
+          >
+            <thead>
+              <tr>
+                {[
+                  "Owner",
+                  "Leads",
+                  "Quotes",
+                  "Orders",
+                  "Business",
+                  "Collections",
+                ].map((x) => (
+                  <th
+                    key={x}
+                    style={{
+                      textAlign: "left",
+                      padding: "10px 8px",
+                      borderBottom: "1px solid #e5edf2",
+                    }}
+                  >
+                    {x}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ownerRows.map(([name, a]) => (
+                <tr key={name}>
+                  <td style={{ padding: "11px 8px" }}>
+                    <strong>{name}</strong>
+                  </td>
+                  <td>{a.leads}</td>
+                  <td>{a.quotes}</td>
+                  <td>{a.orders}</td>
+                  <td>{money(a.business)}</td>
+                  <td>{money(a.collections)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section className="mi-grid">
+        <article className="mi-panel">
+          <div className="mi-panel-head">
+            <div>
+              <span>LEAD SOURCE INTELLIGENCE</span>
+              <h2>Where opportunities originate</h2>
+            </div>
+            <BarChart3 />
+          </div>
+          <div className="mi-sources">
+            {sources.map(([name, count]) => (
+              <div className="mi-source" key={name}>
+                <div>
+                  <span>{name}</span>
+                  <strong>{count}</strong>
+                </div>
+                <div className="mi-source-bar">
+                  <i style={{ width: `${(count / mx) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+        <article className="mi-panel">
+          <div className="mi-panel-head">
+            <div>
+              <span>MANAGEMENT ATTENTION</span>
+              <h2>Items needing action</h2>
+            </div>
+            <AlertTriangle />
+          </div>
+          <div className="mi-alerts">
+            <Link href="/admin/follow-ups">
+              <CalendarClock />
+              <div>
+                <strong>{overdue}</strong>
+                <span>Overdue follow-ups</span>
+              </div>
+              <ArrowRight />
+            </Link>
+            <Link href="/admin/follow-ups">
+              <CalendarClock />
+              <div>
+                <strong>{today}</strong>
+                <span>Due today</span>
+              </div>
+              <ArrowRight />
+            </Link>
+            <Link href="/admin/leads">
+              <Target />
+              <div>
+                <strong>{unread}</strong>
+                <span>Unread / new leads</span>
+              </div>
+              <ArrowRight />
+            </Link>
+            <Link href="/admin/quotations">
+              <FileText />
+              <div>
+                <strong>{qq.length}</strong>
+                <span>Open quotations</span>
+              </div>
+              <ArrowRight />
+            </Link>
+          </div>
+        </article>
+      </section>
+      <section className="mi-next">
+        <div>
+          <span>V5 MANAGEMENT LAYER</span>
+          <h2>Management automation foundation</h2>
+        </div>
+        <div className="mi-next-items">
+          <span>Lead source intelligence ✓</span>
+          <span>Management alerts ✓</span>
+          <span>Individual sales contribution ✓</span>
+          <span>Monthly report automation ✓</span>
+        </div>
+      </section>
+    </main>
+  );
+}
