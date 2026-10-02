@@ -12,11 +12,15 @@ const number = (v: unknown) => Number(v || 0);
 const received = (v: unknown) => ["received", "paid", "collected", "completed"].includes(text(v).toLowerCase());
 const confirmed = (v: unknown) => !["cancelled", "canceled", "rejected", "lost", "draft"].includes(text(v).toLowerCase());
 
+async function allRows(model: { all: () => unknown }): Promise<Row[]> {
+  return await (model.all() as unknown as Promise<Row[]>);
+}
+
 export default async function RecordPaymentPage() {
   const [companies, workOrders, payments] = await Promise.all([
-    db.orm.public.Company.all() as Promise<Row[]>,
-    db.orm.public.WorkOrder.all() as Promise<Row[]>,
-    db.orm.public.Payment.all() as Promise<Row[]>,
+    allRows(db.orm.public.Company),
+    allRows(db.orm.public.WorkOrder),
+    allRows(db.orm.public.Payment),
   ]);
 
   const companyNames = new Map(companies.map((c) => [text(c.id), text(c.name)]));
