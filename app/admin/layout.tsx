@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
+import LeadJourneyContext from "@/components/LeadJourneyContext";
 
 export default function AdminLayout({
   children,
@@ -11,6 +12,7 @@ export default function AdminLayout({
       <AdminSidebar />
 
       <main className="admin-shell-main">
+        <LeadJourneyContext />
         {children}
       </main>
     </div>
