@@ -1,0 +1,1 @@
+import type{ReactNode}from"react";import TeamLogoutButton from"@/components/TeamLogoutButton";import"./functionality.css";export default function TeamLayout({children}:{children:ReactNode}){return <><div style={{position:"fixed",right:18,bottom:18,zIndex:1000}}><TeamLogoutButton/></div>{children}</>}
