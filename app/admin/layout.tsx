@@ -16,7 +16,9 @@ export default function AdminLayout({
         <Suspense fallback={null}>
           <LeadJourneyContext />
         </Suspense>
-        {children}
+        <Suspense fallback={null}>
+          {children}
+        </Suspense>
       </main>
     </div>
   );
