@@ -1,0 +1,36 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { db } from "@/src/prisma/db";
+import { ArrowLeft, CalendarDays, PhoneCall, MapPin, FlaskConical, FileText, BriefcaseBusiness, WalletCards, UsersRound } from "lucide-react";
+import "../management.css";
+import "./activity-history.css";
+
+export const dynamic = "force-dynamic";
+type Row = Record<string, unknown>;
+type Item = { id:string; owner:string; type:string; title:string; detail:string; date:Date; href:string };
+const txt=(v:unknown)=>String(v||"").trim();
+const dt=(v:unknown)=>{const d=new Date(String(v||""));return Number.isNaN(d.getTime())?null:d};
+async function rows(t:"Lead"|"Quotation"|"WorkOrder"|"Payment"|"Activity"|"Sample"){try{return await(db.orm.public[t] as unknown as {all:()=>Promise<Row[]>}).all()}catch{return[]}}
+function dayKey(d:Date){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function rangeFor(mode:string,from?:string,to?:string){const now=new Date(),end=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),start=new Date(now.getFullYear(),now.getMonth(),now.getDate());if(mode==="yesterday"){start.setDate(start.getDate()-1);end.setDate(end.getDate()-1)}else if(mode==="week"){start.setDate(start.getDate()-((start.getDay()+6)%7))}else if(mode==="month"){start.setDate(1)}else if(mode==="custom"&&from){const f=new Date(`${from}T00:00:00`);if(!Number.isNaN(f.getTime()))start.setTime(f.getTime());if(to){const t=new Date(`${to}T00:00:00`);if(!Number.isNaN(t.getTime())){t.setDate(t.getDate()+1);end.setTime(t.getTime())}}}return{start,end}}
+export default async function ActivityHistory({searchParams}:{searchParams:Promise<{period?:string;owner?:string;from?:string;to?:string}>}){
+ const session=await auth();if(!session?.user)redirect("/login");if(txt((session.user as {role?:string}).role).toUpperCase()==="TEAM")redirect("/team");
+ const p=await searchParams,period=p.period||"today",ownerFilter=txt(p.owner),{start,end}=rangeFor(period,p.from,p.to);
+ const [leads,quotes,orders,payments,activities,samples]=await Promise.all([rows("Lead"),rows("Quotation"),rows("WorkOrder"),rows("Payment"),rows("Activity"),rows("Sample")]);
+ const items:Item[]=[];const add=(r:Row,type:string,dateValue:unknown,ownerValue:unknown,title:string,detail:string,href:string)=>{const date=dt(dateValue),owner=txt(ownerValue)||"Unassigned";if(date&&date>=start&&date<end&&(!ownerFilter||owner===ownerFilter))items.push({id:txt(r.id)||`${type}-${items.length}`,owner,type,title,detail,date,href})};
+ leads.forEach(r=>add(r,"Lead",r.createdAt,r.salesOwner,txt(r.companyName)||txt(r.contactName)||"Lead",txt(r.requirement)||txt(r.service)||txt(r.status),`/admin/leads/${txt(r.id)}`));
+ activities.forEach(r=>add(r,txt(r.type)||"Activity",r.activityDate||r.createdAt,r.salesOwner||r.owner||r.createdBy,txt(r.companyName)||txt(r.subject)||txt(r.type)||"Activity",txt(r.notes)||txt(r.outcome)||txt(r.status),"/admin/leads"));
+ quotes.forEach(r=>add(r,"Quotation",r.quotationDate||r.createdAt,r.salesOwner,txt(r.companyName)||txt(r.quotationNumber)||"Quotation",txt(r.status),`/admin/quotations/${txt(r.id)}`));
+ orders.forEach(r=>add(r,"Order",r.confirmedDate||r.createdAt,r.salesOwner,txt(r.companyName)||txt(r.workOrderNumber)||"Order",txt(r.status),"/admin/orders"));
+ payments.forEach(r=>add(r,"Payment",r.paymentDate||r.createdAt,r.salesOwner,txt(r.companyName)||"Payment",`${txt(r.status)} ${r.amount?`· ₹${Number(r.amount).toLocaleString("en-IN")}`:""}`,"/admin/payments"));
+ samples.forEach(r=>add(r,"Sample",r.collectionDate||r.createdAt,r.collectedBy,txt(r.companyName)||txt(r.customerName)||"Sample collection",`${txt(r.sampleType)||txt(r.service)} ${r.sampleCount?`· ${txt(r.sampleCount)} sample(s)`:""}`,`/admin/samples/${txt(r.id)}`));
+ items.sort((a,b)=>b.date.getTime()-a.date.getTime());const owners=[...new Set([...leads.map(x=>txt(x.salesOwner)),...activities.map(x=>txt(x.salesOwner||x.owner||x.createdBy)),...samples.map(x=>txt(x.collectedBy))].filter(Boolean))].sort();
+ const count=(test:(x:Item)=>boolean)=>items.filter(test).length;const periodLabel=period==="today"?"Today":period==="yesterday"?"Yesterday":period==="week"?"This week":period==="month"?"This month":"Custom range";
+ return <main className="mi-page ah-page"><header className="ah-hero"><div><Link href="/admin/management/team"><ArrowLeft size={15}/>Team Control Center</Link><span>MANAGEMENT · DAILY ACTIVITY HISTORY</span><h1>What did the team do?</h1><p>Review historical team execution by day, employee and underlying CRM record.</p></div><CalendarDays/></header>
+ <nav className="ah-periods">{[["today","Today"],["yesterday","Yesterday"],["week","This Week"],["month","This Month"]].map(([v,l])=><Link className={period===v?"active":""} href={`?period=${v}${ownerFilter?`&owner=${encodeURIComponent(ownerFilter)}`:""}`} key={v}>{l}</Link>)}</nav>
+ <form className="ah-filters"><input type="hidden" name="period" value={period}/><label>Employee<select name="owner" defaultValue={ownerFilter}><option value="">All team members</option>{owners.map(o=><option key={o}>{o}</option>)}</select></label><label>From<input type="date" name="from" defaultValue={p.from}/></label><label>To<input type="date" name="to" defaultValue={p.to}/></label><button name="period" value={p.from||p.to?"custom":period}>Apply filters</button></form>
+ <section className="ah-summary"><article><UsersRound/><span>{periodLabel}</span><strong>{items.length}</strong><small>Total records</small></article><article><PhoneCall/><span>Calls / activities</span><strong>{count(x=>x.type.toLowerCase().includes("call")||x.type==="Activity")}</strong><small>Execution records</small></article><article><MapPin/><span>Field visits</span><strong>{count(x=>x.type.toLowerCase().includes("visit"))}</strong><small>On-ground work</small></article><article><FlaskConical/><span>Samples</span><strong>{count(x=>x.type==="Sample")}</strong><small>Collections</small></article></section>
+ <section className="ah-list"><div className="ah-list-head"><div><span>ACTIVITY STREAM</span><h2>{periodLabel}{ownerFilter?` · ${ownerFilter}`:" · All team members"}</h2></div><strong>{dayKey(start)} → {dayKey(new Date(end.getTime()-1))}</strong></div>{items.length?items.map(x=><Link href={x.href} className="ah-row" key={`${x.type}-${x.id}`}><span className={`ah-icon ${x.type.toLowerCase()}`}>{x.type==="Sample"?<FlaskConical/>:x.type==="Quotation"?<FileText/>:x.type==="Order"?<BriefcaseBusiness/>:x.type==="Payment"?<WalletCards/>:x.type.toLowerCase().includes("visit")?<MapPin/>:<PhoneCall/>}</span><div className="ah-main"><strong>{x.title}</strong><span>{x.detail||"No additional notes"}</span></div><div className="ah-owner"><small>OWNER</small><b>{x.owner}</b></div><time>{x.date.toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</time></Link>):<div className="ah-empty"><CalendarDays/><strong>No team activity found</strong><span>Try another period or employee filter.</span></div>}</section>
+ </main>
+}
