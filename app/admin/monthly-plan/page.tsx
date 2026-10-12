@@ -118,7 +118,10 @@ export default function MonthlyPlanPage() {
   }
 
   useEffect(() => {
-    void loadPlan(false);
+    const timer = window.setTimeout(() => {
+      void loadPlan(false);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function toggleStatus(

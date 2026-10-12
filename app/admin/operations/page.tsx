@@ -241,7 +241,10 @@ export default function OperationsPage() {
   }
 
   useEffect(() => {
-    void load(false);
+    const timer = window.setTimeout(() => {
+      void load(false);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const totals = data?.totals || {};
