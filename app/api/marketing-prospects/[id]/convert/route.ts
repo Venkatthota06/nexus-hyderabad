@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { hasManagementRole } from "@/src/lib/api-authorization";
 import { db } from "@/src/prisma/db";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,10 @@ export async function POST(
         status: 401,
       }
     );
+  }
+
+  if (!hasManagementRole(session)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
