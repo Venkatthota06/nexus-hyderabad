@@ -4,14 +4,14 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, fix/security-data-reliability]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.ref }}
+  group: verify-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Type check
-        if: always()
+        if: ${{ !cancelled() }}
         run: npx tsc --noEmit
       - name: Production build
         if: always()
