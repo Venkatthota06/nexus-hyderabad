@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
+import { auth } from "@/auth";
+import { hasManagementRole } from "@/src/lib/api-authorization";
 
 import { db } from "@/src/prisma/db";
 import {
@@ -22,6 +24,14 @@ const ALLOWED_TYPES = new Set([
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
 export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+  if (!hasManagementRole(session)) {
+    return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const formData = await request.formData();
     const uploadedFile = formData.get("file");

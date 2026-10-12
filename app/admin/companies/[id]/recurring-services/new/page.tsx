@@ -232,7 +232,7 @@ export default function NewRecurringServicePage() {
           </h1>
 
           <p>
-            Configure the client's real
+            Configure the client&apos;s real
             recurring testing requirement
             and monthly sample commitment.
           </p>

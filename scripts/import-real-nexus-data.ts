@@ -240,7 +240,7 @@ async function importCorporateRecurringClients() {
 
   console.log("");
 
-  const companyCache = new Map<string, any>();
+  const companyCache = new Map<string, Awaited<ReturnType<typeof getOrCreateRecurringCompany>>>();
 
   for (const item of CORPORATE_RECURRING) {
 
@@ -2105,8 +2105,8 @@ async function getOrCreatePayment({
 ========================================================= */
 
 async function importSPBakersActualOperations(
-  company: any,
-  quotation: any
+  company: Awaited<ReturnType<typeof importSPBakersQuotation>>["company"],
+  quotation: Awaited<ReturnType<typeof importSPBakersQuotation>>["quotation"]
 ) {
   console.log("");
   console.log("Importing SP Bakers confirmed sample/report operations...");

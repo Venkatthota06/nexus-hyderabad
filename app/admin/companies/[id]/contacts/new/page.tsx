@@ -178,7 +178,7 @@ export default function NewContactPage() {
               </h2>
 
               <p>
-                Add the person's basic details.
+                Add the person&apos;s basic details.
               </p>
 
             </div>

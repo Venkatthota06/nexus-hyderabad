@@ -226,7 +226,7 @@ export default function ProspectDetailPage() {
           setCompanies(
             rows.map(
               (
-                company: any
+                company: Company
               ) => ({
                 id:
                   company.id,

@@ -228,10 +228,12 @@ export default function AddSamplePage() {
 
   useEffect(() => {
     if (!companyId) {
-      setLocations([]);
-      setLocationId("");
-      setLocationsLoading(false);
-      return;
+      const resetTimer = window.setTimeout(() => {
+        setLocations([]);
+        setLocationId("");
+        setLocationsLoading(false);
+      }, 0);
+      return () => window.clearTimeout(resetTimer);
     }
 
     let cancelled = false;
