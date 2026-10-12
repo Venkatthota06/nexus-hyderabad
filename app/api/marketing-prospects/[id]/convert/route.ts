@@ -222,8 +222,7 @@ export async function POST(
       prospect.companyId ||
       "";
 
-    let companyRecord:
-      any = null;
+    let companyRecord: { id: string } | null = null;
 
     if (companyId) {
       companyRecord =
