@@ -632,7 +632,7 @@ export default function Home() {
                   Wind,
                 ],
               ].map(
-                ([title, Icon]: any) => (
+                ([title, Icon]: [string, typeof Droplets]) => (
                   <div key={title}>
                     <div className="lab-feature-icon">
                       <Icon

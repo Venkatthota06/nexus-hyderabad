@@ -79,13 +79,17 @@ export default function NotificationBell() {
   }
 
   useEffect(() => {
-    loadNotifications();
-
+    const initialLoad = window.setTimeout(() => {
+      void loadNotifications();
+    }, 0);
     const interval = window.setInterval(() => {
-      loadNotifications(true);
+      void loadNotifications(true);
     }, 30000);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {

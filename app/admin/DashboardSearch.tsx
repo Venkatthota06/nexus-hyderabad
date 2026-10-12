@@ -50,10 +50,12 @@ export default function DashboardSearch() {
 
     if (q.length < 2) {
       controllerRef.current?.abort();
-      setResults([]);
-      setLoading(false);
-      setError("");
-      return;
+      const resetTimer = window.setTimeout(() => {
+        setResults([]);
+        setLoading(false);
+        setError("");
+      }, 0);
+      return () => window.clearTimeout(resetTimer);
     }
 
     const timer = window.setTimeout(async () => {

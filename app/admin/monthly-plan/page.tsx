@@ -76,10 +76,12 @@ export default function MonthlyPlanPage() {
   const [error, setError] =
     useState("");
 
-  async function loadPlan() {
-    try {
+  async function loadPlan(showLoading = true) {
+    if (showLoading) {
       setLoading(true);
       setError("");
+    }
+    try {
 
       const response =
         await fetch(
@@ -116,7 +118,7 @@ export default function MonthlyPlanPage() {
   }
 
   useEffect(() => {
-    loadPlan();
+    void loadPlan(false);
   }, []);
 
   async function toggleStatus(
