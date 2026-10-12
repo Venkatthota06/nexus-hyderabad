@@ -166,7 +166,7 @@ export async function PUT(
       );
     }
 
-    let companyId =
+    const companyId =
       nullableString(body.companyId);
 
     if (companyId) {
