@@ -83,7 +83,7 @@ export default function IdentificationImportClient() {
     return locations.filter(
       (location) => location.companyId === preview.companyId,
     );
-  }, [locations, preview?.companyId]);
+  }, [locations, preview]);
 
   const totalSamples = useMemo(() => {
     if (!preview) return 0;
