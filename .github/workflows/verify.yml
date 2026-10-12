@@ -35,6 +35,8 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Type check
+        if: always()
         run: npx tsc --noEmit
       - name: Production build
+        if: always()
         run: npm run build
