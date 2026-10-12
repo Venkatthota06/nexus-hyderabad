@@ -166,35 +166,75 @@ export async function POST(
       }
     }
 
+    const quotationId = nullableString(body.quotationId);
+    const workOrderId = nullableString(body.workOrderId);
+    const sampleId = nullableString(body.sampleId);
+    const paymentId = nullableString(body.paymentId);
+
+    if ((quotationId || workOrderId || sampleId || paymentId) && !companyId) {
+      return NextResponse.json(
+        { error: "Select a company when linking a document to a CRM record." },
+        { status: 400 }
+      );
+    }
+
+    if (quotationId) {
+      const quotation = await db.orm.public.Quotation.where({ id: quotationId }).first();
+      if (!quotation) {
+        return NextResponse.json({ error: "Linked quotation was not found." }, { status: 404 });
+      }
+      if (quotation.companyId !== companyId) {
+        return NextResponse.json({ error: "Linked quotation does not belong to the selected company." }, { status: 400 });
+      }
+    }
+
+    if (workOrderId) {
+      const workOrder = await db.orm.public.WorkOrder.where({ id: workOrderId }).first();
+      if (!workOrder) {
+        return NextResponse.json({ error: "Linked work order was not found." }, { status: 404 });
+      }
+      if (workOrder.companyId !== companyId) {
+        return NextResponse.json({ error: "Linked work order does not belong to the selected company." }, { status: 400 });
+      }
+    }
+
+    if (sampleId) {
+      const sample = await db.orm.public.Sample.where({ id: sampleId }).first();
+      if (!sample) {
+        return NextResponse.json({ error: "Linked sample was not found." }, { status: 404 });
+      }
+      if (sample.companyId !== companyId) {
+        return NextResponse.json({ error: "Linked sample does not belong to the selected company." }, { status: 400 });
+      }
+    }
+
+    if (paymentId) {
+      const payment = await db.orm.public.Payment.where({ id: paymentId }).first();
+      if (!payment) {
+        return NextResponse.json({ error: "Linked payment was not found." }, { status: 404 });
+      }
+      if (payment.companyId !== companyId) {
+        return NextResponse.json({ error: "Linked payment does not belong to the selected company." }, { status: 400 });
+      }
+    }
+
     const document =
       await db.orm.public.Document.create(
         {
           companyId,
 
-          quotationId:
-            nullableString(
-              body.quotationId
-            ),
+          quotationId,
 
-          workOrderId:
-            nullableString(
-              body.workOrderId
-            ),
+          workOrderId,
 
-          sampleId:
-            nullableString(
-              body.sampleId
-            ),
+          sampleId,
 
           reportId:
             nullableString(
               body.reportId
             ),
 
-          paymentId:
-            nullableString(
-              body.paymentId
-            ),
+          paymentId,
 
           title,
 
