@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { hasManagementRole } from "@/src/lib/api-authorization";
 import { db } from "@/src/prisma/db";
 
 export const dynamic = "force-dynamic";
@@ -227,6 +228,13 @@ export async function GET() {
     );
   }
 
+  if (!hasManagementRole(session)) {
+    return NextResponse.json(
+      { success: false, message: "Forbidden" },
+      { status: 403 },
+    );
+  }
+
   try {
     await syncSampleOperationalAlerts();
 
@@ -312,6 +320,13 @@ export async function PATCH(request: Request) {
     return NextResponse.json(
       { success: false, message: "Unauthorized" },
       { status: 401 },
+    );
+  }
+
+  if (!hasManagementRole(session)) {
+    return NextResponse.json(
+      { success: false, message: "Forbidden" },
+      { status: 403 },
     );
   }
 
