@@ -303,9 +303,6 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        unreadCount: 0,
-        newLeads: 0,
-        notifications: [],
         message: "Failed to load notifications.",
       },
       { status: 500 },
