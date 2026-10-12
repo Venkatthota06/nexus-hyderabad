@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { hasManagementRole } from "@/src/lib/api-authorization";
 import { db } from "@/src/prisma/db";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +44,11 @@ export async function GET() {
     );
   }
 
-  try {
+  if (!hasManagementRole(session)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
     const documents =
       await db.orm.public.Document
         .orderBy(
@@ -93,7 +98,11 @@ export async function POST(
     );
   }
 
-  try {
+  if (!hasManagementRole(session)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
     const body =
       await request.json();
 
