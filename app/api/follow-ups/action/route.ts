@@ -28,10 +28,19 @@ function canManage(role: string) {
 }
 
 function ownsRecord(record: Row, userName: string) {
-  const owner = normalized(userName);
-  return Boolean(owner) && ["salesOwner", "owner", "createdBy", "assignedTo"].some(
-    (field) => normalized(record[field]) === owner
-  );
+  const currentUser = normalized(userName);
+  if (!currentUser) return false;
+
+  // The primary assignment wins. A creator match must never override
+  // an explicit assignment to a different employee.
+  const assignedOwner = ["salesOwner", "assignedTo", "owner"]
+    .map((field) => normalized(record[field]))
+    .find(Boolean);
+
+  if (assignedOwner) return assignedOwner === currentUser;
+
+  const creator = normalized(record.createdBy);
+  return Boolean(creator) && creator === currentUser;
 }
 
 async function notify(input: {
