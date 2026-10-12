@@ -42,3 +42,26 @@ jobs:
       - name: Production build
         if: ${{ !cancelled() }}
         run: npm run build
+
+      - name: Dependency audit summary
+        if: ${{ !cancelled() }}
+        run: |
+          npm audit --json > npm-audit.json || true
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const report = JSON.parse(fs.readFileSync("npm-audit.json", "utf8"));
+            const meta = report.metadata?.vulnerabilities ?? {};
+            console.log("Dependency audit totals:", JSON.stringify(meta));
+            for (const [name, item] of Object.entries(report.vulnerabilities ?? {})) {
+              console.log(JSON.stringify({
+                package: name,
+                severity: item.severity,
+                direct: item.isDirect,
+                installedRange: item.range,
+                fixAvailable: item.fixAvailable,
+                via: item.via.map(v => typeof v === "string" ? v : {
+                  name: v.name, title: v.title, range: v.range, url: v.url
+                })
+              }));
+            }
+          '
