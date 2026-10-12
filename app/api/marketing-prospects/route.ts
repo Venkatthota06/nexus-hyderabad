@@ -205,9 +205,11 @@ export async function POST(
             ),
 
           outreachStatus:
-            cleanString(
-              body.outreachStatus
-            ) || "Identified",
+            existing.converted
+              ? "Converted"
+              : cleanString(
+                  body.outreachStatus
+                ) || "Identified",
 
           priority:
             cleanString(
@@ -224,20 +226,12 @@ export async function POST(
               body.nextFollowUp
             ),
 
-          converted:
-            Boolean(
-              body.converted
-            ),
+          // Conversion must happen through the dedicated conversion endpoint,
+          // which creates the linked CRM lead and activity history together.
+          // Never trust client-supplied conversion flags during prospect creation.
+          converted: false,
 
-          convertedDate:
-            Boolean(
-              body.converted
-            )
-              ? nullableDate(
-                  body.convertedDate
-                ) ||
-                new Date().toISOString()
-              : null,
+          convertedDate: null,
 
           notes:
             nullableString(
@@ -375,11 +369,8 @@ export async function PUT(
       }
     }
 
-    const converted =
-      Boolean(
-        body.converted
-      );
-
+    // Generic prospect updates must not mark a prospect converted or undo a
+    // completed conversion. The dedicated conversion endpoint owns that state.
     const updated =
       await db.orm.public.MarketingProspect
         .where({
@@ -450,16 +441,11 @@ export async function PUT(
               body.nextFollowUp
             ),
 
-          converted,
+          // Preserve conversion state; only the dedicated conversion endpoint
+          // may create a lead and set these fields.
+          converted: existing.converted,
 
-          convertedDate:
-            converted
-              ? nullableDate(
-                  body.convertedDate
-                ) ||
-                existing.convertedDate ||
-                new Date().toISOString()
-              : null,
+          convertedDate: existing.convertedDate,
 
           notes:
             nullableString(
