@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -212,9 +212,11 @@ export default function OperationsPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  async function load() {
-    setLoading(true);
-    setError("");
+  async function load(showLoading = true) {
+    if (showLoading) {
+      setLoading(true);
+      setError("");
+    }
 
     try {
       const response = await fetch("/api/operations/summary", {
@@ -239,14 +241,17 @@ export default function OperationsPage() {
   }
 
   useEffect(() => {
-    void load();
+    const timer = window.setTimeout(() => {
+      void load(false);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const totals = data?.totals || {};
   const queues = data?.queues || {};
   const workflow = data?.workflow || {};
 
-  const generatedLabel = useMemo(() => {
+  const generatedLabel = (() => {
     if (!data?.generatedAt) return "Live CRM data";
     const date = new Date(data.generatedAt);
     if (Number.isNaN(date.getTime())) return "Live CRM data";
@@ -254,7 +259,7 @@ export default function OperationsPage() {
       hour: "2-digit",
       minute: "2-digit",
     })}`;
-  }, [data?.generatedAt]);
+  })();
 
   return (
     <main className="ops-page">

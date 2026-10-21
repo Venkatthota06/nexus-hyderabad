@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { hasManagementRole } from "@/src/lib/api-authorization";
 import { db } from "@/src/prisma/db";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,10 @@ export async function GET(
         status: 401,
       }
     );
+  }
+
+  if (!hasManagementRole(session)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
@@ -119,6 +124,10 @@ export async function PUT(
     );
   }
 
+  if (!hasManagementRole(session)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const { id } = await context.params;
 
@@ -157,7 +166,7 @@ export async function PUT(
       );
     }
 
-    let companyId =
+    const companyId =
       nullableString(body.companyId);
 
     if (companyId) {

@@ -54,11 +54,11 @@ export default function LeadForm() {
         window.location.search
       );
 
-    if (
-      params.get("collection") ===
-      "yes"
-    ) {
-      setNeedsCollection(true);
+    if (params.get("collection") === "yes") {
+      const timer = window.setTimeout(() => {
+        setNeedsCollection(true);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, []);
 

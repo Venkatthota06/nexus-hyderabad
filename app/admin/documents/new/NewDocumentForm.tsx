@@ -89,7 +89,7 @@ export default function NewDocumentForm() {
         setCompanies(
           rows.map(
             (
-              company: any
+              company: Company
             ) => ({
               id:
                 company.id,

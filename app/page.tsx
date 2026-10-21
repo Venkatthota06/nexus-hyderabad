@@ -618,21 +618,21 @@ export default function Home() {
                 [
                   "Water Analysis",
                   Droplets,
-                ],
+                ] as const,
                 [
                   "Food Testing",
                   Utensils,
-                ],
+                ] as const,
                 [
                   "Microbiology",
                   Microscope,
-                ],
+                ] as const,
                 [
                   "Environmental Monitoring",
                   Wind,
-                ],
+                ] as const,
               ].map(
-                ([title, Icon]: any) => (
+                ([title, Icon]) => (
                   <div key={title}>
                     <div className="lab-feature-icon">
                       <Icon

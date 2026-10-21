@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { hasManagementRole } from "@/src/lib/api-authorization";
 
 import { db } from "@/src/prisma/db";
 
@@ -43,6 +45,14 @@ async function createImportNotification({
 }
 
 export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+  if (!hasManagementRole(session)) {
+    return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const body = (await request.json()) as ImportPreview;
 

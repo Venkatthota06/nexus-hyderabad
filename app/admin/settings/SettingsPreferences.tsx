@@ -43,27 +43,20 @@ export default function SettingsPreferences() {
   ] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored =
-        window.localStorage.getItem(
-          STORAGE_KEY
-        );
-
-      if (!stored) return;
-
-      const parsed =
-        JSON.parse(stored);
-
-      setPreferences({
-        ...defaults,
-        ...parsed,
-      });
-    } catch (error) {
-      console.error(
-        "Load CRM preferences error:",
-        error
-      );
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+        if (!stored) return;
+        const parsed = JSON.parse(stored);
+        setPreferences({
+          ...defaults,
+          ...parsed,
+        });
+      } catch (error) {
+        console.error("Load CRM preferences error:", error);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function update(
