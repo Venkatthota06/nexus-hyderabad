@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: verify-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
+  # Keep in-flight verification runs so newer commits do not silently cancel required checks.
+  cancel-in-progress: false
 
 jobs:
   quality:
