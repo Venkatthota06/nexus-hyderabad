@@ -204,12 +204,13 @@ export async function POST(
               body.targetService
             ),
 
+          // A new prospect is never converted at creation time. Conversion
+          // must happen through the dedicated endpoint so the CRM lead and
+          // activity history are created together.
           outreachStatus:
-            existing.converted
-              ? "Converted"
-              : cleanString(
-                  body.outreachStatus
-                ) || "Identified",
+            cleanString(
+              body.outreachStatus
+            ) || "Identified",
 
           priority:
             cleanString(
