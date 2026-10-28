@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated database contract snapshots are artifacts, not authored source.
+    "migrations/snapshots/**",
+    "src/prisma/contract.d.ts",
   ]),
 ]);
 
