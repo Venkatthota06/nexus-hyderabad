@@ -6,12 +6,24 @@ test("ADMIN and MANAGER have management access", () => {
   assert.equal(hasManagementRole({ user: { role: "ADMIN" } }), true);
   assert.equal(hasManagementRole({ user: { role: "MANAGER" } }), true);
   assert.equal(hasManagementRole({ user: { role: "manager" } }), true);
+  assert.equal(hasManagementRole({ user: { role: "  admin  " } }), true);
 });
 
-test("TEAM and missing sessions do not have management access", () => {
+test("TEAM and unknown string roles do not have management access", () => {
   assert.equal(hasManagementRole({ user: { role: "TEAM" } }), false);
   assert.equal(hasManagementRole({ user: { role: "UNKNOWN" } }), false);
-  assert.equal(hasManagementRole({ user: {} }), false);
+  assert.equal(hasManagementRole({ user: { role: "" } }), false);
+  assert.equal(hasManagementRole({ user: { role: "   " } }), false);
+});
+
+test("missing sessions and malformed role claims fail closed", () => {
   assert.equal(hasManagementRole(null), false);
   assert.equal(hasManagementRole(undefined), false);
+  assert.equal(hasManagementRole({}), false);
+  assert.equal(hasManagementRole({ user: null }), false);
+  assert.equal(hasManagementRole({ user: {} }), false);
+  assert.equal(hasManagementRole({ user: { role: null } }), false);
+  assert.equal(hasManagementRole({ user: { role: 1 } }), false);
+  assert.equal(hasManagementRole({ user: { role: ["ADMIN"] } }), false);
+  assert.equal(hasManagementRole({ user: { role: { toString: () => "ADMIN" } } }), false);
 });
