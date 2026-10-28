@@ -1,0 +1,79 @@
+name: Safe dependency audit remediation
+
+on:
+  push:
+    branches: [fix/security-data-reliability-followup]
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AUTH_SECRET: ci-only-not-a-production-secret
+      NEXTAUTH_SECRET: ci-only-not-a-production-secret
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/nexus_ci
+    steps:
+      - name: Checkout follow-up branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/security-data-reliability-followup
+          persist-credentials: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install current lockfile
+        run: npm ci
+      - name: Capture baseline audit
+        run: npm audit --json > /tmp/audit-before.json || true
+      - name: Apply compatible fixes and preserve the existing Prisma RC pair
+        run: |
+          npm audit fix
+          npm install --package-lock-only --save-exact prisma@8.0.0-rc.10 @prisma/orm-postgres@8.0.0-rc.8
+          npm ci
+          node --input-type=module -e '
+            import assert from "node:assert/strict";
+            import prisma from "./node_modules/prisma/package.json" with { type: "json" };
+            import orm from "./node_modules/@prisma/orm-postgres/package.json" with { type: "json" };
+            assert.equal(prisma.version, "8.0.0-rc.10", "Prisma CLI version changed unexpectedly");
+            assert.equal(orm.version, "8.0.0-rc.8", "Prisma ORM adapter version changed unexpectedly");
+            console.log("Prisma versions preserved:", prisma.version, orm.version);
+          '
+      - name: Unit tests
+        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Capture final audit
+        run: npm audit --json > /tmp/audit-after.json || true
+      - name: Commit only if audit findings decrease
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import { execFileSync } from "node:child_process";
+          const before = JSON.parse(fs.readFileSync("/tmp/audit-before.json", "utf8")).metadata?.vulnerabilities?.total ?? Infinity;
+          const after = JSON.parse(fs.readFileSync("/tmp/audit-after.json", "utf8")).metadata?.vulnerabilities?.total ?? Infinity;
+          console.log(JSON.stringify({ before, after }));
+          if (!(after < before)) {
+            execFileSync("git", ["restore", "--", "package.json", "package-lock.json"]);
+            console.log("No net audit improvement; discarded dependency changes.");
+            process.exit(0);
+          }
+          NODE
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "No dependency file changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "security: remediate compatible npm audit findings"
+          git push origin HEAD:refs/heads/fix/security-data-reliability-followup
