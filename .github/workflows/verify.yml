@@ -2,7 +2,7 @@ name: Verify application
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fix/security-data-reliability]
   push:
     branches: [main]
   workflow_dispatch:
