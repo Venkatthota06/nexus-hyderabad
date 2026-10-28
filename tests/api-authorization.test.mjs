@@ -27,3 +27,14 @@ test("missing sessions and malformed role claims fail closed", () => {
   assert.equal(hasManagementRole({ user: { role: ["ADMIN"] } }), false);
   assert.equal(hasManagementRole({ user: { role: { toString: () => "ADMIN" } } }), false);
 });
+
+test("API role validation accepts only recognized roles and requires a TEAM identity", () => {
+  assert.equal(hasValidApiRole({ user: { role: "ADMIN" } }), true);
+  assert.equal(hasValidApiRole({ user: { role: "manager" } }), true);
+  assert.equal(hasValidApiRole({ user: { role: "TEAM", name: "Venkat" } }), true);
+  assert.equal(hasValidApiRole({ user: { role: "TEAM", name: "  " } }), false);
+  assert.equal(hasValidApiRole({ user: { role: "GUEST", name: "Venkat" } }), false);
+  assert.equal(hasValidApiRole({ user: { role: 1, name: "Venkat" } }), false);
+  assert.equal(hasValidApiRole({ user: { role: ["ADMIN"], name: "Venkat" } }), false);
+  assert.equal(hasValidApiRole(null), false);
+});
