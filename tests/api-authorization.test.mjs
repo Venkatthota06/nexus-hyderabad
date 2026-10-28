@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { hasManagementRole } from "../src/lib/api-authorization.ts";
+import { hasManagementRole, hasValidApiRole } from "../src/lib/api-authorization.ts";
 
 test("ADMIN and MANAGER have management access", () => {
   assert.equal(hasManagementRole({ user: { role: "ADMIN" } }), true);
