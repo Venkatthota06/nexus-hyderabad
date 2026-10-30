@@ -58,10 +58,14 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
           BEGIN;
           INSERT INTO "company" ("id", "name", "updatedAt")
-          VALUES ('ci-schema-smoke-test', 'CI schema smoke test', NOW())
-          RETURNING "id";
-          SELECT COUNT(*) AS inserted_company_count
-          FROM "company" WHERE "id" = 'ci-schema-smoke-test';
+          VALUES ('ci-schema-smoke-test', 'CI schema smoke test', NOW());
+          DO $body$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM "company" WHERE "id" = 'ci-schema-smoke-test') THEN
+              RAISE EXCEPTION 'Company insert/read smoke test failed';
+            END IF;
+          END
+          $body$;
           ROLLBACK;
           SQL
       - name: Unit tests
