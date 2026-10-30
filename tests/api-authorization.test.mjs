@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { hasManagementRole, hasValidApiRole } from "../src/lib/api-authorization.ts";
+import { hasManagementRole, hasValidApiRole, isRecordOwnedBy } from "../src/lib/api-authorization.ts";
 
 test("ADMIN and MANAGER have management access", () => {
   assert.equal(hasManagementRole({ user: { role: "ADMIN" } }), true);
@@ -37,4 +37,14 @@ test("API role validation accepts only recognized roles and requires a TEAM iden
   assert.equal(hasValidApiRole({ user: { role: 1, name: "Venkat" } }), false);
   assert.equal(hasValidApiRole({ user: { role: ["ADMIN"], name: "Venkat" } }), false);
   assert.equal(hasValidApiRole(null), false);
+});
+
+test("record ownership comparison trims labels, ignores case, and rejects empty or malformed identities", () => {
+  assert.equal(isRecordOwnedBy(" Venkat ", "venkat"), true);
+  assert.equal(isRecordOwnedBy("VENKAT", " Venkat"), true);
+  assert.equal(isRecordOwnedBy("Venkat", "Other"), false);
+  assert.equal(isRecordOwnedBy(" ", "Venkat"), false);
+  assert.equal(isRecordOwnedBy("Venkat", " "), false);
+  assert.equal(isRecordOwnedBy(null, "Venkat"), false);
+  assert.equal(isRecordOwnedBy("Venkat", 42), false);
 });
