@@ -48,3 +48,15 @@ test("record ownership comparison trims labels, ignores case, and rejects empty 
   assert.equal(isRecordOwnedBy(null, "Venkat"), false);
   assert.equal(isRecordOwnedBy("Venkat", 42), false);
 });
+
+
+test("follow-up ownership honors explicit assignment before creator fallback", async () => {
+  const { isRecordOwnedByOrCreatedBy } = await import("../src/lib/api-authorization.ts");
+  assert.equal(isRecordOwnedByOrCreatedBy({ salesOwner: " Venkat ", createdBy: "Other" }, "venkat"), true);
+  assert.equal(isRecordOwnedByOrCreatedBy({ salesOwner: "Other", createdBy: "Venkat" }, "Venkat"), false);
+  assert.equal(isRecordOwnedByOrCreatedBy({ assignedTo: "Venkat" }, "venkat"), true);
+  assert.equal(isRecordOwnedByOrCreatedBy({ owner: "Other", createdBy: "Venkat" }, "Venkat"), false);
+  assert.equal(isRecordOwnedByOrCreatedBy({ createdBy: " Venkat " }, "venkat"), true);
+  assert.equal(isRecordOwnedByOrCreatedBy({ createdBy: " " }, "venkat"), false);
+  assert.equal(isRecordOwnedByOrCreatedBy(null, "venkat"), false);
+});
