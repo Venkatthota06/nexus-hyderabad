@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       const old = await db.orm.public.Activity.where({ id }).first();
       if (!old) return NextResponse.json({ error: "Activity not found." }, { status: 404 });
       const record = old as unknown as Row;
-      if (!canManage(role) && !ownsRecord(record, userName)) return forbidden();
+      if (!canManage(role) && !isRecordOwnedByOrCreatedBy(record, userName)) return forbidden();
 
       await db.orm.public.Activity.where({ id }).update({ nextFollowUp: next });
       await notify({
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
     const old = await db.orm.public.Quotation.where({ id }).first();
     if (!old) return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
     const record = old as unknown as Row;
-    if (!canManage(role) && !ownsRecord(record, userName)) return forbidden();
+    if (!canManage(role) && !isRecordOwnedByOrCreatedBy(record, userName)) return forbidden();
     if (["accepted", "rejected", "expired"].includes(normalized(record.status))) {
       return NextResponse.json({ error: "Closed quotations cannot be rescheduled." }, { status: 409 });
     }
