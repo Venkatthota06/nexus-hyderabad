@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/src/prisma/db";
+import { hasValidApiRole } from "@/src/lib/api-authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,9 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!hasValidApiRole(session)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const user = session.user as { name?: string | null; role?: string | null };
