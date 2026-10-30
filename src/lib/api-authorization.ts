@@ -41,3 +41,20 @@ export function isRecordOwnedBy(owner: unknown, identity: unknown): boolean {
   const normalizedIdentity = identity.trim().toLocaleLowerCase("en");
   return normalizedOwner.length > 0 && normalizedIdentity.length > 0 && normalizedOwner === normalizedIdentity;
 }
+
+
+/**
+ * Follow-up records may use one of several assignment fields. An explicit
+ * assignment takes precedence; creator ownership is only a fallback when
+ * the record has no assignment at all.
+ */
+export function isRecordOwnedByOrCreatedBy(record: unknown, identity: unknown): boolean {
+  if (!record || typeof record !== "object") return false;
+  const value = record as Record<string, unknown>;
+  const assignedOwner = ["salesOwner", "assignedTo", "owner"]
+    .map((field) => value[field])
+    .find((owner) => typeof owner === "string" && owner.trim().length > 0);
+
+  if (assignedOwner !== undefined) return isRecordOwnedBy(assignedOwner, identity);
+  return isRecordOwnedBy(value.createdBy, identity);
+}
