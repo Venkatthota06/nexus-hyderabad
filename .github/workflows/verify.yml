@@ -51,6 +51,24 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT 1 AS database_ready;"
       - name: Install dependencies
         run: npm ci
+      - name: Initialize isolated CI database schema
+        run: npx prisma db init
+      - name: Smoke-test application database schema
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          BEGIN;
+          INSERT INTO "company" ("id", "name", "updatedAt")
+          VALUES ('ci-schema-smoke-test', 'CI schema smoke test', NOW());
+          DO $
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM "company" WHERE "id" = 'ci-schema-smoke-test'
+            ) THEN
+              RAISE EXCEPTION 'Company insert/read smoke test failed';
+            END IF;
+          END $;
+          ROLLBACK;
+          SQL
       - name: Unit tests
         run: npm test
       - name: Lint
