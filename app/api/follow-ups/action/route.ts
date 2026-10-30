@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/src/prisma/db";
+import { hasValidApiRole, isRecordOwnedByOrCreatedBy } from "@/src/lib/api-authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -27,21 +28,6 @@ function canManage(role: string) {
   return role === "ADMIN" || role === "MANAGER";
 }
 
-function ownsRecord(record: Row, userName: string) {
-  const currentUser = normalized(userName);
-  if (!currentUser) return false;
-
-  // The primary assignment wins. A creator match must never override
-  // an explicit assignment to a different employee.
-  const assignedOwner = ["salesOwner", "assignedTo", "owner"]
-    .map((field) => normalized(record[field]))
-    .find(Boolean);
-
-  if (assignedOwner) return assignedOwner === currentUser;
-
-  const creator = normalized(record.createdBy);
-  return Boolean(creator) && creator === currentUser;
-}
 
 async function notify(input: {
   type: string;
@@ -75,6 +61,9 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!hasValidApiRole(session)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const user = session.user as { name?: string | null; role?: string | null };
@@ -113,7 +102,7 @@ export async function POST(request: Request) {
       const old = await db.orm.public.Lead.where({ id }).first();
       if (!old) return NextResponse.json({ error: "Lead not found." }, { status: 404 });
       const record = old as unknown as Row;
-      if (!canManage(role) && !ownsRecord(record, userName)) return forbidden();
+      if (!canManage(role) && !isRecordOwnedByOrCreatedBy(record, userName)) return forbidden();
       if (["won", "lost"].includes(normalized(record.status))) {
         return NextResponse.json({ error: "Closed leads cannot be rescheduled." }, { status: 409 });
       }
@@ -134,7 +123,7 @@ export async function POST(request: Request) {
       const old = await db.orm.public.Activity.where({ id }).first();
       if (!old) return NextResponse.json({ error: "Activity not found." }, { status: 404 });
       const record = old as unknown as Row;
-      if (!canManage(role) && !ownsRecord(record, userName)) return forbidden();
+      if (!canManage(role) && !isRecordOwnedByOrCreatedBy(record, userName)) return forbidden();
 
       await db.orm.public.Activity.where({ id }).update({ nextFollowUp: next });
       await notify({
@@ -151,7 +140,7 @@ export async function POST(request: Request) {
     const old = await db.orm.public.Quotation.where({ id }).first();
     if (!old) return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
     const record = old as unknown as Row;
-    if (!canManage(role) && !ownsRecord(record, userName)) return forbidden();
+    if (!canManage(role) && !isRecordOwnedByOrCreatedBy(record, userName)) return forbidden();
     if (["accepted", "rejected", "expired"].includes(normalized(record.status))) {
       return NextResponse.json({ error: "Closed quotations cannot be rescheduled." }, { status: 409 });
     }
