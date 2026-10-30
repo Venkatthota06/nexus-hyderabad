@@ -60,3 +60,48 @@ test("follow-up ownership honors explicit assignment before creator fallback", a
   assert.equal(isRecordOwnedByOrCreatedBy({ createdBy: " " }, "venkat"), false);
   assert.equal(isRecordOwnedByOrCreatedBy(null, "venkat"), false);
 });
+
+
+test("follow-up assignment precedence is deterministic across all supported fields", async () => {
+  const { isRecordOwnedByOrCreatedBy } = await import("../src/lib/api-authorization.ts");
+
+  // salesOwner is the primary assignment and cannot be overridden by a
+  // matching lower-priority field or creator identity.
+  assert.equal(
+    isRecordOwnedByOrCreatedBy(
+      { salesOwner: "Other", assignedTo: "Venkat", owner: "Venkat", createdBy: "Venkat" },
+      "Venkat",
+    ),
+    false,
+  );
+
+  // assignedTo is used only when salesOwner is absent or blank.
+  assert.equal(
+    isRecordOwnedByOrCreatedBy({ salesOwner: " ", assignedTo: "Venkat", owner: "Other" }, "venkat"),
+    true,
+  );
+
+  // owner is used only when the two higher-priority assignments are absent.
+  assert.equal(
+    isRecordOwnedByOrCreatedBy({ salesOwner: null, assignedTo: 7, owner: "Venkat" }, "venkat"),
+    true,
+  );
+
+  // Malformed assignment values do not become identities.
+  assert.equal(
+    isRecordOwnedByOrCreatedBy({ salesOwner: 42, assignedTo: null, owner: {}, createdBy: "Venkat" }, "venkat"),
+    true,
+  );
+  assert.equal(
+    isRecordOwnedByOrCreatedBy({ salesOwner: "Other", createdBy: "Venkat" }, "venkat"),
+    false,
+  );
+});
+
+test("follow-up ownership rejects malformed records and non-string identity claims", async () => {
+  const { isRecordOwnedByOrCreatedBy } = await import("../src/lib/api-authorization.ts");
+  assert.equal(isRecordOwnedByOrCreatedBy("Venkat", "Venkat"), false);
+  assert.equal(isRecordOwnedByOrCreatedBy([], "Venkat"), false);
+  assert.equal(isRecordOwnedByOrCreatedBy({ salesOwner: "Venkat" }, 123), false);
+  assert.equal(isRecordOwnedByOrCreatedBy({ createdBy: "Venkat" }, null), false);
+});
