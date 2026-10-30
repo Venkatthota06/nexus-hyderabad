@@ -68,6 +68,38 @@ jobs:
           $body$;
           ROLLBACK;
           SQL
+      - name: Verify database ownership query boundaries
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          BEGIN;
+          INSERT INTO "company" ("id", "name", "updatedAt")
+          VALUES ('ci-authz-company', 'CI authorization fixture', NOW());
+          INSERT INTO "lead" ("id", "name", "company", "phone", "email", "service", "requirement", "salesOwner", "updatedAt")
+          VALUES
+            ('ci-authz-lead-owned', 'Owned lead', 'CI authorization fixture', '0000000000', 'owned@example.invalid', 'IAQ', 'CI fixture', 'Venkat', NOW()),
+            ('ci-authz-lead-other', 'Other lead', 'CI authorization fixture', '0000000001', 'other@example.invalid', 'IAQ', 'CI fixture', 'Other', NOW());
+          INSERT INTO "quotation" ("id", "companyId", "quotationNumber", "service", "amount", "gstAmount", "totalAmount", "quotationDate", "salesOwner", "updatedAt")
+          VALUES
+            ('ci-authz-quotation-owned', 'ci-authz-company', 'CI-AUTHZ-OWNED', 'IAQ', 100, 18, 118, NOW(), 'Venkat', NOW()),
+            ('ci-authz-quotation-other', 'ci-authz-company', 'CI-AUTHZ-OTHER', 'IAQ', 100, 18, 118, NOW(), 'Other', NOW());
+          DO $body$
+          BEGIN
+            IF (SELECT COUNT(*) FROM "lead" WHERE "id" LIKE 'ci-authz-lead-%' AND LOWER(BTRIM("salesOwner")) = LOWER(BTRIM(' Venkat '))) <> 1 THEN
+              RAISE EXCEPTION 'TEAM lead ownership filter did not isolate the assigned lead';
+            END IF;
+            IF (SELECT COUNT(*) FROM "quotation" WHERE "id" LIKE 'ci-authz-quotation-%' AND LOWER(BTRIM("salesOwner")) = LOWER(BTRIM('venkat'))) <> 1 THEN
+              RAISE EXCEPTION 'TEAM quotation ownership filter did not isolate the assigned quotation';
+            END IF;
+            IF (SELECT COUNT(*) FROM "lead" WHERE "id" LIKE 'ci-authz-lead-%') <> 2 THEN
+              RAISE EXCEPTION 'Management lead visibility fixture is incomplete';
+            END IF;
+            IF (SELECT COUNT(*) FROM "quotation" WHERE "id" LIKE 'ci-authz-quotation-%') <> 2 THEN
+              RAISE EXCEPTION 'Management quotation visibility fixture is incomplete';
+            END IF;
+          END
+          $body$;
+          ROLLBACK;
+          SQL
       - name: Unit tests
         run: npm test
       - name: Lint
