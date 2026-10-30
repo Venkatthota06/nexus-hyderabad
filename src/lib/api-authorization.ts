@@ -33,3 +33,11 @@ export function hasValidApiRole(session: unknown): boolean {
   } | null | undefined;
   return typeof value?.user?.name === "string" && value.user.name.trim().length > 0;
 }
+
+/** Compare persisted ownership labels safely and consistently. */
+export function isRecordOwnedBy(owner: unknown, identity: unknown): boolean {
+  if (typeof owner !== "string" || typeof identity !== "string") return false;
+  const normalizedOwner = owner.trim().toLocaleLowerCase("en");
+  const normalizedIdentity = identity.trim().toLocaleLowerCase("en");
+  return normalizedOwner.length > 0 && normalizedIdentity.length > 0 && normalizedOwner === normalizedIdentity;
+}
